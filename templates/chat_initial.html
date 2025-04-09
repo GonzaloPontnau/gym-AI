@@ -60,14 +60,14 @@
             <div class="hero-section p-4">
                 <h1 class="display-4 mb-4">GymAI</h1>
                 <h2 class="mb-4">Tu asistente personal para crear la rutina perfecta</h2>
-                <p class="lead mb-4">Crea una rutina de entrenamiento personalizada en segundos, adaptada a tus objetivos y equipamiento disponible.</p>
+                <p class="lead mb-4">Crea una rutina de entrenamiento personalizada en segundos, adaptada a tus objetivos.</p>
                 
                 <h3 class="h5 mb-3">Beneficios:</h3>
                 <ul class="benefits-list">
                     <li>Rutinas <strong>personalizadas</strong> según tus objetivos</li>
-                    <li>Adaptadas al <strong>equipamiento</strong> que tengas disponible</li>
                     <li><strong>Modifica</strong> tu rutina cuando quieras con el chat</li>
                     <li>Obtén <strong>explicaciones detalladas</strong> de cada ejercicio</li>
+                    <li>Enfocadas en la <strong>efectividad</strong> y progresión gradual</li>
                 </ul>
             </div>
         </div>
@@ -82,14 +82,6 @@
                         <div class="form-floating">
                             <textarea class="form-control" id="goals" style="height: 100px" required></textarea>
                             <label for="goals">Por ejemplo: ganar masa muscular, definición, fuerza...</label>
-                        </div>
-                    </div>
-                    
-                    <div class="form-section">
-                        <label class="form-label">¿Con qué equipamiento cuentas?</label>
-                        <div class="form-floating">
-                            <textarea class="form-control" id="equipment" style="height: 100px" required></textarea>
-                            <label for="equipment">Por ejemplo: mancuernas, barra, máquinas de gimnasio...</label>
                         </div>
                     </div>
                     
@@ -157,13 +149,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Obtener valores del formulario
         const goals = document.getElementById('goals').value;
-        const equipment = document.getElementById('equipment').value;
         const days = document.getElementById('days').value;
         
-        // Preparar datos para enviar
+        // Preparar datos para enviar - equipamiento por defecto
         const data = {
             goals: goals,
-            equipment: equipment,
+            equipment: "gimnasio completo",
             days: parseInt(days),
             user_id: 1
         };

@@ -4,8 +4,11 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
+# Importar servicios
 from app.services.routine_service import RoutineGenerator
+from app.services.gemini_service import GeminiRoutineGenerator
 from app.db.database import init_db, save_routine, get_routine, save_chat_message, get_chat_history, get_user_routines
 from app.websocket.manager import ConnectionManager
 from app.models.models import RoutineRequest
@@ -26,8 +29,19 @@ app.add_middleware(
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Crear instancias de servicios
-routine_generator = RoutineGenerator()
+# Cargar variables de entorno
+load_dotenv()
+
+# Determinar qué generador de rutinas usar
+api_key = os.getenv("GEMINI_API_KEY")
+if api_key:
+    print("API key de Gemini detectada. Usando GeminiRoutineGenerator.")
+    routine_generator = GeminiRoutineGenerator()
+else:
+    print("No se encontró API key de Gemini. Usando generador local.")
+    routine_generator = RoutineGenerator()
+
+# Crear instancia del gestor de conexiones WebSocket
 manager = ConnectionManager()
 
 # Configurar eventos de inicio
@@ -68,8 +82,8 @@ async def create_routine(request: Request):
         user_id=data.get("user_id", 1)
     )
     
-    # Generar la rutina usando el servicio alternativo
-    routine = routine_generator.create_initial_routine(routine_request)
+    # Generar la rutina usando el servicio configurado
+    routine = await routine_generator.create_initial_routine(routine_request)
     
     # Guardar la rutina en la base de datos
     routine_id = await save_routine(routine, user_id=routine_request.user_id)
@@ -120,10 +134,10 @@ async def websocket_endpoint(websocket: WebSocket, routine_id: int):
             await save_chat_message(routine_id, "user", data)
             
             # Procesar con el generador de rutinas
-            modified_routine = routine_generator.modify_routine(current_routine, data)
+            modified_routine = await routine_generator.modify_routine(current_routine, data)
             
             # Generar explicación de cambios
-            explanation = routine_generator.explain_routine_changes(current_routine, modified_routine, data)
+            explanation = await routine_generator.explain_routine_changes(current_routine, modified_routine, data)
             
             # Actualizar la rutina en la BD
             await save_routine(modified_routine, routine_id=routine_id)

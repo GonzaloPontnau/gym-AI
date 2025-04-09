@@ -167,7 +167,7 @@ class RoutineGenerator:
             
         return filtered
     
-    def create_initial_routine(self, request: RoutineRequest) -> Routine:
+    async def create_initial_routine(self, request: RoutineRequest) -> Routine:
         """Genera una rutina inicial basada en los objetivos del usuario"""
         routine_type = self._determine_routine_type(request.goals)
         days_count = min(request.days, 7)  # Máximo 7 días
@@ -224,7 +224,7 @@ class RoutineGenerator:
             days=days
         )
     
-    def modify_routine(self, current_routine: Routine, user_request: str) -> Routine:
+    async def modify_routine(self, current_routine: Routine, user_request: str) -> Routine:
         """Modifica una rutina existente según la solicitud del usuario"""
         # Hacer una copia de la rutina actual para modificarla
         modified_routine = current_routine.model_copy(deep=True)
@@ -352,7 +352,7 @@ class RoutineGenerator:
         
         return modified_routine
     
-    def explain_routine_changes(self, old_routine: Routine, new_routine: Routine, user_request: str) -> str:
+    async def explain_routine_changes(self, old_routine: Routine, new_routine: Routine, user_request: str) -> str:
         """Genera una explicación de los cambios realizados a la rutina"""
         explanation = "He modificado tu rutina según tu solicitud:\n\n"
         

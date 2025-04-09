@@ -9,10 +9,8 @@ if __name__ == "__main__":
     # Configurar opciones de Uvicorn para el desarrollo
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host="localhost",
         port=8000,
         reload=True,  # Recarga automática cuando se cambian archivos
         log_level="info"
     )
-    
-    print("¡GymAI se está ejecutando! Visita http://localhost:8000 en tu navegador.")

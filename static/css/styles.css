@@ -1,7 +1,7 @@
 /* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f5f5;
+    background-color: #f0f0f0;
 }
 
 /* Personalización de la barra de navegación */
@@ -37,7 +37,7 @@ body {
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .card-header {
@@ -50,11 +50,15 @@ body {
     padding: 8px 16px;
     font-weight: 500;
     transition: all 0.3s ease;
+    background-color: #444;
+    border-color: #333;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 255, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #555;
+    border-color: #444;
 }
 
 /* Estilo para mensajes de chat */
@@ -71,13 +75,13 @@ body {
 }
 
 .user-message {
-    background: #007bff;
+    background: #555;
     color: white;
     border-bottom-right-radius: 5px;
 }
 
 .assistant-message {
-    background: #f1f1f1;
+    background: #e0e0e0;
     color: #333;
     border-bottom-left-radius: 5px;
 }
@@ -100,4 +104,42 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Tema en escala de grises */
+.navbar-dark.bg-primary {
+    background-color: #333 !important;
+}
+
+.btn-outline-primary {
+    color: #444;
+    border-color: #444;
+}
+
+.btn-outline-primary:hover {
+    background-color: #444;
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: #666;
+    border-color: #666;
+}
+
+.alert-info {
+    background-color: #e8e8e8;
+    color: #333;
+    border-color: #d0d0d0;
+}
+
+.bg-primary {
+    background-color: #444 !important;
+}
+
+.text-primary {
+    color: #444 !important;
+}
+
+.text-muted {
+    color: #777 !important;
 }
