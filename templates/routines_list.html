@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}GymAI - Mis Rutinas{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1>Mis Rutinas</h1>
+            <p class="lead">Selecciona una rutina para ver y modificarla, o crea una nueva.</p>
+        </div>
+        <div class="col-auto align-self-center">
+            <a href="/" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Crear nueva rutina
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% if routines %}
+            {% for routine in routines %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ routine.routine_name }}</h5>
+                            <p class="card-text text-muted">
+                                <small>Actualizada: {{ routine.updated_at }}</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <a href="/dashboard/{{ routine.id }}" class="btn btn-primary w-100">
+                                <i class="bi bi-eye"></i> Ver rutina
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-clipboard2-x display-1 text-muted"></i>
+                        <h3 class="mt-3">No tienes rutinas guardadas</h3>
+                        <p class="text-muted">¡Crea tu primera rutina personalizada ahora!</p>
+                        <a href="/" class="btn btn-primary btn-lg mt-3">
+                            <i class="bi bi-plus-circle"></i> Crear mi primera rutina
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

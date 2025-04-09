@@ -1,0 +1,103 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Personalización de la barra de navegación */
+.navbar-brand {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* Animación de carga */
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
+
+.loading-pulse {
+    animation: pulse 1.5s infinite;
+}
+
+/* Tarjetas personalizadas */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    font-weight: bold;
+}
+
+/* Estilo para botones principales */
+.btn-primary {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 255, 0.2);
+}
+
+/* Estilo para mensajes de chat */
+.message {
+    position: relative;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 15px;
+    transition: transform 0.2s ease;
+}
+
+.message:hover {
+    transform: scale(1.02);
+}
+
+.user-message {
+    background: #007bff;
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.assistant-message {
+    background: #f1f1f1;
+    color: #333;
+    border-bottom-left-radius: 5px;
+}
+
+/* Scroll personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

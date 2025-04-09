@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}GymAI - Crea tu rutina personalizada{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-section {
+        background-color: #f8f9fa;
+        padding: 3rem 0;
+        border-radius: 0.5rem;
+    }
+    
+    .form-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 2rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .form-floating {
+        margin-bottom: 1rem;
+    }
+    
+    .number-input {
+        width: 100%;
+        max-width: 180px;
+    }
+    
+    .benefits-list {
+        padding-left: 1.5rem;
+    }
+    
+    .benefits-list li {
+        margin-bottom: 0.75rem;
+    }
+    
+    .btn-create {
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .loading-container {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="hero-section p-4">
+                <h1 class="display-4 mb-4">GymAI</h1>
+                <h2 class="mb-4">Tu asistente personal para crear la rutina perfecta</h2>
+                <p class="lead mb-4">Crea una rutina de entrenamiento personalizada en segundos, adaptada a tus objetivos y equipamiento disponible.</p>
+                
+                <h3 class="h5 mb-3">Beneficios:</h3>
+                <ul class="benefits-list">
+                    <li>Rutinas <strong>personalizadas</strong> según tus objetivos</li>
+                    <li>Adaptadas al <strong>equipamiento</strong> que tengas disponible</li>
+                    <li><strong>Modifica</strong> tu rutina cuando quieras con el chat</li>
+                    <li>Obtén <strong>explicaciones detalladas</strong> de cada ejercicio</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="form-container" id="form-container">
+                <h2 class="text-center mb-4">Crea tu rutina personalizada</h2>
+                
+                <form id="routine-form">
+                    <div class="form-section">
+                        <label class="form-label">¿Cuáles son tus objetivos?</label>
+                        <div class="form-floating">
+                            <textarea class="form-control" id="goals" style="height: 100px" required></textarea>
+                            <label for="goals">Por ejemplo: ganar masa muscular, definición, fuerza...</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label class="form-label">¿Con qué equipamiento cuentas?</label>
+                        <div class="form-floating">
+                            <textarea class="form-control" id="equipment" style="height: 100px" required></textarea>
+                            <label for="equipment">Por ejemplo: mancuernas, barra, máquinas de gimnasio...</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <label class="form-label">¿Cuántos días a la semana entrenarás?</label>
+                        <div class="input-group number-input">
+                            <button class="btn btn-outline-secondary" type="button" id="decrease-days">-</button>
+                            <input type="number" class="form-control text-center" id="days" min="1" max="7" value="3" required>
+                            <button class="btn btn-outline-secondary" type="button" id="increase-days">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary btn-create">
+                            <i class="bi bi-magic"></i> Crear mi rutina
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="loading-container" id="loading-container">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+                <h3 class="mt-4 loading-pulse">Creando tu rutina personalizada...</h3>
+                <p class="text-muted">Esto puede tardar unos segundos.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const routineForm = document.getElementById('routine-form');
+    const formContainer = document.getElementById('form-container');
+    const loadingContainer = document.getElementById('loading-container');
+    const daysInput = document.getElementById('days');
+    const decreaseDays = document.getElementById('decrease-days');
+    const increaseDays = document.getElementById('increase-days');
+    
+    // Controles para el campo de días
+    decreaseDays.addEventListener('click', function() {
+        if (daysInput.value > 1) {
+            daysInput.value = parseInt(daysInput.value) - 1;
+        }
+    });
+    
+    increaseDays.addEventListener('click', function() {
+        if (daysInput.value < 7) {
+            daysInput.value = parseInt(daysInput.value) + 1;
+        }
+    });
+    
+    // Manejar envío del formulario
+    routineForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Mostrar cargador
+        formContainer.style.display = 'none';
+        loadingContainer.style.display = 'block';
+        
+        // Obtener valores del formulario
+        const goals = document.getElementById('goals').value;
+        const equipment = document.getElementById('equipment').value;
+        const days = document.getElementById('days').value;
+        
+        // Preparar datos para enviar
+        const data = {
+            goals: goals,
+            equipment: equipment,
+            days: parseInt(days),
+            user_id: 1
+        };
+        
+        // Enviar solicitud para crear rutina
+        fetch('/api/create_routine', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al crear la rutina');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Redireccionar al dashboard con la nueva rutina
+            window.location.href = '/dashboard/' + data.routine_id;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ha ocurrido un error al crear tu rutina. Por favor, intenta de nuevo.');
+            
+            // Volver a mostrar el formulario
+            formContainer.style.display = 'block';
+            loadingContainer.style.display = 'none';
+        });
+    });
+});
+</script>
+{% endblock %}
