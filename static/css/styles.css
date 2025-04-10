@@ -1,67 +1,130 @@
-/* Estilos generales */
+/* static/css/styles.css */
+
+/* Estilos generales - Dark Theme */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f0f0;
+    background-color: #1a1a1a !important; /* FORCE BODY BACKGROUND */
+    color: #e0e0e0 !important; /* FORCE BODY TEXT COLOR */
 }
 
-/* Personalización de la barra de navegación */
+/* Personalización de la barra de navegación - Dark Theme */
 .navbar-brand {
     font-weight: bold;
     letter-spacing: 1px;
 }
 
+.navbar-dark.bg-primary {
+    background-color: #2c2c2c !important; /* Darker navbar background */
+    border-bottom: 1px solid #444;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+    color: #ffffff;
+}
+
+.navbar-dark .navbar-brand {
+    color: #ffffff;
+}
+
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+
 /* Animación de carga */
 @keyframes pulse {
-    0% {
-        opacity: 0.6;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0.6;
-    }
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }
 
 .loading-pulse {
     animation: pulse 1.5s infinite;
 }
 
-/* Tarjetas personalizadas */
+/* Tarjetas personalizadas - Dark Theme */
 .card {
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background-color: #2c2c2c !important; /* FORCE CARD BACKGROUND */
+    border: 1px solid #444;
+    color: #e0e0e0 !important; /* FORCE CARD TEXT */
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
 }
 
 .card-header {
     font-weight: bold;
+    background-color: #6a3093;
+    color: #ffffff;
+    border-bottom: 1px solid #5b2681;
 }
 
-/* Estilo para botones principales */
+.card-footer.bg-white { /* Override if needed */
+    background-color: #252525 !important; /* Darker footer background */
+    border-top: 1px solid #444;
+}
+
+/* Estilo para botones principales - Dark Theme */
 .btn-primary {
     border-radius: 8px;
     padding: 8px 16px;
     font-weight: 500;
     transition: all 0.3s ease;
-    background-color: #444;
-    border-color: #333;
+    background-color: #6a3093;
+    border-color: #5b2681;
+    color: #ffffff;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    background-color: #555;
-    border-color: #444;
+    box-shadow: 0 4px 8px rgba(106, 48, 147, 0.4);
+    background-color: #7b3fa5;
+    border-color: #6a3093;
+    color: #ffffff;
 }
 
-/* Estilo para mensajes de chat */
+/* Estilo para botones secundarios - Dark Theme */
+.btn-outline-primary {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    color: #a074c3;
+    border-color: #a074c3;
+}
+
+.btn-outline-primary:hover {
+    background-color: #6a3093;
+    color: #ffffff;
+    border-color: #6a3093;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #adb5bd;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #1a1a1a;
+}
+
+/* Estilo para mensajes de chat - Dark Theme */
 .message {
     position: relative;
     margin-bottom: 15px;
@@ -75,71 +138,424 @@ body {
 }
 
 .user-message {
-    background: #555;
+    background: #6a3093;
     color: white;
     border-bottom-right-radius: 5px;
 }
 
 .assistant-message {
-    background: #e0e0e0;
-    color: #333;
+    background: #3a3a3a;
+    color: #e0e0e0;
     border-bottom-left-radius: 5px;
 }
 
-/* Scroll personalizado */
+/* Scroll personalizado - Dark Theme */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #2c2c2c;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: #555;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #6a3093;
 }
 
-/* Tema en escala de grises */
-.navbar-dark.bg-primary {
-    background-color: #333 !important;
-}
-
-.btn-outline-primary {
-    color: #444;
-    border-color: #444;
-}
-
-.btn-outline-primary:hover {
-    background-color: #444;
-    color: white;
-}
-
-.btn-outline-secondary {
-    color: #666;
-    border-color: #666;
-}
-
-.alert-info {
-    background-color: #e8e8e8;
-    color: #333;
-    border-color: #d0d0d0;
-}
-
+/* Colores para otros elementos - Dark Theme */
 .bg-primary {
-    background-color: #444 !important;
+    background-color: #6a3093 !important;
 }
 
 .text-primary {
-    color: #444 !important;
+    color: #a074c3 !important;
 }
 
 .text-muted {
-    color: #777 !important;
+    color: #868e96 !important;
+}
+
+/* Alerta info con estilo - Dark Theme */
+.alert-info {
+    background-color: #1d3c45;
+    color: #a6d8e6;
+    border-color: #2a525e;
+}
+.alert-info .bi {
+     color: #a6d8e6;
+}
+
+
+/* Hero section - Dark Theme */
+.hero-section {
+    background-color: #252525 !important;
+    padding: 3rem 1.5rem; /* Adjusted padding */
+    border-radius: 0.5rem;
+    border: 1px solid #444;
+}
+.hero-section h1, .hero-section h2, .hero-section h3, .hero-section p, .hero-section li {
+    color: #e0e0e0;
+}
+.hero-section h1.text-primary {
+     color: #a074c3 !important;
+}
+.hero-section .benefits-list strong {
+    color: #a074c3;
+}
+
+
+/* --- CORRECCIÓN TABLAS DASHBOARD --- */
+.table {
+    /* Override Bootstrap variables */
+    --bs-table-color: #e0e0e0;
+    --bs-table-bg: #2c2c2c;
+    --bs-table-border-color: #444;
+    --bs-table-striped-color: #e0e0e0;
+    --bs-table-striped-bg: #313131; /* Color para filas pares */
+    --bs-table-active-color: #e0e0e0;
+    --bs-table-active-bg: #3a3a3a;
+    --bs-table-hover-color: #ffffff;
+    --bs-table-hover-bg: #3f3f3f; /* Color para hover */
+
+    width: 100%;
+    margin-bottom: 1rem;
+    color: var(--bs-table-color);
+    background-color: var(--bs-table-bg) !important; /* FORCE BACKGROUND */
+    border-color: var(--bs-table-border-color);
+    vertical-align: top;
+}
+
+.table th, .table td {
+    border-top: 1px solid var(--bs-table-border-color);
+    padding: 0.75rem;
+    vertical-align: top; /* Mantener alineación */
+}
+
+.table thead th {
+    border-bottom: 2px solid #555; /* Un borde inferior más grueso */
+    color: #f8f9fa; /* Texto blanco */
+    background-color: #3a3a3a; /* Fondo gris oscuro para encabezado */
+    vertical-align: bottom;
+}
+
+/* Asegurar que los estilos de hover y striped usen las variables */
+.table-hover > tbody > tr:hover > * {
+    color: var(--bs-table-hover-color);
+    background-color: var(--bs-table-hover-bg) !important; /* FORCE HOVER BG */
+}
+/* .table-striped>tbody>tr:nth-of-type(odd)>* { Ya cubierto por --bs-table-bg } */
+.table-striped > tbody > tr:nth-of-type(even) > * {
+    color: var(--bs-table-striped-color);
+    background-color: var(--bs-table-striped-bg) !important; /* FORCE STRIPED BG */
+}
+
+/* Aplicar a las tablas específicas del dashboard si es necesario */
+.day-card .table {
+     background-color: var(--bs-table-bg) !important; /* Redundante pero seguro */
+}
+.day-card .table tbody tr {
+    background-color: transparent !important; /* Dejar que :nth y :hover manejen el BG */
+    color: var(--bs-table-color) !important; /* Asegurar color texto fila */
+}
+.day-card .table tbody tr.exercise-row:nth-child(odd) > * {
+     background-color: var(--bs-table-bg) !important; /* Fondo impar explícito */
+}
+.day-card .table tbody tr.exercise-row:nth-child(even) > * {
+     background-color: var(--bs-table-striped-bg) !important; /* Fondo par explícito */
+}
+.day-card .table tbody tr:hover > * {
+    background-color: var(--bs-table-hover-bg) !important; /* Hover explícito */
+    color: var(--bs-table-hover-color) !important;
+}
+
+
+.table-equipment {
+    font-style: italic;
+    color: #adb5bd;
+}
+
+/* --- CORRECCIÓN FORMULARIO Y FLOATING LABEL (Intento Final) --- */
+.form-control,
+textarea.form-control {
+    background-color: #3a3a3a !important; /* FORCE BACKGROUND */
+    color: #e0e0e0 !important; /* FORCE TEXT COLOR */
+    border: 1px solid #555;
+}
+
+/* Placeholder standard */
+.form-control::placeholder {
+  color: #868e96;
+  opacity: 1;
+}
+/* Placeholder para textarea flotante (oculto) */
+.form-floating > textarea.form-control::placeholder {
+  color: transparent;
+}
+
+.form-control:focus,
+textarea.form-control:focus {
+    background-color: #4a4a4a !important; /* FORCE FOCUS BACKGROUND */
+    color: #e0e0e0 !important;
+    border-color: #a074c3;
+    box-shadow: 0 0 0 0.25rem rgba(106, 48, 147, 0.5);
+}
+
+.form-label {
+    /* Esta regla general puede ser menos específica, asegurarse que no interfiera */
+    color: #adb5bd; /* Color general para otras etiquetas si existen */
+}
+
+/* Estilos floating labels */
+.form-floating {
+    position: relative;
+    /* background-color: #3a3a3a !important; eliminado */
+}
+.form-floating > .form-control,
+.form-floating > textarea.form-control {
+    padding: 1rem 0.75rem;
+    height: calc(3.5rem + 2px);
+    /* Asegurar que el fondo está aquí, no en .form-floating */
+    background-color: #3a3a3a !important;
+}
+.form-floating > textarea.form-control {
+     height: 100px;
+     padding-top: 1.625rem;
+     padding-bottom: 0.625rem;
+}
+
+/* Etiqueta flotante (estado inicial, como placeholder) */
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+    color: #868e96 !important; /* <-- Añadir !important AQUI (color gris claro placeholder) */
+}
+
+/* Etiqueta flotante (cuando el input tiene foco o contenido) */
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label,
+.form-floating > textarea.form-control:focus ~ label,
+.form-floating > textarea.form-control:not(:placeholder-shown) ~ label {
+    opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    color: #adb5bd !important; /* <-- Añadir !important AQUI (color gris más claro flotante) */
+}
+
+/* Autofill styles */
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active,
+textarea.form-control:-webkit-autofill,
+textarea.form-control:-webkit-autofill:hover,
+textarea.form-control:-webkit-autofill:focus,
+textarea.form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #3a3a3a inset !important; /* FORCE DARK AUTOFILL BG */
+    -webkit-text-fill-color: #3A3A3A !important; /* FORCE LIGHT AUTOFILL TEXT */
+    caret-color: #3A3A3A;
+    transition: background-color 5000s ease-in-out 0s;
+}
+/* Etiqueta con autofill */
+.form-floating > .form-control:-webkit-autofill ~ label {
+     opacity: 0.65;
+    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+    color: #3A3A3A;
+}
+
+/* Estilos específicos para textarea#goals y su etiqueta */
+.form-floating > textarea#goals + label {
+    color: #3A3A3A !important; /* Fuerza SIEMPRE el color gris claro */
+    opacity: 1 !important;    /* Asegura opacidad completa */
+}
+
+/* Asegurar que también cambia cuando está flotando (si es necesario) */
+.form-floating > textarea#goals:focus + label,
+.form-floating > textarea#goals:not(:placeholder-shown) + label {
+     color: #3A3A3A !important; /* Fuerza el color gris más claro flotante */
+}
+
+/* Asegurar que también cambia con autofill (si es necesario) */
+.form-floating > textarea#goals:-webkit-autofill + label {
+    color: #3A3A3A !important; /* Fuerza el color con autofill */
+}
+
+/* Estilos personalizados para el textarea de objetivos */
+.goals-textarea {
+    background-color: #3A3A3A;
+    border-color: #6a3093;
+}
+
+.goals-textarea:focus {
+    background-color: #3A3A3A !important; /* Morado un poco más claro cuando está en foco */
+    box-shadow: 0 0 0 0.25rem rgba(160, 116, 195, 0.5) !important; /* Sombra del color accent */
+}
+
+.form-floating > .goals-textarea ~ label {
+    color: #3A3A3A; /* Color de etiqueta con tinte morado */
+}
+
+/* Estilos para la chat-container - Dark Theme */
+.chat-container {
+    width: 35%;
+    min-width: 350px;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #444;
+    background-color: #3A3A3A;
+}
+
+.chat-header {
+    background-color: #3A3A3A;
+}
+
+.chat-input-container {
+    padding: 1rem;
+    border-top: 1px solid #444;
+    background: #3A3A3A;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: #3A3A3A;
+}
+
+/* Dashboard container */
+.dashboard-container {
+    height: calc(100vh - 56px - 40px);
+    min-height: 500px;
+    display: flex;
+    flex-direction: row;
+}
+
+.routine-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem 2rem;
+    background-color: #1a1a1a; /* Match body background */
+}
+
+/* Estilos para días */
+.day-card {
+    margin-bottom: 1.5rem;
+    background-color: #2c2c2c !important; /* Asegurar fondo oscuro de la card */
+    border-color: #444 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Estilos para formulario de creación de rutina - Dark Theme */
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #2c2c2c !important; /* FORCE FORM CONTAINER BG */
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.number-input {
+    width: 100%;
+    max-width: 180px;
+}
+
+.input-group .form-control {
+     background-color: #3a3a3a !important; /* FORCE NUMBER INPUT BG */
+     color: #e0e0e0 !important;
+     border-color: #555;
+}
+
+
+/* Beneficios lista - Dark Theme */
+.benefits-list {
+    padding-left: 1.5rem;
+}
+
+/* Botón de crear */
+.btn-create {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+/* Contenedor de carga - Dark Theme */
+.loading-container {
+    display: none;
+    text-align: center;
+    padding: 2rem;
+    color: #e0e0e0;
+}
+
+.loading-container .spinner-border {
+    color: #a074c3 !important;
+}
+.loading-container .text-muted{
+     color: #868e96 !important;
+}
+
+/* Estilos para la lista de rutinas - Dark Theme */
+.empty-state-icon {
+    color: #555;
+}
+
+/* Estilos responsivos para el dashboard */
+@media (max-width: 992px) {
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        min-height: unset;
+    }
+
+    .routine-container {
+        padding: 1rem;
+    }
+
+    .chat-container {
+        width: 100%;
+        min-width: unset;
+        height: 500px;
+        border-left: none;
+        border-top: 1px solid #444;
+        margin-top: 1rem;
+    }
+}
+
+/* Ajustes finales para asegurar texto claro general */
+.container, .container-fluid {
+    color: #e0e0e0;
+}
+.container h1, .container-fluid h1,
+.container h2, .container-fluid h2,
+.container h3, .container-fluid h3,
+.container h5, .container-fluid h5,
+.container p, .container-fluid p {
+     color: inherit;
+}
+.text-primary {
+    color: #a074c3 !important;
+}
+.text-muted {
+    color: #868e96 !important;
+}
+h1.text-primary, h2.text-primary {
+     color: #a074c3 !important;
 }
