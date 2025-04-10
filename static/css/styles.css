@@ -1,20 +1,20 @@
 /* static/css/styles.css */
 
-/* Estilos generales - Dark Theme */
+/* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #1a1a1a !important; /* FORCE BODY BACKGROUND */
-    color: #e0e0e0 !important; /* FORCE BODY TEXT COLOR */
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
 }
 
-/* Personalización de la barra de navegación - Dark Theme */
+/* Barra de navegación */
 .navbar-brand {
     font-weight: bold;
     letter-spacing: 1px;
 }
 
 .navbar-dark.bg-primary {
-    background-color: #2c2c2c !important; /* Darker navbar background */
+    background-color: #2c2c2c !important;
     border-bottom: 1px solid #444;
 }
 
@@ -51,15 +51,15 @@ body {
     animation: pulse 1.5s infinite;
 }
 
-/* Tarjetas personalizadas - Dark Theme */
+/* Tarjetas */
 .card {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background-color: #2c2c2c !important; /* FORCE CARD BACKGROUND */
+    background-color: #2c2c2c !important;
     border: 1px solid #444;
-    color: #e0e0e0 !important; /* FORCE CARD TEXT */
+    color: #e0e0e0 !important;
 }
 
 .card:hover {
@@ -74,12 +74,12 @@ body {
     border-bottom: 1px solid #5b2681;
 }
 
-.card-footer.bg-white { /* Override if needed */
-    background-color: #252525 !important; /* Darker footer background */
+.card-footer.bg-white { /* Override needed for Bootstrap's default */
+    background-color: #252525 !important;
     border-top: 1px solid #444;
 }
 
-/* Estilo para botones principales - Dark Theme */
+/* Botones */
 .btn-primary {
     border-radius: 8px;
     padding: 8px 16px;
@@ -98,7 +98,6 @@ body {
     color: #ffffff;
 }
 
-/* Estilo para botones secundarios - Dark Theme */
 .btn-outline-primary {
     border-radius: 8px;
     padding: 8px 16px;
@@ -124,7 +123,7 @@ body {
     color: #1a1a1a;
 }
 
-/* Estilo para mensajes de chat - Dark Theme */
+/* Mensajes de chat */
 .message {
     position: relative;
     margin-bottom: 15px;
@@ -149,7 +148,7 @@ body {
     border-bottom-left-radius: 5px;
 }
 
-/* Scroll personalizado - Dark Theme */
+/* Scroll personalizado */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -169,7 +168,7 @@ body {
     background: #6a3093;
 }
 
-/* Colores para otros elementos - Dark Theme */
+/* Utilidades de color */
 .bg-primary {
     background-color: #6a3093 !important;
 }
@@ -182,7 +181,7 @@ body {
     color: #868e96 !important;
 }
 
-/* Alerta info con estilo - Dark Theme */
+/* Alertas */
 .alert-info {
     background-color: #1d3c45;
     color: #a6d8e6;
@@ -193,10 +192,10 @@ body {
 }
 
 
-/* Hero section - Dark Theme */
+/* Hero section */
 .hero-section {
     background-color: #252525 !important;
-    padding: 3rem 1.5rem; /* Adjusted padding */
+    padding: 3rem 1.5rem;
     border-radius: 0.5rem;
     border: 1px solid #444;
 }
@@ -211,23 +210,23 @@ body {
 }
 
 
-/* --- CORRECCIÓN TABLAS DASHBOARD --- */
+/* --- Tablas Dashboard --- */
 .table {
-    /* Override Bootstrap variables */
+    /* Override Bootstrap variables for dark theme */
     --bs-table-color: #e0e0e0;
     --bs-table-bg: #2c2c2c;
     --bs-table-border-color: #444;
     --bs-table-striped-color: #e0e0e0;
-    --bs-table-striped-bg: #313131; /* Color para filas pares */
+    --bs-table-striped-bg: #313131;
     --bs-table-active-color: #e0e0e0;
     --bs-table-active-bg: #3a3a3a;
     --bs-table-hover-color: #ffffff;
-    --bs-table-hover-bg: #3f3f3f; /* Color para hover */
+    --bs-table-hover-bg: #3f3f3f;
 
     width: 100%;
     margin-bottom: 1rem;
     color: var(--bs-table-color);
-    background-color: var(--bs-table-bg) !important; /* FORCE BACKGROUND */
+    background-color: var(--bs-table-bg) !important;
     border-color: var(--bs-table-border-color);
     vertical-align: top;
 }
@@ -235,93 +234,80 @@ body {
 .table th, .table td {
     border-top: 1px solid var(--bs-table-border-color);
     padding: 0.75rem;
-    vertical-align: top; /* Mantener alineación */
+    vertical-align: top;
 }
 
 .table thead th {
-    border-bottom: 2px solid #555; /* Un borde inferior más grueso */
-    color: #f8f9fa; /* Texto blanco */
-    background-color: #3a3a3a; /* Fondo gris oscuro para encabezado */
+    border-bottom: 2px solid #555;
+    color: #f8f9fa;
+    background-color: #3a3a3a;
     vertical-align: bottom;
 }
 
-/* Asegurar que los estilos de hover y striped usen las variables */
 .table-hover > tbody > tr:hover > * {
     color: var(--bs-table-hover-color);
-    background-color: var(--bs-table-hover-bg) !important; /* FORCE HOVER BG */
+    background-color: var(--bs-table-hover-bg) !important;
 }
-/* .table-striped>tbody>tr:nth-of-type(odd)>* { Ya cubierto por --bs-table-bg } */
 .table-striped > tbody > tr:nth-of-type(even) > * {
     color: var(--bs-table-striped-color);
-    background-color: var(--bs-table-striped-bg) !important; /* FORCE STRIPED BG */
+    background-color: var(--bs-table-striped-bg) !important;
 }
 
-/* Aplicar a las tablas específicas del dashboard si es necesario */
+/* Dashboard specific table overrides if needed */
 .day-card .table {
-     background-color: var(--bs-table-bg) !important; /* Redundante pero seguro */
+     background-color: var(--bs-table-bg) !important;
 }
 .day-card .table tbody tr {
-    background-color: transparent !important; /* Dejar que :nth y :hover manejen el BG */
-    color: var(--bs-table-color) !important; /* Asegurar color texto fila */
+    background-color: transparent !important; /* Let :nth and :hover handle */
+    color: var(--bs-table-color) !important;
 }
 .day-card .table tbody tr.exercise-row:nth-child(odd) > * {
-     background-color: var(--bs-table-bg) !important; /* Fondo impar explícito */
+     background-color: var(--bs-table-bg) !important;
 }
 .day-card .table tbody tr.exercise-row:nth-child(even) > * {
-     background-color: var(--bs-table-striped-bg) !important; /* Fondo par explícito */
+     background-color: var(--bs-table-striped-bg) !important;
 }
 .day-card .table tbody tr:hover > * {
-    background-color: var(--bs-table-hover-bg) !important; /* Hover explícito */
+    background-color: var(--bs-table-hover-bg) !important;
     color: var(--bs-table-hover-color) !important;
 }
-
 
 .table-equipment {
     font-style: italic;
     color: #adb5bd;
 }
 
-/* --- CORRECCIÓN FORMULARIO Y FLOATING LABEL (Intento Final) --- */
+/* --- Formularios y Floating Label --- */
 .form-control,
 textarea.form-control {
-    background-color: #3a3a3a !important; /* FORCE BACKGROUND */
-    color: #e0e0e0 !important; /* FORCE TEXT COLOR */
+    background-color: #3a3a3a !important;
+    color: #e0e0e0 !important;
     border: 1px solid #555;
+    caret-color: #e0e0e0; /* Ensure cursor is visible */
 }
 
-/* Placeholder standard */
 .form-control::placeholder {
   color: #868e96;
   opacity: 1;
 }
-/* Placeholder para textarea flotante (oculto) */
-.form-floating > textarea.form-control::placeholder {
-  color: transparent;
-}
 
 .form-control:focus,
 textarea.form-control:focus {
-    background-color: #4a4a4a !important; /* FORCE FOCUS BACKGROUND */
+    background-color: #4a4a4a !important;
     color: #e0e0e0 !important;
     border-color: #a074c3;
     box-shadow: 0 0 0 0.25rem rgba(106, 48, 147, 0.5);
 }
 
-.form-label {
-    /* Esta regla general puede ser menos específica, asegurarse que no interfiera */
-    color: #adb5bd; /* Color general para otras etiquetas si existen */
-}
-
-/* Estilos floating labels */
+/* Floating labels */
 .form-floating {
     position: relative;
-    /* background-color: #3a3a3a !important; eliminado */
 }
+
 .form-floating > .form-control,
 .form-floating > textarea.form-control {
     padding: 1rem 0.75rem;
     height: calc(3.5rem + 2px);
-    /* Asegurar que el fondo está aquí, no en .form-floating */
     background-color: #3a3a3a !important;
 }
 .form-floating > textarea.form-control {
@@ -329,8 +315,12 @@ textarea.form-control:focus {
      padding-top: 1.625rem;
      padding-bottom: 0.625rem;
 }
+/* Hide actual placeholder for floating textarea */
+.form-floating > textarea.form-control::placeholder {
+    color: transparent;
+}
 
-/* Etiqueta flotante (estado inicial, como placeholder) */
+/* Floating label - initial state */
 .form-floating > label {
     position: absolute;
     top: 0;
@@ -341,17 +331,18 @@ textarea.form-control:focus {
     border: 1px solid transparent;
     transform-origin: 0 0;
     transition: opacity .1s ease-in-out, transform .1s ease-in-out;
-    color: #868e96 !important; /* <-- Añadir !important AQUI (color gris claro placeholder) */
+    color: #868e96 !important; /* Placeholder text color */
 }
 
-/* Etiqueta flotante (cuando el input tiene foco o contenido) */
+/* Floating label - active state (focus or has content) */
 .form-floating > .form-control:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
 .form-floating > textarea.form-control:focus ~ label,
 .form-floating > textarea.form-control:not(:placeholder-shown) ~ label {
     opacity: 0.65;
-    transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-    color: #adb5bd !important; /* <-- Añadir !important AQUI (color gris más claro flotante) */
+    /* transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem); */
+    color: #2893fe !important; /* Floated label color */
+    background-color: #ff0000 !important; /* Ensure label bg matches input */
 }
 
 /* Autofill styles */
@@ -363,51 +354,33 @@ textarea.form-control:-webkit-autofill,
 textarea.form-control:-webkit-autofill:hover,
 textarea.form-control:-webkit-autofill:focus,
 textarea.form-control:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #3a3a3a inset !important; /* FORCE DARK AUTOFILL BG */
-    -webkit-text-fill-color: #3A3A3A !important; /* FORCE LIGHT AUTOFILL TEXT */
-    caret-color: #3A3A3A;
+    -webkit-box-shadow: 0 0 0 30px #3a3a3a inset !important;
+    -webkit-text-fill-color: #e0e0e0 !important; /* Ensure text is light */
+    caret-color: #e0e0e0; /* Ensure cursor is light */
     transition: background-color 5000s ease-in-out 0s;
 }
-/* Etiqueta con autofill */
+/* Ensure label floats correctly with autofill */
 .form-floating > .form-control:-webkit-autofill ~ label {
      opacity: 0.65;
     transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-    color: #3A3A3A;
+    color: #adb5bd !important; /* Use standard floated label color */
 }
 
-/* Estilos específicos para textarea#goals y su etiqueta */
-.form-floating > textarea#goals + label {
-    color: #3A3A3A !important; /* Fuerza SIEMPRE el color gris claro */
-    opacity: 1 !important;    /* Asegura opacidad completa */
-}
 
-/* Asegurar que también cambia cuando está flotando (si es necesario) */
-.form-floating > textarea#goals:focus + label,
-.form-floating > textarea#goals:not(:placeholder-shown) + label {
-     color: #3A3A3A !important; /* Fuerza el color gris más claro flotante */
-}
-
-/* Asegurar que también cambia con autofill (si es necesario) */
-.form-floating > textarea#goals:-webkit-autofill + label {
-    color: #3A3A3A !important; /* Fuerza el color con autofill */
-}
-
-/* Estilos personalizados para el textarea de objetivos */
+/* Specific Textarea styles */
 .goals-textarea {
-    background-color: #3A3A3A;
+    background-color: #3a3a3a !important;
+    color: #e0e0e0 !important;
     border-color: #6a3093;
 }
 
 .goals-textarea:focus {
-    background-color: #3A3A3A !important; /* Morado un poco más claro cuando está en foco */
+    background-color: #3a3a3a !important; /* Morado un poco más claro cuando está en foco */
     box-shadow: 0 0 0 0.25rem rgba(160, 116, 195, 0.5) !important; /* Sombra del color accent */
 }
 
-.form-floating > .goals-textarea ~ label {
-    color: #3A3A3A; /* Color de etiqueta con tinte morado */
-}
 
-/* Estilos para la chat-container - Dark Theme */
+/* Chat Container */
 .chat-container {
     width: 35%;
     min-width: 350px;
@@ -419,12 +392,8 @@ textarea.form-control:-webkit-autofill:active {
 
 .chat-header {
     background-color: #3A3A3A;
-}
-
-.chat-input-container {
     padding: 1rem;
-    border-top: 1px solid #444;
-    background: #3A3A3A;
+    border-bottom: 1px solid #444;
 }
 
 .chat-messages {
@@ -437,9 +406,15 @@ textarea.form-control:-webkit-autofill:active {
     background-color: #3A3A3A;
 }
 
-/* Dashboard container */
+.chat-input-container {
+    padding: 1rem;
+    border-top: 1px solid #444;
+    background: #3A3A3A;
+}
+
+/* Dashboard Layout */
 .dashboard-container {
-    height: calc(100vh - 56px - 40px);
+    height: calc(100vh - 56px - 40px); /* Adjust based on navbar/footer height */
     min-height: 500px;
     display: flex;
     flex-direction: row;
@@ -449,23 +424,22 @@ textarea.form-control:-webkit-autofill:active {
     flex-grow: 1;
     overflow-y: auto;
     padding: 1rem 2rem;
-    background-color: #1a1a1a; /* Match body background */
+    background-color: #1a1a1a;
 }
 
-/* Estilos para días */
 .day-card {
     margin-bottom: 1.5rem;
-    background-color: #2c2c2c !important; /* Asegurar fondo oscuro de la card */
+    background-color: #2c2c2c !important;
     border-color: #444 !important;
     color: #e0e0e0 !important;
 }
 
-/* Estilos para formulario de creación de rutina - Dark Theme */
+/* Form Container (e.g., Create Routine Page) */
 .form-container {
     max-width: 700px;
-    margin: 0 auto;
+    margin: 2rem auto; /* Added top/bottom margin */
     padding: 2rem;
-    background-color: #2c2c2c !important; /* FORCE FORM CONTAINER BG */
+    background-color: #2c2c2c !important;
     border-radius: 1rem;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
@@ -479,25 +453,24 @@ textarea.form-control:-webkit-autofill:active {
     max-width: 180px;
 }
 
+/* Ensure number input group controls have dark bg */
 .input-group .form-control {
-     background-color: #3a3a3a !important; /* FORCE NUMBER INPUT BG */
+     background-color: #3a3a3a !important;
      color: #e0e0e0 !important;
      border-color: #555;
 }
 
 
-/* Beneficios lista - Dark Theme */
+/* Misc */
 .benefits-list {
     padding-left: 1.5rem;
 }
 
-/* Botón de crear */
 .btn-create {
     padding: 0.75rem 2rem;
     font-size: 1.1rem;
 }
 
-/* Contenedor de carga - Dark Theme */
 .loading-container {
     display: none;
     text-align: center;
@@ -512,12 +485,12 @@ textarea.form-control:-webkit-autofill:active {
      color: #868e96 !important;
 }
 
-/* Estilos para la lista de rutinas - Dark Theme */
 .empty-state-icon {
     color: #555;
+    font-size: 4rem; /* Example size */
 }
 
-/* Estilos responsivos para el dashboard */
+/* Responsividad */
 @media (max-width: 992px) {
     .dashboard-container {
         flex-direction: column;
@@ -539,10 +512,11 @@ textarea.form-control:-webkit-autofill:active {
     }
 }
 
-/* Ajustes finales para asegurar texto claro general */
+/* Final Text Color Adjustments */
 .container, .container-fluid {
     color: #e0e0e0;
 }
+/* Ensure headings/paragraphs inherit container color */
 .container h1, .container-fluid h1,
 .container h2, .container-fluid h2,
 .container h3, .container-fluid h3,
@@ -550,12 +524,10 @@ textarea.form-control:-webkit-autofill:active {
 .container p, .container-fluid p {
      color: inherit;
 }
-.text-primary {
+/* Reiterate important color overrides */
+.text-primary, h1.text-primary, h2.text-primary {
     color: #a074c3 !important;
 }
 .text-muted {
     color: #868e96 !important;
-}
-h1.text-primary, h2.text-primary {
-     color: #a074c3 !important;
 }
