@@ -29,30 +29,49 @@ ENV/
 # Base de datos
 *.db
 *.sqlite3
+*.sqlite
+app/db/*.db
 
-# Archivos de variables de entorno y secretos
+# Archivos de variables de entorno y secretos (reforzado)
 .env
+.env.*
+*.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 secrets.json
+*_key.json
+*_keys.json
+credentials.json
 
 # Logs
 *.log
 logs/
+log/
 
 # Directorios de IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-*
 
 # Archivos del sistema operativo
 .DS_Store
 Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
 
 # Archivos temporales
 *.tmp
 *.bak
 *~
+.temp/
+.cache/
+tmp/
+
+# Archivos de configuración local
+config.local.js
+local_settings.py

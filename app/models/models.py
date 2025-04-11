@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
+from datetime import datetime
 
 class Exercise(BaseModel):
-    """Modelo para un ejercicio"""
+    """Modelo para representar un ejercicio en una rutina"""
     name: str
     sets: int
     reps: str
@@ -10,34 +11,30 @@ class Exercise(BaseModel):
     equipment: str
 
 class Day(BaseModel):
-    """Modelo para un día de entrenamiento"""
+    """Modelo para representar un día de entrenamiento en una rutina"""
     day_name: str
     focus: str
     exercises: List[Exercise]
 
 class Routine(BaseModel):
-    """Modelo para una rutina completa"""
+    """Modelo para representar una rutina de entrenamiento completa"""
     id: Optional[int] = None
+    user_id: int = 1
     routine_name: str
-    user_id: Optional[int] = None
     days: List[Day]
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 class ChatMessage(BaseModel):
-    """Modelo para un mensaje de chat"""
-    id: Optional[int] = None
+    """Modelo para representar un mensaje en el chat"""
     routine_id: int
     sender: str  # "user" o "assistant"
     content: str
-    timestamp: Optional[str] = None
+    timestamp: Optional[datetime] = None
     
 class RoutineRequest(BaseModel):
-    """Modelo para petición de creación/modificación de rutina"""
+    """Modelo para solicitar la creación de una rutina"""
     goals: str
-    equipment: str
+    equipment: str = ""
     days: int
-    user_id: Optional[int] = 1
-
-class WebSocketMessage(BaseModel):
-    """Modelo para mensajes WebSocket"""
-    type: str
-    data: Dict[str, Any]
+    user_id: int = 1
