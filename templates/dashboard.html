@@ -39,10 +39,7 @@
                         <tbody>
                             {% for exercise in day.exercises %}
                             <tr class="exercise-row">
-                                <td>
-                                    {{ exercise.name }}
-                                    <div class="table-equipment">{{ exercise.equipment }}</div>
-                                </td>
+                                <td>{{ exercise.name }}</td>
                                 <td>{{ exercise.sets }}</td>
                                 <td>{{ exercise.reps }}</td>
                                 <td>{{ exercise.rest }}</td>
@@ -71,12 +68,70 @@
         </div>
         
         <div class="chat-input-container">
-            <form id="chat-form" class="d-flex">
-                <input type="text" id="message-input" class="form-control me-2" placeholder="Escribe tu mensaje aquí..." required>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-send"></i>
-                </button>
+            <form id="chat-form" class="d-flex flex-column">
+                <div class="d-flex mb-2">
+                    <input type="text" id="message-input" class="form-control me-2" placeholder="Escribe tu mensaje aquí..." required>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+                <div class="d-flex align-items-center">
+                    <button type="button" id="upload-image-btn" class="btn btn-sm btn-outline-secondary me-2">
+                        <i class="bi bi-image"></i> Subir imagen
+                    </button>
+                    <div id="image-preview-container" class="d-none">
+                        <span id="image-name" class="me-2"></span>
+                        <button type="button" id="remove-image-btn" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" id="image-upload" class="d-none" accept="image/*">
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para analizar imagen -->
+<div class="modal fade" id="image-analysis-modal" tabindex="-1" aria-labelledby="image-analysis-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="image-analysis-modal-label">Análisis de imagen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modal-image-preview" class="img-fluid rounded" src="" alt="Vista previa">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="exercise-name" class="form-label">Nombre del ejercicio (opcional)</label>
+                            <input type="text" class="form-control" id="exercise-name" placeholder="Ej: Sentadilla, Press banca...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">¿Qué quieres analizar?</label>
+                            <div class="d-grid gap-2">
+                                <button type="button" id="analyze-form-btn" class="btn btn-outline-primary">
+                                    <i class="bi bi-check-circle"></i> Analizar forma y postura
+                                </button>
+                                <button type="button" id="suggest-variations-btn" class="btn btn-outline-primary">
+                                    <i class="bi bi-shuffle"></i> Sugerir variaciones
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="analysis-loading d-none mt-3">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Analizando...</span>
+                        </div>
+                    </div>
+                    <p class="text-center mt-2">Analizando imagen con Gemini AI...</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -91,9 +146,23 @@
         const messagesContainer = document.getElementById('chat-messages');
         const routineContent = document.getElementById('routine-content');
         const routineName = document.getElementById('routine-name');
+        const uploadImageBtn = document.getElementById('upload-image-btn');
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imageName = document.getElementById('image-name');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const imageAnalysisModal = new bootstrap.Modal(document.getElementById('image-analysis-modal'));
+        const modalImagePreview = document.getElementById('modal-image-preview');
+        const exerciseName = document.getElementById('exercise-name');
+        const analyzeFormBtn = document.getElementById('analyze-form-btn');
+        const suggestVariationsBtn = document.getElementById('suggest-variations-btn');
+        const analysisLoading = document.querySelector('.analysis-loading');
         
         // ID de la rutina actual
         const routineId = {{ routine_id }};
+        
+        // Variables para almacenar la imagen
+        let selectedImage = null;
         
         // Scroll al final del chat
         function scrollToBottom() {
@@ -140,10 +209,7 @@
                             <tbody>
                                 ${day.exercises.map(exercise => `
                                     <tr class="exercise-row">
-                                        <td>
-                                            ${exercise.name}
-                                            <div class="table-equipment">${exercise.equipment}</div>
-                                        </td>
+                                        <td>${exercise.name}</td>
                                         <td>${exercise.sets}</td>
                                         <td>${exercise.reps}</td>
                                         <td>${exercise.rest}</td>
@@ -178,6 +244,9 @@
                     
                     // Agregar mensaje del asistente
                     addMessage(data.explanation, 'assistant');
+                } else if (data.type === 'image_analysis') {
+                    // Agregar resultado del análisis de imagen
+                    addMessage(data.analysis, 'assistant');
                 } else if (data.error) {
                     console.error('Error:', data.error);
                     addMessage('Ha ocurrido un error. Por favor, intenta de nuevo.', 'assistant');
@@ -197,6 +266,108 @@
         
         // Iniciar WebSocket
         setupWebSocket();
+        
+        // Manejar subida de imagen
+        uploadImageBtn.addEventListener('click', () => {
+            imageUpload.click();
+        });
+        
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Guardar la imagen seleccionada
+                selectedImage = file;
+                
+                // Mostrar el nombre del archivo
+                imageName.textContent = file.name;
+                imagePreviewContainer.classList.remove('d-none');
+                
+                // Crear URL para vista previa
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Mostrar el modal con la vista previa
+                    modalImagePreview.src = event.target.result;
+                    exerciseName.value = '';
+                    imageAnalysisModal.show();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Remover imagen
+        removeImageBtn.addEventListener('click', () => {
+            selectedImage = null;
+            imageUpload.value = '';
+            imagePreviewContainer.classList.add('d-none');
+        });
+        
+        // Analizar forma y postura
+        analyzeFormBtn.addEventListener('click', () => {
+            if (selectedImage) {
+                // Mostrar cargando
+                analysisLoading.classList.remove('d-none');
+                
+                // Leer la imagen como base64
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Image = event.target.result;
+                    
+                    // Enviar al servidor para análisis
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'analyze_image',
+                            image_data: base64Image,
+                            exercise_name: exerciseName.value || null,
+                            action: 'analyze_form'
+                        }));
+                        
+                        // Agregar mensaje del usuario con la imagen
+                        addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para analizar.`, 'user');
+                        
+                        // Cerrar modal y limpiar
+                        imageAnalysisModal.hide();
+                        selectedImage = null;
+                        imageUpload.value = '';
+                        imagePreviewContainer.classList.add('d-none');
+                    }
+                };
+                reader.readAsDataURL(selectedImage);
+            }
+        });
+        
+        // Sugerir variaciones
+        suggestVariationsBtn.addEventListener('click', () => {
+            if (selectedImage) {
+                // Mostrar cargando
+                analysisLoading.classList.remove('d-none');
+                
+                // Leer la imagen como base64
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64Image = event.target.result;
+                    
+                    // Enviar al servidor para análisis
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'analyze_image',
+                            image_data: base64Image,
+                            exercise_name: exerciseName.value || null,
+                            action: 'suggest_variations'
+                        }));
+                        
+                        // Agregar mensaje del usuario con la imagen
+                        addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para obtener variaciones.`, 'user');
+                        
+                        // Cerrar modal y limpiar
+                        imageAnalysisModal.hide();
+                        selectedImage = null;
+                        imageUpload.value = '';
+                        imagePreviewContainer.classList.add('d-none');
+                    }
+                };
+                reader.readAsDataURL(selectedImage);
+            }
+        });
         
         // Manejar envío de mensajes
         chatForm.addEventListener('submit', (e) => {
