@@ -1,9 +1,10 @@
 import os
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Form, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from dotenv import load_dotenv
 
 # Importar servicios
@@ -156,3 +157,26 @@ async def websocket_endpoint(websocket: WebSocket, routine_id: int):
     except Exception as e:
         print(f"Error en la conexión WebSocket: {str(e)}")
         manager.disconnect(websocket, routine_id)
+
+# Ruta para eliminar una rutina
+@app.post("/delete_routine")
+async def delete_routine(request: Request, routine_id: int = Form(...)):
+    """
+    Elimina una rutina de la base de datos y redirige a la lista de rutinas
+    """
+    print(f"Intentando eliminar rutina con ID: {routine_id}")
+    
+    # Obtener el servicio de rutinas
+    routine_service = RoutineGenerator()
+    
+    # Intentar eliminar la rutina
+    success = await routine_service.delete_routine(routine_id)
+    
+    print(f"Resultado de la eliminación: {'éxito' if success else 'fallido'}")
+    
+    if not success:
+        # Si falla, mostrar mensaje de error
+        raise HTTPException(status_code=500, detail="Error al eliminar la rutina")
+    
+    # Si todo va bien, redirigir a la lista de rutinas
+    return RedirectResponse(url="/routines", status_code=303)

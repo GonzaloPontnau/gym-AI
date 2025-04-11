@@ -11,8 +11,8 @@ load_dotenv()
 # Configurar la API de Gemini con la clave API
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Definir el modelo a utilizar (Gemini Pro)
-model = genai.GenerativeModel('gemini-pro')
+# Definir el modelo a utilizar (gemini-1.5-flash)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 class GeminiRoutineGenerator:
     """Servicio para generar rutinas de entrenamiento utilizando la API de Gemini"""
@@ -23,12 +23,10 @@ class GeminiRoutineGenerator:
         Actúa como un entrenador personal profesional y crea una rutina de entrenamiento detallada con estas características:
         
         Objetivos: {request.goals}
-        Equipamiento disponible: {request.equipment}
         Días de entrenamiento: {request.days} días a la semana
         
-        La rutina debe tener el siguiente formato JSON (retorna SOLO el JSON entre marcadores de código, sin texto adicional):
+        La rutina debe seguir ESTRICTAMENTE este formato JSON:
         
-        ```json
         {{
             "routine_name": "Nombre descriptivo de la rutina",
             "days": [
@@ -47,10 +45,12 @@ class GeminiRoutineGenerator:
                 }}
             ]
         }}
-        ```
         
-        Crea la rutina más efectiva posible con base científica para los objetivos mencionados.
-        Asegúrate de incluir exactamente {request.days} días.
+        IMPORTANTE: 
+        1. Devuelve SOLO el JSON válido, sin texto explicativo antes o después.
+        2. Asegúrate de que el JSON sea válido y esté completo.
+        3. Incluye exactamente {request.days} días en la rutina.
+        4. Cada ejercicio debe tener todos los campos requeridos.
         """
     
     def _build_modification_prompt(self, current_routine: Routine, user_request: str) -> str:

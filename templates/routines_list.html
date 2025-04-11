@@ -28,9 +28,16 @@
                             </p>
                         </div>
                         <div class="card-footer bg-white border-0">
-                            <a href="/dashboard/{{ routine.id }}" class="btn btn-primary w-100">
-                                <i class="bi bi-eye"></i> Ver rutina
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a href="/dashboard/{{ routine.id }}" class="btn btn-primary flex-grow-1">
+                                    Ver rutina
+                                </a>
+                                <button class="btn btn-danger" 
+                                        onclick="confirmDelete({{ routine.id }}, '{{ routine.routine_name }}')"
+                                        title="Eliminar rutina">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -51,4 +58,45 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro que deseas eliminar la rutina "<span id="routine-name-to-delete"></span>"?</p>
+                <p class="text-danger">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="delete-form" method="POST" action="/delete_routine">
+                    <!-- Añadir token CSRF si tu framework lo requiere -->
+                    {% if csrf_token %}
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% endif %}
+                    <input type="hidden" id="routine-id-to-delete" name="routine_id">
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function confirmDelete(routineId, routineName) {
+        // Configurar el modal con los datos de la rutina
+        document.getElementById('routine-name-to-delete').textContent = routineName;
+        document.getElementById('routine-id-to-delete').value = routineId;
+        
+        // Mostrar el modal de confirmación
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        deleteModal.show();
+    }
+</script>
 {% endblock %}
