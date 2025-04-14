@@ -5,39 +5,14 @@
     {
       "src": "app/vercel_app.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "static/**",
-      "use": "@vercel/static"
     }
   ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "app/vercel_app.py" }
-  ],
-  "regions": ["sfo1"],
-  "functions": {
-    "app/vercel_app.py": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
-      ]
-    },
-    {
-      "source": "/static/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "src": "/(.*)",
+      "dest": "app/vercel_app.py"
     }
   ],
-  "cleanUrls": true,
   "env": {
     "PYTHONPATH": "."
   }
