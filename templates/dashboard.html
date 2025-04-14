@@ -242,49 +242,75 @@
         
         // Configurar WebSocket
         let ws;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+        const reconnectDelay = 3000;
+        
         function setupWebSocket() {
+            // Limpiar cualquier conexión existente
+            if (ws) {
+                ws.close();
+            }
+            
             // Crear conexión WebSocket
-            ws = new WebSocket(`ws://${window.location.host}/ws/chat/${routineId}`);
+            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            ws = new WebSocket(`${protocol}${window.location.host}/ws/chat/${routineId}`);
             
             // Configurar eventos del WebSocket
             ws.onopen = () => {
                 console.log('Conexión WebSocket establecida');
                 sendButton.disabled = false;
+                reconnectAttempts = 0; // Resetear contador de intentos
             };
             
             ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                if (data.type === 'routine_update') {
-                    // Actualizar la rutina en la interfaz
-                    updateRoutineView(data.routine);
+                try {
+                    const data = JSON.parse(event.data);
                     
-                    // Agregar mensaje del asistente
-                    addMessage(data.explanation, 'assistant');
-                    
-                    // Habilitar botón de envío
-                    sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
-                } else if (data.type === 'image_analysis') {
-                    // Agregar resultado del análisis de imagen
-                    addMessage(data.analysis, 'assistant');
-                    
-                    // Ocultar loading en modal si está visible
-                    analysisLoading.classList.add('d-none');
-                } else if (data.error) {
-                    console.error('Error:', data.error);
-                    addMessage('Ha ocurrido un error. Por favor, intenta de nuevo.', 'assistant');
-                    
-                    // Habilitar botón de envío
+                    if (data.type === 'routine_update') {
+                        // Actualizar la rutina en la interfaz
+                        updateRoutineView(data.routine);
+                        
+                        // Agregar mensaje del asistente
+                        addMessage(data.explanation, 'assistant');
+                        
+                        // Habilitar botón de envío
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    } else if (data.type === 'image_analysis') {
+                        // Agregar resultado del análisis de imagen
+                        addMessage(data.analysis, 'assistant');
+                        
+                        // Ocultar loading en modal si está visible
+                        analysisLoading.classList.add('d-none');
+                    } else if (data.error) {
+                        console.error('Error:', data.error);
+                        addMessage(`Error: ${data.error}`, 'assistant');
+                        
+                        // Habilitar botón de envío
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    }
+                } catch (e) {
+                    console.error('Error al procesar mensaje:', e);
+                    addMessage('Ha ocurrido un error al procesar la respuesta del servidor.', 'assistant');
                     sendButton.disabled = false;
                     sendButton.innerHTML = '<i class="bi bi-send"></i>';
                 }
             };
             
-            ws.onclose = () => {
-                console.log('Conexión WebSocket cerrada');
-                // Intentar reconectar después de un tiempo
-                setTimeout(setupWebSocket, 3000);
+            ws.onclose = (event) => {
+                console.log(`Conexión WebSocket cerrada (código: ${event.code}, razón: ${event.reason})`);
+                sendButton.disabled = true;
+                
+                // Intentar reconectar si no fue un cierre limpio y no excedimos los intentos
+                if (event.code !== 1000 && event.code !== 1001 && reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    console.log(`Intentando reconectar (intento ${reconnectAttempts}/${maxReconnectAttempts})...`);
+                    setTimeout(setupWebSocket, reconnectDelay);
+                } else if (reconnectAttempts >= maxReconnectAttempts) {
+                    addMessage('No se pudo reconectar al servidor. Por favor, recarga la página.', 'assistant');
+                }
             };
             
             ws.onerror = (error) => {
@@ -429,6 +455,12 @@
             
             // Limpiar campo de entrada
             messageInput.value = '';
+        });
+        
+        // Código adicional para manejar errores y reconexiones
+        window.addEventListener('online', () => {
+            console.log('Conexión de red restaurada, reconectando WebSocket...');
+            setupWebSocket();
         });
         
         // Scroll inicial al final del chat

@@ -12,6 +12,7 @@ from app.services.gemini_service import GeminiRoutineGenerator
 from app.services.image_analysis_service import GeminiImageAnalyzer
 from app.db.database import init_db, save_routine, get_routine, save_chat_message, get_chat_history, get_user_routines, delete_routine_from_db
 from app.websocket.manager import ConnectionManager
+from app.websocket.routes import WebSocketRoutes
 from app.models.models import RoutineRequest
 
 # Crear la app FastAPI
@@ -40,6 +41,9 @@ image_analyzer = GeminiImageAnalyzer()
 
 # Gestor de conexiones WebSocket
 manager = ConnectionManager()
+
+# Inicializar rutas WebSocket
+ws_routes = WebSocketRoutes(manager, routine_generator, image_analyzer)
 
 # Configurar eventos de inicio
 @app.on_event("startup")
@@ -93,7 +97,6 @@ async def dashboard(request: Request, routine_id: int):
     
     chat_history = await get_chat_history(routine_id)
     
-
     routine_duration = len(routine.days)
     
     return templates.TemplateResponse(
@@ -110,60 +113,7 @@ async def dashboard(request: Request, routine_id: int):
 @app.websocket("/ws/chat/{routine_id}")
 async def websocket_endpoint(websocket: WebSocket, routine_id: int):
     """Endpoint WebSocket para el chat en tiempo real"""
-    await manager.connect(websocket, routine_id)
-    try:
-        while True:
-            message = await websocket.receive_json()
-            current_routine = await get_routine(routine_id)
-            
-            if not current_routine:
-                await websocket.send_json({"error": "Rutina no encontrada"})
-                continue
-            
-            # Determinar el tipo de mensaje
-            if isinstance(message, dict) and message.get("type") == "analyze_image":
-                # Procesar análisis de imagen
-                image_data = message.get("image_data")
-                exercise_name = message.get("exercise_name")
-                action = message.get("action", "analyze_form")
-                
-                if action == "analyze_form":
-                    analysis = await image_analyzer.analyze_exercise_image(image_data, exercise_name)
-                else:
-                    analysis = await image_analyzer.suggest_exercise_variations(image_data)
-                
-                # Guardar y enviar el análisis
-                await save_chat_message(routine_id, "assistant", analysis)
-                await manager.broadcast(routine_id, {
-                    "type": "image_analysis",
-                    "analysis": analysis
-                })
-            else:
-                # Mensaje de texto normal
-                text_message = message if isinstance(message, str) else "Mensaje no reconocido"
-                
-                # Guardar mensaje del usuario
-                await save_chat_message(routine_id, "user", text_message)
-                
-                # Procesar con el generador de rutinas
-                modified_routine = await routine_generator.modify_routine(current_routine, text_message)
-                explanation = await routine_generator.explain_routine_changes(current_routine, modified_routine, text_message)
-                
-                # Actualizar la rutina en la BD
-                await save_routine(modified_routine, routine_id=routine_id)
-                await save_chat_message(routine_id, "assistant", explanation)
-                
-                # Enviar actualizaciones al cliente
-                await manager.broadcast(routine_id, {
-                    "type": "routine_update",
-                    "routine": modified_routine.model_dump(),
-                    "explanation": explanation
-                })
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, routine_id)
-    except Exception as e:
-        print(f"Error en WebSocket: {str(e)}")
-        manager.disconnect(websocket, routine_id)
+    await ws_routes.handle_websocket(websocket, routine_id)
 
 # Ruta para eliminar una rutina
 @app.post("/delete_routine")
