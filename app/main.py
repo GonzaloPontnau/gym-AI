@@ -78,8 +78,8 @@ async def create_routine(request: Request):
     routine_id = await save_routine(routine, user_id=routine_request.user_id)
     
     # Guardar mensajes iniciales
-    await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} para {routine_request.days} días a la semana.")
-    await save_chat_message(routine_id, "assistant", f"¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
+    await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.")
+    await save_chat_message(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
     
     return {"routine_id": routine_id, "routine": routine.model_dump()}
 
@@ -93,13 +93,17 @@ async def dashboard(request: Request, routine_id: int):
     
     chat_history = await get_chat_history(routine_id)
     
+
+    routine_duration = len(routine.days)
+    
     return templates.TemplateResponse(
         "dashboard.html", 
         {
             "request": request, 
             "routine": routine,
             "chat_history": chat_history,
-            "routine_id": routine_id
+            "routine_id": routine_id,
+            "routine_duration": routine_duration
         }
     )
 
@@ -170,4 +174,5 @@ async def delete_routine(routine_id: int = Form(...)):
     if not success:
         raise HTTPException(status_code=500, detail="Error al eliminar la rutina")
     
-    return RedirectResponse(url="/routines", status_code=303)
+    # Redirigir con parámetros de éxito
+    return RedirectResponse(url="/routines?success=true&action=delete", status_code=303)

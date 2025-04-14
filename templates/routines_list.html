@@ -4,6 +4,13 @@
 
 {% block content %}
 <div class="container my-4">
+    <!-- Alerta de éxito (oculta inicialmente) -->
+    <div class="alert alert-success alert-dismissible fade show d-none" id="success-alert" role="alert">
+        <i class="bi bi-check-circle"></i> 
+        <span id="success-message">Operación completada con éxito</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <div class="row mb-4">
         <div class="col">
             <h1 class="text-primary">Mis Rutinas</h1>
@@ -16,7 +23,7 @@
         </div>
     </div>
     
-    <div class="row">
+    <div class="row" id="routines-container">
         {% if routines %}
             {% for routine in routines %}
                 <div class="col-md-4 mb-4">
@@ -79,7 +86,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% endif %}
                     <input type="hidden" id="routine-id-to-delete" name="routine_id">
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">Eliminar</button>
                 </form>
             </div>
         </div>
@@ -89,6 +96,34 @@
 
 {% block scripts %}
 <script>
+    // Verificar si hay un parámetro de éxito en la URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const success = urlParams.get('success');
+        const action = urlParams.get('action');
+        
+        if (success === 'true') {
+            const successAlert = document.getElementById('success-alert');
+            const successMessage = document.getElementById('success-message');
+            
+            // Personalizar mensaje según la acción
+            if (action === 'delete') {
+                successMessage.textContent = "La rutina ha sido eliminada correctamente.";
+            }
+            
+            // Mostrar la alerta
+            successAlert.classList.remove('d-none');
+            
+            // Limpiar la URL (eliminar parámetros)
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            // Ocultar después de 5 segundos
+            setTimeout(() => {
+                successAlert.classList.add('d-none');
+            }, 5000);
+        }
+    });
+
     function confirmDelete(routineId, routineName) {
         // Configurar el modal con los datos de la rutina
         document.getElementById('routine-name-to-delete').textContent = routineName;
@@ -98,5 +133,13 @@
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
         deleteModal.show();
     }
+    
+    // Manejar el formulario de eliminación
+    document.getElementById('delete-form').addEventListener('submit', function(e) {
+        // Cambiar estado del botón
+        const deleteButton = document.getElementById('confirm-delete-btn');
+        deleteButton.disabled = true;
+        deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Eliminando...';
+    });
 </script>
 {% endblock %}
