@@ -2,11 +2,16 @@ import sqlite3
 import json
 import aiosqlite
 from datetime import datetime
+import os
 from app.models.models import Routine, ChatMessage
 from typing import List, Optional, Dict, Any
 
 # Ruta a la base de datos SQLite
-DB_PATH = "app/db/gymAI.db"
+# En Vercel, necesitamos usar /tmp para almacenamiento temporal
+if os.environ.get("VERCEL_ENV"):
+    DB_PATH = "/tmp/gymAI.db"
+else:
+    DB_PATH = "app/db/gymAI.db"
 
 async def init_db():
     """Inicializa la base de datos con las tablas necesarias"""
