@@ -15,6 +15,13 @@
             </div>
         </div>
         
+        <!-- Alerta de actualización exitosa (oculta inicialmente) -->
+        <div class="alert alert-success alert-dismissible fade show d-none" id="update-alert" role="alert">
+            <i class="bi bi-check-circle"></i> 
+            Tu rutina ha sido actualizada correctamente.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
         <div class="alert alert-primary">
             <i class="bi bi-info-circle"></i> 
             Puedes modificar esta rutina usando el chat lateral. Pide añadir ejercicios, cambiar repeticiones o adaptar la rutina a tus necesidades.
@@ -71,7 +78,7 @@
             <form id="chat-form" class="d-flex flex-column">
                 <div class="d-flex mb-2">
                     <input type="text" id="message-input" class="form-control me-2" placeholder="Escribe tu mensaje aquí..." required>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" id="send-button">
                         <i class="bi bi-send"></i>
                     </button>
                 </div>
@@ -157,6 +164,8 @@
         const analyzeFormBtn = document.getElementById('analyze-form-btn');
         const suggestVariationsBtn = document.getElementById('suggest-variations-btn');
         const analysisLoading = document.querySelector('.analysis-loading');
+        const sendButton = document.getElementById('send-button');
+        const updateAlert = document.getElementById('update-alert');
         
         // ID de la rutina actual
         const routineId = {{ routine_id }};
@@ -222,6 +231,13 @@
                 
                 routineContent.appendChild(dayCard);
             });
+            
+            // Mostrar alerta de actualización exitosa
+            updateAlert.classList.remove('d-none');
+            // Ocultar después de 5 segundos
+            setTimeout(() => {
+                updateAlert.classList.add('d-none');
+            }, 5000);
         }
         
         // Configurar WebSocket
@@ -233,6 +249,7 @@
             // Configurar eventos del WebSocket
             ws.onopen = () => {
                 console.log('Conexión WebSocket establecida');
+                sendButton.disabled = false;
             };
             
             ws.onmessage = (event) => {
@@ -244,12 +261,23 @@
                     
                     // Agregar mensaje del asistente
                     addMessage(data.explanation, 'assistant');
+                    
+                    // Habilitar botón de envío
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
                 } else if (data.type === 'image_analysis') {
                     // Agregar resultado del análisis de imagen
                     addMessage(data.analysis, 'assistant');
+                    
+                    // Ocultar loading en modal si está visible
+                    analysisLoading.classList.add('d-none');
                 } else if (data.error) {
                     console.error('Error:', data.error);
                     addMessage('Ha ocurrido un error. Por favor, intenta de nuevo.', 'assistant');
+                    
+                    // Habilitar botón de envío
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
                 }
             };
             
@@ -261,6 +289,8 @@
             
             ws.onerror = (error) => {
                 console.error('Error en la conexión WebSocket:', error);
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="bi bi-send"></i>';
             };
         }
         
@@ -379,12 +409,22 @@
             // Agregar mensaje al chat
             addMessage(message, 'user');
             
+            // Cambiar estado del botón
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            
             // Enviar mensaje por WebSocket
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(message);
             } else {
                 addMessage('Error de conexión. Intentando reconectar...', 'assistant');
                 setupWebSocket();
+                
+                // Habilitar botón después de un tiempo
+                setTimeout(() => {
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                }, 3000);
             }
             
             // Limpiar campo de entrada
@@ -393,6 +433,23 @@
         
         // Scroll inicial al final del chat
         scrollToBottom();
+
+        // Manejar vista responsive mejor
+        function adjustLayout() {
+            if (window.innerWidth < 992) {
+                // En dispositivos móviles, asegurar que el chat tenga altura adecuada
+                const chatContainer = document.querySelector('.chat-container');
+                chatContainer.style.height = '400px';
+            } else {
+                // En desktop, volver a altura automática
+                const chatContainer = document.querySelector('.chat-container');
+                chatContainer.style.height = '';
+            }
+        }
+
+        // Ajustar layout al cargar y al cambiar tamaño de ventana
+        adjustLayout();
+        window.addEventListener('resize', adjustLayout);
     });
 </script>
 {% endblock %}
