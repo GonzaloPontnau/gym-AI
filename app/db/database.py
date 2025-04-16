@@ -11,22 +11,64 @@ from sqlalchemy.sql import select, delete
 
 from app.models.models import Routine, ChatMessage
 
-# Determinar qué base de datos usar según el entorno
-if os.environ.get("DATABASE_URL"):
+# Verificar disponibilidad de asyncpg
+asyncpg_available = False
+try:
+    import asyncpg
+    asyncpg_available = True
+except ImportError:
+    print("Módulo asyncpg no disponible, usando SQLite para desarrollo local")
+
+# Intentar importar configuración local
+try:
+    from app.local_settings import FORCE_SQLITE
+except ImportError:
+    FORCE_SQLITE = False
+
+# Determinar de forma explícita qué base de datos usar
+use_postgres = False
+db_url_env = os.environ.get("DATABASE_URL")
+
+# Debugging - mostrar la URL de DB si existe
+if db_url_env:
+    print(f"DATABASE_URL encontrado en variables de entorno: {db_url_env[:20]}...")
+
+# Solo usar PostgreSQL si tenemos DATABASE_URL, asyncpg y no estamos forzando SQLite
+if db_url_env and asyncpg_available and not FORCE_SQLITE:
+    use_postgres = True
+
+if use_postgres:
     # Usar Neon PostgreSQL en producción (Vercel)
-    DB_URL = os.environ.get("DATABASE_URL").replace("postgres://", "postgresql+asyncpg://")
+    # Asegurarse de que sslmode=require está incluido
+    if 'sslmode=' not in db_url_env:
+        if '?' in db_url_env:
+            db_url_env += "&sslmode=require"
+        else:
+            db_url_env += "?sslmode=require"
+    
+    DB_URL = db_url_env.replace("postgres://", "postgresql+asyncpg://")
     IS_SQLITE = False
     print("Utilizando PostgreSQL (Neon Database)")
 else:
-    # Usar SQLite en desarrollo local si no hay DATABASE_URL
+    # Usar SQLite en desarrollo local
     DB_DIR = os.path.dirname(os.path.abspath(__file__))
+    os.makedirs(DB_DIR, exist_ok=True)  # Crear directorio si no existe
     DB_PATH = os.path.join(DB_DIR, "gymAI.db")
     DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
     IS_SQLITE = True
-    print("Utilizando SQLite local")
+    print("Utilizando SQLite local para desarrollo")
 
-# Crear engine y session
-engine = create_async_engine(DB_URL, echo=False)
+# Configuración del engine según el tipo de base de datos
+if IS_SQLITE:
+    engine = create_async_engine(DB_URL, echo=False)
+else:
+    # Para PostgreSQL, configurar opciones específicas
+    engine = create_async_engine(
+        DB_URL,
+        echo=False,
+        connect_args={"ssl": False}  # Desactivar SSL para desarrollo o ajustar según necesidad
+    )
+
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # Definir base y metadatos
@@ -36,7 +78,6 @@ metadata = MetaData()
 # Definir modelos SQL
 class RoutineModel(Base):
     __tablename__ = "routines"
-    
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, nullable=False)
     routine_name = Column(String, nullable=False)
@@ -59,8 +100,7 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 async def save_routine(routine: Routine, user_id: int = None, routine_id: int = None) -> int:
-    """
-    Guarda una rutina en la base de datos.
+    """Guarda una rutina en la base de datos.
     Si routine_id es proporcionado, actualiza la rutina existente,
     de lo contrario, crea una nueva rutina.
     """
@@ -73,7 +113,6 @@ async def save_routine(routine: Routine, user_id: int = None, routine_id: int = 
             stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
             result = await session.execute(stmt)
             routine_model = result.scalar_one_or_none()
-            
             if routine_model:
                 routine_model.routine_name = routine.routine_name
                 routine_model.routine_data = routine_data
@@ -102,7 +141,6 @@ async def get_routine(routine_id: int) -> Optional[Routine]:
         stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
         result = await session.execute(stmt)
         routine_model = result.scalar_one_or_none()
-        
         if routine_model:
             routine_dict = json.loads(routine_model.routine_data)
             routine_dict["id"] = routine_id

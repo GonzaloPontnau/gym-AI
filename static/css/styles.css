@@ -229,13 +229,14 @@ body {
     margin-bottom: 15px;
     padding: 10px 15px;
     border-radius: 15px;
-    transition: transform 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .message:hover {
-    transform: scale(1.02);
+    transform: none;
 }
 
+/* Estilos específicos para diferenciar mensajes */
 .user-message {
     background: #6a3093;
     color: white;
@@ -415,12 +416,10 @@ textarea.form-control:focus {
      padding-top: 1.625rem;
      padding-bottom: 0.625rem;
 }
-/* Hide actual placeholder for floating textarea */
 .form-floating > textarea.form-control::placeholder {
     color: transparent;
 }
 
-/* Floating label - initial state */
 .form-floating > label {
     position: absolute;
     top: 0;
@@ -434,18 +433,15 @@ textarea.form-control:focus {
     color: #868e96 !important; /* Placeholder text color */
 }
 
-/* Floating label - active state (focus or has content) */
 .form-floating > .form-control:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
 .form-floating > textarea.form-control:focus ~ label,
 .form-floating > textarea.form-control:not(:placeholder-shown) ~ label {
     opacity: 0.65;
-    /* transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem); */
     color: #2893fe !important; /* Floated label color */
     background-color: #ff0000 !important; /* Ensure label bg matches input */
 }
 
-/* Autofill styles */
 .form-control:-webkit-autofill,
 .form-control:-webkit-autofill:hover,
 .form-control:-webkit-autofill:focus,
@@ -459,7 +455,6 @@ textarea.form-control:-webkit-autofill:active {
     caret-color: #e0e0e0; /* Ensure cursor is light */
     transition: background-color 5000s ease-in-out 0s;
 }
-/* Ensure label floats correctly with autofill */
 .form-floating > .form-control:-webkit-autofill ~ label {
      opacity: 0.65;
     transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
@@ -467,7 +462,6 @@ textarea.form-control:-webkit-autofill:active {
 }
 
 
-/* Specific Textarea styles */
 .goals-textarea {
     background-color: #3a3a3a !important;
     color: #e0e0e0 !important;
@@ -553,7 +547,6 @@ textarea.form-control:-webkit-autofill:active {
     max-width: 180px;
 }
 
-/* Ensure number input group controls have dark bg */
 .input-group .form-control {
      background-color: #3a3a3a !important;
      color: #e0e0e0 !important;
@@ -561,7 +554,6 @@ textarea.form-control:-webkit-autofill:active {
 }
 
 
-/* Misc */
 .benefits-list {
     padding-left: 1.5rem;
 }
@@ -639,7 +631,6 @@ textarea.form-control:-webkit-autofill:active {
 .container, .container-fluid {
     color: #e0e0e0;
 }
-/* Ensure headings/paragraphs inherit container color */
 .container h1, .container-fluid h1,
 .container h2, .container-fluid h2,
 .container h3, .container-fluid h3,
@@ -647,7 +638,6 @@ textarea.form-control:-webkit-autofill:active {
 .container p, .container-fluid p {
      color: inherit;
 }
-/* Reiterate important color overrides */
 .text-primary, h1.text-primary, h2.text-primary {
     color: #a074c3 !important;
 }
@@ -680,7 +670,6 @@ textarea.form-control:-webkit-autofill:active {
     border-top: 1px solid #444;
 }
 
-/* Estilos para botones de subir y análisis de imágenes */
 #upload-image-btn {
     font-size: 0.9rem;
     padding: 0.25rem 0.5rem;
@@ -730,10 +719,22 @@ textarea.form-control:-webkit-autofill:active {
     border-radius: 0.5rem;
 }
 
-/* Aseguramos que la imagen de mensaje tenga el tamaño adecuado */
 .message img {
     max-width: 100%;
     max-height: 200px;
     border-radius: 5px;
     margin: 5px 0;
+}
+
+#export-routine-btn {
+    transition: all 0.3s ease;
+}
+
+#export-routine-btn:hover {
+    background-color: #6a3093;
+    color: #ffffff;
+}
+
+#export-routine-btn .bi-download {
+    margin-right: 5px;
 }

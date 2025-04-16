@@ -9,6 +9,9 @@
         <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
             <h1 id="routine-name">{{ routine.routine_name }}</h1>
             <div>
+                <button id="export-routine-btn" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-download"></i> Exportar rutina
+                </button>
                 <a href="/routines" class="btn btn-outline-primary">
                     <i class="bi bi-arrow-left"></i> Volver a mis rutinas
                 </a>
@@ -166,6 +169,7 @@
         const analysisLoading = document.querySelector('.analysis-loading');
         const sendButton = document.getElementById('send-button');
         const updateAlert = document.getElementById('update-alert');
+        const exportRoutineBtn = document.getElementById('export-routine-btn');
         
         // ID de la rutina actual
         const routineId = {{ routine_id }};
@@ -462,6 +466,60 @@
             console.log('Conexión de red restaurada, reconectando WebSocket...');
             setupWebSocket();
         });
+        
+        // Función para exportar la rutina como archivo de texto
+        function exportRoutine() {
+            // Obtener los datos de la rutina
+            const routineName = document.getElementById('routine-name').textContent;
+            const daysCards = document.querySelectorAll('.day-card');
+            
+            // Crear el contenido de texto para exportar
+            let content = `RUTINA: ${routineName}\n`;
+            content += `Fecha de exportación: ${new Date().toLocaleDateString()}\n\n`;
+            
+            daysCards.forEach(dayCard => {
+                // Obtener el encabezado del día
+                const dayHeader = dayCard.querySelector('.card-header h3').textContent;
+                content += `=== ${dayHeader} ===\n\n`;
+                
+                // Obtener todos los ejercicios
+                const exerciseRows = dayCard.querySelectorAll('.exercise-row');
+                exerciseRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const exerciseName = cells[0].textContent;
+                    const sets = cells[1].textContent;
+                    const reps = cells[2].textContent;
+                    const rest = cells[3].textContent;
+                    
+                    content += `* ${exerciseName}\n`;
+                    content += `  Series: ${sets}, Repeticiones: ${reps}, Descanso: ${rest}\n\n`;
+                });
+                
+                content += '\n';
+            });
+            
+            content += "Exportado desde GymAI - Tu asistente personal de entrenamiento";
+            
+            // Crear un objeto Blob para la descarga
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            // Crear un enlace de descarga y activarlo
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${routineName.replace(/\s+/g, '_')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpiar
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Agregar evento al botón de exportación
+        if (exportRoutineBtn) {
+            exportRoutineBtn.addEventListener('click', exportRoutine);
+        }
         
         // Scroll inicial al final del chat
         scrollToBottom();

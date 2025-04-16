@@ -6,7 +6,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Importar servicios
+# Cargar variables de entorno primero
+load_dotenv()
+
+# Importar servicios y módulos
 from app.services.routine_service import RoutineGenerator
 from app.services.gemini_service import GeminiRoutineGenerator
 from app.services.image_analysis_service import GeminiImageAnalyzer
@@ -34,9 +37,6 @@ templates = Jinja2Templates(directory="templates")
 # En Vercel, esto será manejado por vercel_app.py
 if os.environ.get("VERCEL_ENV") is None:  
     app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Cargar variables de entorno
-load_dotenv()
 
 # Determinar qué generador de rutinas usar
 routine_generator = GeminiRoutineGenerator() if os.getenv("GEMINI_API_KEY") else RoutineGenerator()

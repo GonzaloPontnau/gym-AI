@@ -75,3 +75,7 @@ tmp/
 # Archivos de configuración local
 config.local.js
 local_settings.py
+
+# Configuración local
+app/local_settings.py
+.env.local
