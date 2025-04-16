@@ -12,16 +12,18 @@ from sqlalchemy.sql import select, delete
 from app.models.models import Routine, ChatMessage
 
 # Determinar qué base de datos usar según el entorno
-if os.environ.get("NEON_DB_URL"):
+if os.environ.get("DATABASE_URL"):
     # Usar Neon PostgreSQL en producción (Vercel)
-    DB_URL = os.environ.get("NEON_DB_URL").replace("postgres://", "postgresql+asyncpg://")
+    DB_URL = os.environ.get("DATABASE_URL").replace("postgres://", "postgresql+asyncpg://")
     IS_SQLITE = False
+    print("Utilizando PostgreSQL (Neon Database)")
 else:
-    # Usar SQLite en desarrollo local
+    # Usar SQLite en desarrollo local si no hay DATABASE_URL
     DB_DIR = os.path.dirname(os.path.abspath(__file__))
     DB_PATH = os.path.join(DB_DIR, "gymAI.db")
     DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
     IS_SQLITE = True
+    print("Utilizando SQLite local")
 
 # Crear engine y session
 engine = create_async_engine(DB_URL, echo=False)

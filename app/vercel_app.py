@@ -16,10 +16,15 @@ elif os.path.exists("staticfiles"):
     main_app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
 
 # Verificar y mostrar información de la base de datos para debug
-if os.environ.get("NEON_DB_URL"):
-    print(f"Usando Neon PostgreSQL - URL: {os.environ.get('NEON_DB_URL')[:20]}...")
+if os.environ.get("DATABASE_URL"):
+    db_url = os.environ.get("DATABASE_URL")
+    # Mostrar versión redactada por seguridad
+    masked_url = db_url.split("@")[0].split(":")
+    masked_url[2] = "********"  # Ocultar contraseña
+    masked_url = ":".join(masked_url) + "@" + db_url.split("@")[1]
+    print(f"Conectando a Neon PostgreSQL: {masked_url}")
 else:
-    print("Usando SQLite local")
+    print("Base de datos no configurada correctamente. Usando SQLite local.")
 
 # Punto de entrada para Vercel
 app = main_app
