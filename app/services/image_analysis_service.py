@@ -3,7 +3,14 @@ import base64
 from io import BytesIO
 import google.generativeai as genai
 from dotenv import load_dotenv
-from PIL import Image
+
+# Intentar importar PIL, si no está disponible, definir un flag
+PIL_AVAILABLE = False
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    print("ADVERTENCIA: PIL (Pillow) no está instalado. La funcionalidad de análisis de imágenes estará deshabilitada.")
 
 # Cargar variables de entorno
 load_dotenv()
@@ -28,6 +35,9 @@ class GeminiImageAnalyzer:
         Returns:
             str: Análisis y feedback sobre la postura y técnica
         """
+        if not PIL_AVAILABLE:
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
+        
         try:
             # Convertir datos de imagen si es necesario
             if isinstance(image_data, str) and image_data.startswith('data:image'):
@@ -87,6 +97,9 @@ class GeminiImageAnalyzer:
         Returns:
             str: Sugerencias de variaciones del ejercicio
         """
+        if not PIL_AVAILABLE:
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
+        
         try:
             # Convertir datos de imagen
             if isinstance(image_data, str) and image_data.startswith('data:image'):

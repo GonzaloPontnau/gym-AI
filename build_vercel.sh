@@ -7,7 +7,12 @@ which python
 which pip
 
 echo "Instalando dependencias..."
+/opt/vercel/python3/bin/python -m pip install --upgrade pip
 /opt/vercel/python3/bin/python -m pip install -r requirements.txt
+
+# Verificar que Pillow se ha instalado correctamente
+echo "Verificando instalación de Pillow..."
+/opt/vercel/python3/bin/python -c "import PIL; print(f'✅ Pillow instalado correctamente')" || echo "❌ Error: Pillow no está instalado"
 
 echo "Creando directorios para archivos estáticos..."
 mkdir -p staticfiles
@@ -50,3 +55,7 @@ echo "Contenido de staticfiles:"
 ls -la staticfiles
 echo "Contenido de staticfiles/css:"
 ls -la staticfiles/css 2>/dev/null || echo "No existe directorio css"
+
+# Listar paquetes Python instalados
+echo "Paquetes Python instalados:"
+/opt/vercel/python3/bin/python -m pip list
