@@ -1,46 +1,60 @@
-import sqlite3
 import json
-import aiosqlite
-from datetime import datetime
 import os
-from app.models.models import Routine, ChatMessage
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-# Ruta a la base de datos SQLite
-# En Vercel, necesitamos usar /tmp para almacenamiento temporal
-if os.environ.get("VERCEL_ENV"):
-    DB_PATH = "/tmp/gymAI.db"
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData, Table
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql import select, delete
+
+from app.models.models import Routine, ChatMessage
+
+# Determinar qué base de datos usar según el entorno
+if os.environ.get("NEON_DB_URL"):
+    # Usar Neon PostgreSQL en producción (Vercel)
+    DB_URL = os.environ.get("NEON_DB_URL").replace("postgres://", "postgresql+asyncpg://")
+    IS_SQLITE = False
 else:
-    DB_PATH = "app/db/gymAI.db"
+    # Usar SQLite en desarrollo local
+    DB_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(DB_DIR, "gymAI.db")
+    DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
+    IS_SQLITE = True
+
+# Crear engine y session
+engine = create_async_engine(DB_URL, echo=False)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+# Definir base y metadatos
+Base = declarative_base()
+metadata = MetaData()
+
+# Definir modelos SQL
+class RoutineModel(Base):
+    __tablename__ = "routines"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, nullable=False)
+    routine_name = Column(String, nullable=False)
+    routine_data = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
+
+class ChatMessageModel(Base):
+    __tablename__ = "chat_messages"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    routine_id = Column(Integer, ForeignKey("routines.id", ondelete="CASCADE"), nullable=False)
+    sender = Column(String, nullable=False)
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
 async def init_db():
     """Inicializa la base de datos con las tablas necesarias"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        # Crear tabla de rutinas
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS routines (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                routine_name TEXT NOT NULL,
-                routine_data TEXT NOT NULL,
-                created_at TIMESTAMP NOT NULL,
-                updated_at TIMESTAMP NOT NULL
-            )
-        ''')
-        
-        # Crear tabla de mensajes del chat
-        await db.execute('''
-            CREATE TABLE IF NOT EXISTS chat_messages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                routine_id INTEGER NOT NULL,
-                sender TEXT NOT NULL,
-                content TEXT NOT NULL,
-                timestamp TIMESTAMP NOT NULL,
-                FOREIGN KEY (routine_id) REFERENCES routines (id) ON DELETE CASCADE
-            )
-        ''')
-        
-        await db.commit()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 async def save_routine(routine: Routine, user_id: int = None, routine_id: int = None) -> int:
     """
@@ -48,84 +62,92 @@ async def save_routine(routine: Routine, user_id: int = None, routine_id: int = 
     Si routine_id es proporcionado, actualiza la rutina existente,
     de lo contrario, crea una nueva rutina.
     """
-    now = datetime.now().isoformat()
+    now = datetime.now()
     routine_data = routine.model_dump_json()
     
-    async with aiosqlite.connect(DB_PATH) as db:
+    async with async_session() as session:
         if routine_id:
             # Actualizar rutina existente
-            await db.execute(
-                "UPDATE routines SET routine_name = ?, routine_data = ?, updated_at = ? WHERE id = ?",
-                (routine.routine_name, routine_data, now, routine_id)
-            )
-            await db.commit()
-            return routine_id
+            stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
+            result = await session.execute(stmt)
+            routine_model = result.scalar_one_or_none()
+            
+            if routine_model:
+                routine_model.routine_name = routine.routine_name
+                routine_model.routine_data = routine_data
+                routine_model.updated_at = now
+                await session.commit()
+                return routine_id
+            else:
+                raise ValueError(f"No se encontró rutina con ID {routine_id}")
         else:
             # Crear nueva rutina
             user_id = user_id or routine.user_id
-            cursor = await db.execute(
-                "INSERT INTO routines (user_id, routine_name, routine_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                (user_id, routine.routine_name, routine_data, now, now)
+            routine_model = RoutineModel(
+                user_id=user_id,
+                routine_name=routine.routine_name,
+                routine_data=routine_data,
+                created_at=now,
+                updated_at=now
             )
-            await db.commit()
-            return cursor.lastrowid
+            session.add(routine_model)
+            await session.commit()
+            return routine_model.id
 
 async def get_routine(routine_id: int) -> Optional[Routine]:
     """Obtiene una rutina por su ID"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "SELECT routine_data FROM routines WHERE id = ?", 
-            (routine_id,)
-        )
-        result = await cursor.fetchone()
+    async with async_session() as session:
+        stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
+        result = await session.execute(stmt)
+        routine_model = result.scalar_one_or_none()
         
-        if result:
-            routine_dict = json.loads(result[0])
+        if routine_model:
+            routine_dict = json.loads(routine_model.routine_data)
             routine_dict["id"] = routine_id
             return Routine.model_validate(routine_dict)
         return None
 
 async def save_chat_message(routine_id: int, sender: str, content: str) -> int:
     """Guarda un mensaje de chat para una rutina específica"""
-    now = datetime.now().isoformat()
+    now = datetime.now()
     
-    async with aiosqlite.connect(DB_PATH) as db:
-        cursor = await db.execute(
-            "INSERT INTO chat_messages (routine_id, sender, content, timestamp) VALUES (?, ?, ?, ?)",
-            (routine_id, sender, content, now)
+    async with async_session() as session:
+        message_model = ChatMessageModel(
+            routine_id=routine_id,
+            sender=sender,
+            content=content,
+            timestamp=now
         )
-        await db.commit()
-        return cursor.lastrowid
+        session.add(message_model)
+        await session.commit()
+        return message_model.id
 
 async def get_chat_history(routine_id: int) -> List[Dict[str, Any]]:
     """Obtiene el historial de chat para una rutina específica"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT sender, content FROM chat_messages WHERE routine_id = ? ORDER BY timestamp",
-            (routine_id,)
-        )
-        results = await cursor.fetchall()
-        return [dict(row) for row in results]
+    async with async_session() as session:
+        stmt = select(ChatMessageModel).where(ChatMessageModel.routine_id == routine_id).order_by(ChatMessageModel.timestamp)
+        result = await session.execute(stmt)
+        messages = result.scalars().all()
+        
+        return [{"sender": msg.sender, "content": msg.content} for msg in messages]
 
 async def get_user_routines(user_id: int) -> List[Dict[str, Any]]:
     """Obtiene todas las rutinas de un usuario específico"""
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        cursor = await db.execute(
-            "SELECT id, routine_name, updated_at FROM routines WHERE user_id = ? ORDER BY updated_at DESC",
-            (user_id,)
-        )
-        results = await cursor.fetchall()
-        return [dict(row) for row in results]
+    async with async_session() as session:
+        stmt = select(RoutineModel).where(RoutineModel.user_id == user_id).order_by(RoutineModel.updated_at.desc())
+        result = await session.execute(stmt)
+        routines = result.scalars().all()
+        
+        return [{"id": r.id, "routine_name": r.routine_name, "updated_at": r.updated_at} for r in routines]
 
 async def delete_routine_from_db(routine_id: int) -> bool:
     """Elimina una rutina y sus mensajes asociados de la base de datos"""
     try:
-        async with aiosqlite.connect(DB_PATH) as db:
-            await db.execute("DELETE FROM chat_messages WHERE routine_id = ?", (routine_id,))
-            await db.execute("DELETE FROM routines WHERE id = ?", (routine_id,))
-            await db.commit()
+        async with async_session() as session:
+            # Eliminar rutina (los mensajes asociados se eliminarán por CASCADE)
+            stmt = delete(RoutineModel).where(RoutineModel.id == routine_id)
+            await session.execute(stmt)
+            await session.commit()
             return True
     except Exception as e:
         print(f"Error al eliminar rutina: {str(e)}")

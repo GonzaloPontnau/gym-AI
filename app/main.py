@@ -27,9 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configurar plantillas y archivos estáticos
+# Configurar plantillas
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Configurar archivos estáticos solo en desarrollo
+# En Vercel, esto será manejado por vercel_app.py
+if os.environ.get("VERCEL_ENV") is None:  
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Cargar variables de entorno
 load_dotenv()
