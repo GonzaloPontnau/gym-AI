@@ -9,17 +9,26 @@ PIL_AVAILABLE = False
 try:
     from PIL import Image
     PIL_AVAILABLE = True
+    print("✅ PIL (Pillow) está disponible - Funcionalidad de análisis de imágenes activada")
 except ImportError:
-    print("ADVERTENCIA: PIL (Pillow) no está instalado. La funcionalidad de análisis de imágenes estará deshabilitada.")
+    print("⚠️ PIL (Pillow) no está instalado - Funcionalidad de análisis de imágenes desactivada")
 
 # Cargar variables de entorno
 load_dotenv()
 
-# Configurar la API de Gemini con la clave API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Definir el modelo a utilizar (gemini-1.5-flash es multimodal)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Verificar si la API de Gemini está configurada
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    print("⚠️ GEMINI_API_KEY no está configurada - Funcionalidad de IA limitada")
+else:
+    # Configurar la API de Gemini con la clave API
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        print("✅ API de Gemini configurada correctamente")
+        # Definir el modelo a utilizar (gemini-1.5-flash es multimodal)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+    except Exception as e:
+        print(f"❌ Error al configurar la API de Gemini: {str(e)}")
 
 class GeminiImageAnalyzer:
     """Servicio para analizar imágenes de ejercicios usando la API de Gemini"""
@@ -35,8 +44,13 @@ class GeminiImageAnalyzer:
         Returns:
             str: Análisis y feedback sobre la postura y técnica
         """
+        # Verificar si PIL está disponible
         if not PIL_AVAILABLE:
             return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
+        
+        # Verificar si la API de Gemini está configurada
+        if not GEMINI_API_KEY:
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada porque no se ha configurado la API de Gemini."
         
         try:
             # Convertir datos de imagen si es necesario
@@ -97,8 +111,12 @@ class GeminiImageAnalyzer:
         Returns:
             str: Sugerencias de variaciones del ejercicio
         """
+        # Verificaciones iniciales
         if not PIL_AVAILABLE:
             return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
+        
+        if not GEMINI_API_KEY:
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada porque no se ha configurado la API de Gemini."
         
         try:
             # Convertir datos de imagen

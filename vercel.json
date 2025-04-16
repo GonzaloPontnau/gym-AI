@@ -6,7 +6,8 @@
       "src": "app/vercel_app.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb"
+        "maxLambdaSize": "50mb",
+        "runtime": "python3.9"
       }
     },
     {
