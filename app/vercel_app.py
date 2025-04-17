@@ -30,15 +30,23 @@ except Exception as e:
     async def error_root():
         return {"error": "La aplicación no pudo iniciarse correctamente. Consulta los logs."}
 
-# Configurar montaje de archivos estáticos para Vercel
+# Configurar montaje de archivos estáticos para Vercel - MEJORADO
+# Vercel pone los archivos estáticos generados en /tmp/staticfiles en producción
 if os.path.exists("/tmp/staticfiles"):
     main_app.mount("/static", StaticFiles(directory="/tmp/staticfiles"), name="static")
     print("✅ Archivos estáticos montados desde /tmp/staticfiles")
+    print(f"   Contenido de /tmp/staticfiles: {os.listdir('/tmp/staticfiles')}")
+    if os.path.exists("/tmp/staticfiles/css"):
+        print(f"   Contenido de /tmp/staticfiles/css: {os.listdir('/tmp/staticfiles/css')}")
 elif os.path.exists("staticfiles"):
     main_app.mount("/static", StaticFiles(directory="staticfiles"), name="static")
     print("✅ Archivos estáticos montados desde staticfiles")
 else:
     print("⚠️ No se encontró directorio de archivos estáticos")
+    # Intentar directorio estático fallback para debug
+    if os.path.exists("static"):
+        main_app.mount("/static", StaticFiles(directory="static"), name="static")
+        print("✅ Fallback: Archivos estáticos montados desde 'static'")
 
 # Verificar y mostrar información de la base de datos para debug
 if os.environ.get("DATABASE_URL"):

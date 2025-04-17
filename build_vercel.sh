@@ -62,20 +62,30 @@ mkdir -p staticfiles/img
 echo "Copiando archivos estáticos..."
 if [ -d "static" ]; then
   cp -r static/* staticfiles/
-fi
-
-echo "Generando styles.css en la raíz de staticfiles..."
-echo "/* Archivo generado automáticamente para Vercel - $(date) */" > staticfiles/styles.css
-if [ -f "static/css/styles.css" ]; then
-  cat static/css/styles.css >> staticfiles/styles.css
+  echo "✅ Archivos copiados desde static/ a staticfiles/"
 else
-  echo "/* Archivo CSS base no encontrado - creando una versión mínima */" >> staticfiles/styles.css
-  echo "/* Contenido original de styles.css */" >> staticfiles/styles.css
+  echo "⚠️ No se encontró el directorio 'static'"
 fi
 
-echo "Asegurando que css/styles.css también existe..."
-mkdir -p staticfiles/css
-cp staticfiles/styles.css staticfiles/css/styles.css
+# Asegurar explícitamente que styles.css existe en ambas ubicaciones
+echo "Verificando archivos CSS críticos..."
+if [ -f "static/css/styles.css" ]; then
+  # Asegurar que existe en staticfiles/css/
+  mkdir -p staticfiles/css
+  cp static/css/styles.css staticfiles/css/styles.css
+  echo "✅ CSS copiado a staticfiles/css/styles.css"
+  
+  # También copiarlo a la raíz para la ruta styles.css
+  cp static/css/styles.css staticfiles/styles.css
+  echo "✅ CSS copiado a staticfiles/styles.css"
+else
+  echo "❌ ERROR: No se encontró el archivo css/styles.css en static/"
+  # Crear un archivo de prueba para debug
+  mkdir -p staticfiles/css
+  echo "/* Archivo CSS de respaldo - algo salió mal */" > staticfiles/css/styles.css
+  echo "body { background-color: #333; color: red; }" >> staticfiles/css/styles.css
+  cp staticfiles/css/styles.css staticfiles/styles.css
+fi
 
 echo "Creando archivo de test para verificar que los estáticos funcionan..."
 echo "<html><body><h1>Archivos estáticos funcionando</h1></body></html>" > staticfiles/test.html
@@ -99,5 +109,9 @@ if [ ! -z "$PYTHON_PATH" ]; then
 else
   echo "⚠️ No se pueden listar paquetes Python (Python no encontrado)"
 fi
+
+# Listar contenido para debug
+echo "Contenido de staticfiles (después de la construcción):"
+find staticfiles -type f | sort
 
 echo "=== Fin de la construcción de GymAI para Vercel ==="

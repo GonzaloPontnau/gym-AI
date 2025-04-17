@@ -33,10 +33,10 @@ app.add_middleware(
 # Configurar plantillas
 templates = Jinja2Templates(directory="templates")
 
-# Configurar archivos estáticos solo en desarrollo
-# En Vercel, esto será manejado por vercel_app.py
+# Configurar archivos estáticos - CORREGIDO para consistencia con vercel_app.py
 if os.environ.get("VERCEL_ENV") is None:  
-    app.mount("/staticfiles", StaticFiles(directory="static"), name="staticfiles")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+    print("✅ Archivos estáticos montados desde directorio 'static' en /static")
 
 # Determinar qué generador de rutinas usar
 routine_generator = GeminiRoutineGenerator() if os.getenv("GEMINI_API_KEY") else RoutineGenerator()
