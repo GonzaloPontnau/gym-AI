@@ -2,14 +2,17 @@ import json
 import os
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from urllib.parse import urlparse, urlunparse, parse_qs, urlencode # Importar utilidades de URL
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData, Table
+# Eliminar Table de la importación
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, delete
 
-from app.models.models import Routine, ChatMessage
+# Eliminar ChatMessage de la importación
+from app.models.models import Routine
 
 # Verificar disponibilidad de asyncpg
 asyncpg_available = False
@@ -39,12 +42,21 @@ if db_url_env and asyncpg_available and not FORCE_SQLITE:
 
 if use_postgres:
     # Usar Neon PostgreSQL en producción (Vercel)
-    # La URL ya debe incluir los parámetros SSL necesarios
-    # NO modificar la URL para agregar sslmode aquí, ya que causa conflictos
-    DB_URL = db_url_env.replace("postgres://", "postgresql+asyncpg://")
+    # Construir la URL base para asyncpg
+    temp_url = db_url_env.replace("postgres://", "postgresql+asyncpg://")
+    
+    # Parsear la URL para quitar sslmode de la query string
+    parsed_url = urlparse(temp_url)
+    query_params = parse_qs(parsed_url.query)
+    query_params.pop('sslmode', None) # Eliminar sslmode si existe
+    new_query = urlencode(query_params, doseq=True)
+    
+    # Reconstruir la URL sin sslmode en la query
+    DB_URL = urlunparse(parsed_url._replace(query=new_query))
+    
     IS_SQLITE = False
     print("Utilizando PostgreSQL (Neon Database)")
-    print(f"URL de conexión: {DB_URL[:20]}...")  # Solo mostrar parte inicial por seguridad
+    print(f"URL de conexión (limpia): {DB_URL[:20]}...") # Mostrar URL limpia
 else:
     # Usar SQLite en desarrollo local
     DB_DIR = os.path.dirname(os.path.abspath(__file__))
