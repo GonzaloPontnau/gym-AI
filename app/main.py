@@ -44,8 +44,12 @@ templates = Jinja2Templates(directory="templates")
 
 # Configurar archivos estáticos - CORREGIDO para consistencia con vercel_app.py
 if os.environ.get("VERCEL_ENV") is None:  
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-    print("✅ Archivos estáticos montados desde directorio 'static' en /static")
+    # Verificar si existe el directorio static para evitar errores
+    if os.path.exists("static"):
+        app.mount("/static", StaticFiles(directory="static"), name="static")
+        print("✅ Archivos estáticos montados desde directorio 'static' en /static")
+    else:
+        print("⚠️ El directorio 'static' no existe. Los archivos estáticos no estarán disponibles.")
 
 # Inicializar el generador de rutinas con Gemini
 routine_generator = GeminiRoutineGenerator()
