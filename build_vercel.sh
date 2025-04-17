@@ -67,24 +67,33 @@ else
   echo "⚠️ No se encontró el directorio 'static'"
 fi
 
-# Asegurar explícitamente que styles.css existe en ambas ubicaciones
-echo "Verificando archivos CSS críticos..."
-if [ -f "static/css/styles.css" ]; then
-  # Asegurar que existe en staticfiles/css/
-  mkdir -p staticfiles/css
-  cp static/css/styles.css staticfiles/css/styles.css
-  echo "✅ CSS copiado a staticfiles/css/styles.css"
-  
-  # También copiarlo a la raíz para la ruta styles.css
-  cp static/css/styles.css staticfiles/styles.css
+# Verificar si styles.css está en la raíz y copiarlo a las ubicaciones necesarias
+echo "Verificando archivo CSS principal..."
+if [ -f "styles.css" ]; then
+  echo "✅ Se encontró styles.css en la raíz del proyecto"
+  # Copiar a la raíz de staticfiles
+  cp styles.css staticfiles/styles.css
   echo "✅ CSS copiado a staticfiles/styles.css"
-else
-  echo "❌ ERROR: No se encontró el archivo css/styles.css en static/"
-  # Crear un archivo de prueba para debug
+  
+  # También crear una copia en css/ para compatibilidad
   mkdir -p staticfiles/css
-  echo "/* Archivo CSS de respaldo - algo salió mal */" > staticfiles/css/styles.css
-  echo "body { background-color: #333; color: red; }" >> staticfiles/css/styles.css
-  cp staticfiles/css/styles.css staticfiles/styles.css
+  cp styles.css staticfiles/css/styles.css
+  echo "✅ CSS copiado a staticfiles/css/styles.css para compatibilidad"
+else
+  echo "❌ ERROR: No se encontró el archivo styles.css en la raíz del proyecto"
+  # Comprobamos si existe en /static/css como alternativa
+  if [ -f "static/css/styles.css" ]; then
+    echo "✅ Se encontró styles.css en static/css/, usándolo como alternativa"
+    cp static/css/styles.css staticfiles/styles.css
+    mkdir -p staticfiles/css
+    cp static/css/styles.css staticfiles/css/styles.css
+  else
+    # Crear un archivo de respaldo para debug
+    echo "/* Archivo CSS de respaldo - no se encontró el original */" > staticfiles/styles.css
+    echo "body { background-color: #333; color: red; }" >> staticfiles/styles.css
+    mkdir -p staticfiles/css
+    cp staticfiles/styles.css staticfiles/css/styles.css
+  fi
 fi
 
 echo "Creando archivo de test para verificar que los estáticos funcionan..."
