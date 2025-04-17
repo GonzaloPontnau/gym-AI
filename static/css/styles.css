@@ -197,7 +197,7 @@ body {
     grid-template-columns: 2fr 1fr;
     gap: 1.5rem;
     margin: 1rem;
-    height: calc(100vh - 120px); /* Altura ajustada para mantener contenido visible */
+    height: calc(100vh - 70px); /* Ajustado para ocupar toda la pantalla disponible */
 }
 
 .routine-container {
@@ -235,6 +235,10 @@ body {
 .chat-input-container {
     padding: 1rem;
     border-top: 1px solid #444;
+}
+
+.chat-input-container textarea::placeholder {
+    color: #aaaaaa; /* Color más claro para el placeholder */
 }
 
 .message {
@@ -279,12 +283,14 @@ body {
 }
 
 .day-card .card-header {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: #a074c3; /* Cambiado a color violeta */
     border-bottom: 1px solid #444;
+    color: #ffffff; /* Asegurar buen contraste */
 }
 
 .day-card .table {
     color: #e0e0e0;
+    background-color: #2c2c2c; /* Color de fondo igual al de la web */
 }
 
 .day-card .table thead th {
