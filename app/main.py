@@ -1,4 +1,5 @@
 import os
+import asyncio
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -8,6 +9,15 @@ from dotenv import load_dotenv
 
 # Cargar variables de entorno primero
 load_dotenv()
+
+# Intentar obtener el bucle de eventos actual o crear uno nuevo
+try:
+    loop = asyncio.get_event_loop()
+    print(f"Usando bucle de eventos existente en main: {loop}")
+except RuntimeError:
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    print(f"Creado nuevo bucle de eventos en main: {loop}")
 
 # Importar servicios y módulos
 from app.services.routine_service import RoutineGenerator
@@ -53,15 +63,17 @@ ws_routes = WebSocketRoutes(manager, routine_generator, image_analyzer)
 @app.on_event("startup")
 async def startup_event():
     """Inicializar la base de datos"""
-    print("⏳ Inicializando base de datos (evento startup)...")
-    try:
-        await init_db()
-        print("✅ Base de datos inicializada correctamente")
-    except Exception as e:
-        print(f"❌ Error al inicializar la base de datos: {str(e)}")
-        print("⚠️ La aplicación seguirá ejecutándose, pero podrían ocurrir errores")
-        import traceback
-        print(traceback.format_exc())
+    # Solo inicializar si no estamos en Vercel (donde lo hace vercel_app.py)
+    if not os.environ.get("VERCEL_ENV"):
+        print("⏳ Inicializando base de datos (evento startup)...")
+        try:
+            await init_db()
+            print("✅ Base de datos inicializada correctamente")
+        except Exception as e:
+            print(f"❌ Error al inicializar la base de datos: {str(e)}")
+            print("⚠️ La aplicación seguirá ejecutándose, pero podrían ocurrir errores")
+            import traceback
+            print(traceback.format_exc())
 
 # Rutas de la aplicación
 @app.get("/", response_class=HTMLResponse)

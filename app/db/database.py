@@ -68,16 +68,32 @@ else:
 if IS_SQLITE:
     engine = create_async_engine(DB_URL, echo=False)
 else:
-    # Para PostgreSQL, configurar opciones específicas
-    # No incluir argumentos SSL adicionales ya que están en la URL
+    # Para PostgreSQL en entorno serverless, ajustar la configuración
+    # para evitar problemas con el bucle de eventos
     engine = create_async_engine(
         DB_URL,
         echo=False,
-        pool_pre_ping=True,  # Verificar conexión antes de usarla
-        pool_recycle=300     # Reciclar conexiones cada 5 minutos
+        # Evitar mantener conexiones persistentes en entorno serverless
+        poolclass=sqlalchemy.pool.NullPool,
+        # Opciones para entorno serverless
+        future=True,
+        connect_args={"server_settings": {"statement_timeout": "30000"}}
     )
 
+# Modificamos la función de sesión para usar siempre el mismo bucle de eventos
+import asyncio
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+async def get_session():
+    """Obtener una sesión de base de datos asegurando el uso del bucle de eventos correcto"""
+    try:
+        # Usar siempre el bucle de eventos actual
+        loop = asyncio.get_running_loop()
+        async with async_session() as session:
+            yield session
+    except Exception as e:
+        print(f"Error al crear sesión de base de datos: {str(e)}")
+        raise
 
 # Definir base y metadatos
 Base = declarative_base()
@@ -112,6 +128,7 @@ async def table_exists(table_name):
         print(f"Error al verificar si la tabla {table_name} existe: {str(e)}")
         return False
 
+# Modificamos init_db para ser más confiable en entornos serverless
 async def init_db():
     """Inicializa la base de datos con las tablas necesarias"""
     try:
@@ -124,34 +141,14 @@ async def init_db():
             return
         
         print("🔧 Creando tablas en la base de datos...")
-        async with engine.begin() as conn:
-            # Para PostgreSQL, establecer timeout más largo
-            if not IS_SQLITE:
-                await conn.execute("SET statement_timeout = 30000;")  # 30 segundos
-                
-            # Crear tablas explícitamente
-            if not routines_exists:
-                print("Creando tabla 'routines'...")
-                await conn.run_sync(lambda sync_conn: RoutineModel.__table__.create(sync_conn, checkfirst=True))
-                
-            if not chat_messages_exists:
-                print("Creando tabla 'chat_messages'...")
-                await conn.run_sync(lambda sync_conn: ChatMessageModel.__table__.create(sync_conn, checkfirst=True))
-                
-        print("✅ Tablas creadas correctamente")
-    except Exception as e:
-        print(f"❌ Error al inicializar la base de datos: {str(e)}")
-        import traceback
-        print(traceback.format_exc())
         
-        # Si estamos usando PostgreSQL, intentar un enfoque alternativo si algo falla
+        # Usar método directo SQL para evitar problemas con los bucles de eventos
         if not IS_SQLITE:
             try:
-                print("🔄 Intentando método alternativo para crear tablas...")
+                print("Usando SQL directo para crear tablas en PostgreSQL...")
                 async with engine.connect() as conn:
-                    # Crear tablas con SQL directo si es necesario
-                    if not await table_exists("routines"):
-                        print("Creando tabla 'routines' con SQL directo...")
+                    # Crear la tabla routines si no existe
+                    if not routines_exists:
                         await conn.execute("""
                         CREATE TABLE IF NOT EXISTS routines (
                             id SERIAL PRIMARY KEY,
@@ -163,8 +160,8 @@ async def init_db():
                         )
                         """)
                     
-                    if not await table_exists("chat_messages"):
-                        print("Creando tabla 'chat_messages' con SQL directo...")
+                    # Crear la tabla chat_messages si no existe
+                    if not chat_messages_exists:
                         await conn.execute("""
                         CREATE TABLE IF NOT EXISTS chat_messages (
                             id SERIAL PRIMARY KEY,
@@ -176,62 +173,121 @@ async def init_db():
                         """)
                     
                     await conn.commit()
-                print("✅ Tablas creadas con método alternativo")
-            except Exception as alt_e:
-                print(f"❌ También falló el método alternativo: {str(alt_e)}")
+                print("✅ Tablas creadas correctamente con SQL directo")
+                return
+            except Exception as e:
+                print(f"Error al crear tablas con SQL directo: {str(e)}")
+                import traceback
                 print(traceback.format_exc())
-                raise
+        
+        # Si llegamos aquí, usar el método de SQLAlchemy como respaldo
+        async with engine.begin() as conn:
+            await conn.run_sync(lambda sync_conn: Base.metadata.create_all(sync_conn))
+            
+        print("✅ Tablas creadas correctamente con SQLAlchemy")
+        
+    except Exception as e:
+        print(f"❌ Error al inicializar la base de datos: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        raise
 
 # Resto del código sin cambios
+# Reemplazamos la implementación de save_routine para evitar problemas de loop
 async def save_routine(routine: Routine, user_id: int = None, routine_id: int = None) -> int:
-    """Guarda una rutina en la base de datos con mejor manejo de errores."""
+    """Guarda una rutina en la base de datos con mejor manejo de eventos asíncronos."""
     now = datetime.now()
     routine_data = routine.model_dump_json()
     
-    try:
-        async with async_session() as session:
+    # Para entornos serverless, crear una conexión fresca cada vez
+    async with async_session() as session:
+        try:
             if routine_id:
-                # Actualizar rutina existente
-                stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
-                result = await session.execute(stmt)
-                routine_model = result.scalar_one_or_none()
-                if routine_model:
-                    routine_model.routine_name = routine.routine_name
-                    routine_model.routine_data = routine_data
-                    routine_model.updated_at = now
+                # Actualizar rutina existente con SQL directo para evitar problemas de ORM
+                if not IS_SQLITE:
+                    query = """
+                    UPDATE routines SET 
+                    routine_name = :routine_name, 
+                    routine_data = :routine_data, 
+                    updated_at = :updated_at
+                    WHERE id = :routine_id RETURNING id
+                    """
+                    result = await session.execute(
+                        query, 
+                        {
+                            "routine_name": routine.routine_name,
+                            "routine_data": routine_data,
+                            "updated_at": now,
+                            "routine_id": routine_id
+                        }
+                    )
                     await session.commit()
                     return routine_id
                 else:
-                    raise ValueError(f"No se encontró rutina con ID {routine_id}")
+                    # Mantener el código original para SQLite en desarrollo
+                    stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
+                    result = await session.execute(stmt)
+                    routine_model = result.scalar_one_or_none()
+                    if routine_model:
+                        routine_model.routine_name = routine.routine_name
+                        routine_model.routine_data = routine_data
+                        routine_model.updated_at = now
+                        await session.commit()
+                        return routine_id
+                    else:
+                        raise ValueError(f"No se encontró rutina con ID {routine_id}")
             else:
-                # Crear nueva rutina
+                # Crear nueva rutina con SQL directo para PostgreSQL
                 user_id = user_id or routine.user_id
-                routine_model = RoutineModel(
-                    user_id=user_id,
-                    routine_name=routine.routine_name,
-                    routine_data=routine_data,
-                    created_at=now,
-                    updated_at=now
-                )
-                session.add(routine_model)
-                await session.commit()
-                return routine_model.id
-    except Exception as e:
-        import traceback
-        error_trace = traceback.format_exc()
-        print(f"Error al guardar rutina en la base de datos: {str(e)}")
-        print(f"Detalles del error: {error_trace}")
-        
-        # Verificar si es un error de conexión
-        if "connection" in str(e).lower() or "timeout" in str(e).lower():
-            raise Exception(f"Error de conexión a la base de datos: {str(e)}")
-        
-        # Verificar si podría ser un error de schema
-        if "column" in str(e).lower() or "table" in str(e).lower():
-            raise Exception(f"Error de estructura en la base de datos: {str(e)}")
-        
-        # Error general si no se identifica específicamente
-        raise Exception(f"Error al guardar rutina: {str(e)}")
+                if not IS_SQLITE:
+                    query = """
+                    INSERT INTO routines 
+                    (user_id, routine_name, routine_data, created_at, updated_at) 
+                    VALUES (:user_id, :routine_name, :routine_data, :created_at, :updated_at)
+                    RETURNING id
+                    """
+                    result = await session.execute(
+                        query, 
+                        {
+                            "user_id": user_id,
+                            "routine_name": routine.routine_name,
+                            "routine_data": routine_data,
+                            "created_at": now,
+                            "updated_at": now
+                        }
+                    )
+                    new_id = result.scalar_one()
+                    await session.commit()
+                    return new_id
+                else:
+                    # Mantener el código original para SQLite en desarrollo
+                    routine_model = RoutineModel(
+                        user_id=user_id,
+                        routine_name=routine.routine_name,
+                        routine_data=routine_data,
+                        created_at=now,
+                        updated_at=now
+                    )
+                    session.add(routine_model)
+                    await session.commit()
+                    return routine_model.id
+        except Exception as e:
+            await session.rollback()
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"Error al guardar rutina en la base de datos: {str(e)}")
+            print(f"Detalles del error: {error_trace}")
+            
+            # Verificar si es un error de conexión
+            if "connection" in str(e).lower() or "timeout" in str(e).lower() or "loop" in str(e).lower():
+                raise Exception(f"Error de conexión a la base de datos: {str(e)}")
+            
+            # Verificar si podría ser un error de schema
+            if "column" in str(e).lower() or "table" in str(e).lower():
+                raise Exception(f"Error de estructura en la base de datos: {str(e)}")
+            
+            # Error general si no se identifica específicamente
+            raise Exception(f"Error al guardar rutina: {str(e)}")
 
 async def get_routine(routine_id: int) -> Optional[Routine]:
     """Obtiene una rutina por su ID"""

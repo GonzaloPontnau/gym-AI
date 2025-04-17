@@ -5,6 +5,17 @@ import sys
 import importlib.metadata
 import asyncio
 
+# Configurar un único bucle de eventos para toda la aplicación en Vercel
+try:
+    # Crear un nuevo bucle de eventos si no hay uno configurado
+    loop = asyncio.get_event_loop()
+    print(f"✅ Usando bucle de eventos existente: {loop}")
+except RuntimeError:
+    # Si no hay bucle configurado (nuevo contexto), crear uno nuevo
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    print(f"✅ Creado nuevo bucle de eventos: {loop}")
+
 # Imprimir información de paquetes instalados para depuración
 print("=== Paquetes instalados ===")
 try:
@@ -18,31 +29,8 @@ print("=========================")
 # Asegurar que el directorio raíz del proyecto esté en el path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Inicializar la base de datos explícitamente para entorno Vercel
-print("Inicializando base de datos para Vercel...")
+# Importar la aplicación primero (para que use el mismo bucle de eventos)
 try:
-    from app.db.database import init_db
-    
-    # Ejecutar la inicialización de la base de datos
-    # Nota: asyncio.run() no funciona en algunos entornos de Vercel, usamos un enfoque alternativo
-    async def setup_db():
-        print("⏳ Creando tablas en la base de datos...")
-        await init_db()
-        print("✅ Inicialización de base de datos completada")
-    
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(setup_db())
-    loop.close()
-    
-    print("✅ Base de datos inicializada correctamente")
-except Exception as e:
-    print(f"❌ Error al inicializar la base de datos: {str(e)}")
-    import traceback
-    print(traceback.format_exc())
-
-try:
-    # Importar la app principal
     from app.main import app as main_app
     print("✅ Aplicación principal importada correctamente")
 except Exception as e:
@@ -54,8 +42,27 @@ except Exception as e:
     async def error_root():
         return {"error": "La aplicación no pudo iniciarse correctamente. Consulta los logs."}
 
-# Configurar montaje de archivos estáticos para Vercel - MEJORADO
-# Vercel pone los archivos estáticos generados en /tmp/staticfiles en producción
+# Inicializar la base de datos explícitamente para entorno Vercel
+print("Inicializando base de datos para Vercel...")
+try:
+    from app.db.database import init_db
+    
+    # Ejecutar la inicialización de la base de datos con el bucle de eventos actual
+    async def setup_db():
+        print("⏳ Creando tablas en la base de datos...")
+        # Usar el bucle configurado anteriormente
+        await init_db()
+        print("✅ Inicialización de base de datos completada")
+    
+    # Ejecutar la función de inicialización
+    loop.run_until_complete(setup_db())
+    print("✅ Base de datos inicializada correctamente")
+except Exception as e:
+    print(f"❌ Error al inicializar la base de datos: {str(e)}")
+    import traceback
+    print(traceback.format_exc())
+
+# Configurar montaje de archivos estáticos para Vercel
 if os.path.exists("/tmp/staticfiles"):
     main_app.mount("/static", StaticFiles(directory="/tmp/staticfiles"), name="static")
     print("✅ Archivos estáticos montados desde /tmp/staticfiles")
