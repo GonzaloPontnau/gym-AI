@@ -48,7 +48,7 @@ La aplicación está configurada para ser desplegada fácilmente en Render.
    - Windows: `venv\Scripts\activate`
    - Linux/Mac: `source venv/bin/activate`
 4. Instala las dependencias: `pip install -r requirements.txt`
-5. Crea un archivo `.env` basado en `.env-example` y añade tu clave API de Gemini
+5. Crea un archivo `.env` basado en `.env` y añade tu clave API de Gemini
 6. Ejecuta la aplicación: `uvicorn app.main:app --reload`
 
 ## Licencia

@@ -11,7 +11,7 @@ echo "SECRET_KEY generada: $SECRET_KEY"
 # Verificar si existe .env
 if [ ! -f .env ]; then
     echo "Creando archivo .env..."
-    cp .env-example .env
+    cp .env .env
     # Reemplazar la clave secreta de ejemplo por la generada
     sed -i "s/genera_una_clave_secreta_aqui/$SECRET_KEY/g" .env
     echo "Archivo .env creado. No olvides configurar tu GEMINI_API_KEY."

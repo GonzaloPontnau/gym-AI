@@ -11,7 +11,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: DATABASE_URL
-        value: sqlite:///gym_ai.db
+        value: "sqlite:///gym_ai.db"
       - key: SECRET_KEY
         sync: false
     healthCheckPath: /health
