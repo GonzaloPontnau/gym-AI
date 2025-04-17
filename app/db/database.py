@@ -39,16 +39,12 @@ if db_url_env and asyncpg_available and not FORCE_SQLITE:
 
 if use_postgres:
     # Usar Neon PostgreSQL en producción (Vercel)
-    # Asegurarse de que sslmode=require está incluido
-    if 'sslmode=' not in db_url_env:
-        if '?' in db_url_env:
-            db_url_env += "&sslmode=require"
-        else:
-            db_url_env += "?sslmode=require"
-    
+    # La URL ya debe incluir los parámetros SSL necesarios
+    # NO modificar la URL para agregar sslmode aquí, ya que causa conflictos
     DB_URL = db_url_env.replace("postgres://", "postgresql+asyncpg://")
     IS_SQLITE = False
     print("Utilizando PostgreSQL (Neon Database)")
+    print(f"URL de conexión: {DB_URL[:20]}...")  # Solo mostrar parte inicial por seguridad
 else:
     # Usar SQLite en desarrollo local
     DB_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -63,10 +59,10 @@ if IS_SQLITE:
     engine = create_async_engine(DB_URL, echo=False)
 else:
     # Para PostgreSQL, configurar opciones específicas
+    # No incluir argumentos SSL adicionales ya que están en la URL
     engine = create_async_engine(
         DB_URL,
-        echo=False,
-        connect_args={"ssl": False}  # Desactivar SSL para desarrollo o ajustar según necesidad
+        echo=False
     )
 
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
