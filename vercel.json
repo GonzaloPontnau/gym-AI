@@ -39,13 +39,16 @@
       "dest": "/static/favicon.ico"
     },
     {
-      "src": "/ws/(.*)",
+      "handle": "filesystem"
+    },
+    {
+      "src": "/ws/chat/(.*)",
       "dest": "app/vercel_app.py",
+      "check": true,
       "headers": {
         "Connection": "upgrade",
         "Upgrade": "websocket"
-      },
-      "continue": true
+      }
     },
     {
       "src": "/api/(.*)",
