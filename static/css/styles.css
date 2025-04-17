@@ -235,8 +235,14 @@ body {
     border-top: 1px solid #444;
 }
 
-.chat-input-container textarea::placeholder {
-    color: #aaaaaa; /* Color más claro para el placeholder */
+.chat-input-container textarea::placeholder,
+.chat-input-container input::placeholder {
+    color: #aaaaaa !important; /* Color más claro para el placeholder */
+}
+
+/* Asegurar que el input de chat tenga texto visible */
+.chat-input-container input {
+    color: #ffffff !important;
 }
 
 .message {
@@ -287,7 +293,7 @@ body {
 }
 
 .day-card .table {
-    color: #e0e0e0;
+    color: #ffffff !important; /* Cambiado a blanco para mayor visibilidad */
     background-color: #2c2c2c !important; /* Color de fondo igual al de la web con !important */
 }
 
@@ -411,7 +417,7 @@ body {
 }
 
 .table {
-    color: #e0e0e0 !important;
+    color: #ffffff !important; /* Cambiado a blanco para mayor visibilidad */
     background-color: #2c2c2c !important;
     border-color: #444 !important;
 }
