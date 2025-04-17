@@ -3,8 +3,8 @@ services:
     name: gymai
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt && pip install gunicorn
-    startCommand: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app --limit-request-line 8190 --limit-request-fields 100
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
@@ -15,4 +15,4 @@ services:
       - key: SECRET_KEY
         sync: false
     healthCheckPath: /health
-    autoDeploy: true 
+    autoDeploy: true

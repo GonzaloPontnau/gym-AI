@@ -1,22 +1,33 @@
 # Consideraciones de Seguridad para GymAI
 
-## Vulnerabilidades Conocidas y Mitigaciones
+## Vulnerabilidades Resueltas
 
 ### python-jose (Crítica y Moderada)
 - **Vulnerabilidades**: 
   - Confusión de algoritmo con claves OpenSSH ECDSA (Crítica)
   - DoS mediante contenido JWE comprimido (Moderada)
 - **Mitigación**: 
-  - Desactivar la verificación de claves ECDSA no confiables
-  - Considerar migrar a PyJWT que tiene mejor mantenimiento
-  - Limitar el tamaño de los tokens JWE procesados
+  - Actualizado a la versión 3.4.0 que resuelve estas vulnerabilidades
+  - Se mantienen medidas adicionales: limitar el tamaño de tokens JWE procesados
+
+### Gunicorn (Alta)
+- **Vulnerabilidades**:
+  - Contrabando de solicitudes HTTP (Request Smuggling)
+  - Bypass de restricciones de endpoint
+- **Mitigación**:
+  - Actualizado a la versión 23.0.0 que soluciona estas vulnerabilidades
 
 ### Pillow (Alta)
 - **Vulnerabilidad**: Desbordamiento de búfer (CVE-2024-23334)
 - **Mitigación**:
-  - Procesar solo imágenes de fuentes confiables
-  - Implementar validación adicional de imágenes antes del procesamiento
-  - Actualizar a la siguiente versión cuando esté disponible
+  - Actualizado a la versión 10.3.0 que corrige el problema
+  - Se mantienen medidas adicionales: validación de imágenes antes del procesamiento
+
+### python-multipart (Alta)
+- **Vulnerabilidad**: DoS mediante boundary malformado en multipart/form-data
+- **Mitigación**:
+  - Actualizado a la versión 0.0.18 que corrige este problema
+  - Se mantienen limitaciones de tamaño para cargas de archivos
 
 ### Jinja2 (Moderada)
 - **Vulnerabilidades**: Múltiples vectores de escape de sandbox
@@ -26,13 +37,6 @@
   - No pasar entrada de usuario como claves al filtro `xmlattr`
   - Aplicar validación estricta a toda entrada de usuario
   - Considerar usar SandboxedEnvironment con restricciones adicionales
-
-### python-multipart (Alta)
-- **Vulnerabilidad**: DoS mediante boundary malformado en multipart/form-data
-- **Mitigación**:
-  - Actualizado a la versión 0.0.9 que corrige este problema
-  - Implementar limitación de tamaño para cargas de archivos
-  - Considerar utilizar un proxy inverso con protección DoS
 
 ## Mejores Prácticas de Seguridad para la Aplicación
 
@@ -70,3 +74,11 @@ Actualización de dependencias:
 pip install pip-tools
 pip-compile --upgrade
 ```
+
+## Historial de Actualizaciones de Seguridad
+
+- **2024-07-XX**: Actualizadas las siguientes dependencias para resolver vulnerabilidades:
+  - python-jose: 3.3.0 → 3.4.0 (confusión de algoritmo con claves OpenSSH ECDSA)
+  - gunicorn: 21.2.0 → 23.0.0 (contrabando de solicitudes HTTP)
+  - Pillow: 10.2.0 → 10.3.0 (desbordamiento de búfer)
+  - python-multipart: 0.0.9 → 0.0.18 (DoS via boundary malformado)

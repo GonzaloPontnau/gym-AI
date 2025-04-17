@@ -53,16 +53,62 @@ class GeminiImageAnalyzer:
             return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada porque no se ha configurado la API de Gemini."
         
         try:
+            # Mejorar la validación de imágenes para mitigar vulnerabilidades
+            image = None
+            
             # Convertir datos de imagen si es necesario
             if isinstance(image_data, str) and image_data.startswith('data:image'):
+                # Definir un límite máximo para tamaño de imagen (10MB)
+                MAX_IMAGE_SIZE = 10 * 1024 * 1024
+                
                 # Extraer datos base64
-                image_data = image_data.split(',')[1]
-                image_bytes = base64.b64decode(image_data)
-                image = Image.open(BytesIO(image_bytes))
+                try:
+                    image_data = image_data.split(',')[1]
+                    image_bytes = base64.b64decode(image_data)
+                    
+                    # Verificar tamaño
+                    if len(image_bytes) > MAX_IMAGE_SIZE:
+                        return "La imagen es demasiado grande. Por favor, utiliza una imagen más pequeña (max. 10MB)."
+                    
+                    # Validar que sea una imagen real antes de procesarla
+                    image = Image.open(BytesIO(image_bytes))
+                    image.verify()  # Verificar que es una imagen válida
+                    
+                    # Reabrir después de verify() ya que verify cierra el archivo
+                    image = Image.open(BytesIO(image_bytes))
+                except Exception as e:
+                    print(f"Error al validar imagen: {str(e)}")
+                    return "No se pudo procesar la imagen. El formato no es válido o está corrupta."
+                    
             elif isinstance(image_data, bytes):
-                image = Image.open(BytesIO(image_data))
+                # Verificar tamaño
+                MAX_IMAGE_SIZE = 10 * 1024 * 1024
+                if len(image_data) > MAX_IMAGE_SIZE:
+                    return "La imagen es demasiado grande. Por favor, utiliza una imagen más pequeña (max. 10MB)."
+                
+                try:
+                    # Validar que sea una imagen real
+                    image = Image.open(BytesIO(image_data))
+                    image.verify()
+                    # Reabrir después de verify()
+                    image = Image.open(BytesIO(image_data))
+                except Exception as e:
+                    print(f"Error al validar imagen: {str(e)}")
+                    return "No se pudo procesar la imagen. El formato no es válido o está corrupta."
             else:
-                image = Image.open(BytesIO(image_data))
+                try:
+                    # Intentar abrir como flujo de bytes
+                    image = Image.open(BytesIO(image_data))
+                    image.verify()
+                    # Reabrir después de verify()
+                    image = Image.open(BytesIO(image_data))
+                except Exception as e:
+                    print(f"Error al validar imagen: {str(e)}")
+                    return "Formato de imagen no compatible. Por favor, intenta con otro formato."
+            
+            # Asegurar que tenemos una imagen válida antes de continuar
+            if not image:
+                return "No se pudo procesar la imagen. Por favor, intenta con otro formato."
             
             # Construir el prompt según si tenemos el nombre del ejercicio o no
             if exercise_name:
