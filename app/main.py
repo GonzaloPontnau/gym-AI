@@ -1,8 +1,8 @@
 import os
 import asyncio
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Form
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Form, status
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -20,8 +20,7 @@ except RuntimeError:
     print(f"Creado nuevo bucle de eventos en main: {loop}")
 
 # Importar servicios y módulos
-from app.services.routine_service import RoutineGenerator
-from app.services.gemini_service import GeminiRoutineGenerator
+from app.services.gemini_service import GeminiRoutineGenerator, GEMINI_CONFIGURED
 from app.services.image_analysis_service import GeminiImageAnalyzer
 from app.db.database import init_db, save_routine, get_routine, save_chat_message, get_chat_history, get_user_routines, delete_routine_from_db
 from app.websocket.manager import ConnectionManager
@@ -48,8 +47,8 @@ if os.environ.get("VERCEL_ENV") is None:
     app.mount("/static", StaticFiles(directory="static"), name="static")
     print("✅ Archivos estáticos montados desde directorio 'static' en /static")
 
-# Determinar qué generador de rutinas usar
-routine_generator = GeminiRoutineGenerator() if os.getenv("GEMINI_API_KEY") else RoutineGenerator()
+# Inicializar el generador de rutinas con Gemini
+routine_generator = GeminiRoutineGenerator()
 # Inicializar el analizador de imágenes
 image_analyzer = GeminiImageAnalyzer()
 
@@ -94,28 +93,29 @@ async def list_routines(request: Request, user_id: int = 1):
 async def create_routine(request: Request):
     """Endpoint para crear una rutina inicial con manejo de errores mejorado"""
     try:
+        # Verificar si Gemini está configurado
+        if not GEMINI_CONFIGURED:
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={"error": "El servicio de IA no está disponible. La API de Gemini no está configurada."}
+            )
+            
         data = await request.json()
         print(f"Datos recibidos para crear rutina: {data}")
         routine_request = RoutineRequest(
             goals=data.get("goals", ""),
             equipment=data.get("equipment", ""),
             days=data.get("days", 3),
+            experience_level=data.get("experience_level", ""),
+            available_equipment=data.get("available_equipment", ""),
+            time_per_session=data.get("time_per_session", ""),
+            health_conditions=data.get("health_conditions", ""),
             user_id=data.get("user_id", 1)
         )
-
-        # Detectar entorno Vercel
-        is_vercel = os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV") or os.environ.get("VERCEL_REGION")
         
         try:
-            # Intentar método asíncrono normal primero
-            if not os.getenv("GEMINI_API_KEY"):
-                print("ADVERTENCIA: GEMINI_API_KEY no configurada, usando generador de respaldo")
-                backup_generator = RoutineGenerator()
-                routine = await backup_generator.create_initial_routine(routine_request)
-            else:
-                routine = await routine_generator.create_initial_routine(routine_request)
-            
-            # Si llegamos aquí, generar la rutina funcionó
+            # Generar rutina con Gemini
+            routine = await routine_generator.create_initial_routine(routine_request)
             print(f"Rutina generada con éxito: {routine.routine_name}")
             
             # Intentar guardar en la base de datos
@@ -123,17 +123,11 @@ async def create_routine(request: Request):
                 routine_id = await save_routine(routine, user_id=routine_request.user_id)
                 print(f"Rutina guardada con ID: {routine_id}")
             except Exception as db_error:
-                print(f"Error al guardar rutina en base de datos async: {str(db_error)}")
-                
-                # Intentar el método de respaldo síncrono (sqlite_helper)
-                try:
-                    from app.sqlite_helper import save_routine_sync
-                    routine_dict = routine.model_dump()
-                    routine_id = save_routine_sync(routine_dict, user_id=routine_request.user_id)
-                    print(f"Rutina guardada con método de respaldo, ID: {routine_id}")
-                except Exception as fallback_error:
-                    print(f"Error también en el método de respaldo: {str(fallback_error)}")
-                    return {"error": "No se pudo guardar la rutina en la base de datos"}
+                print(f"Error al guardar rutina en base de datos: {str(db_error)}")
+                return JSONResponse(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    content={"error": "No se pudo guardar la rutina en la base de datos"}
+                )
             
             # Intentar guardar mensajes de chat
             try:
@@ -145,32 +139,33 @@ async def create_routine(request: Request):
                 
             return {"routine_id": routine_id, "routine": routine.model_dump()}
             
+        except ValueError as value_error:
+            print(f"Error al crear rutina: {str(value_error)}")
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"error": str(value_error)}
+            )
+            
         except Exception as core_error:
             print(f"Error crítico al crear rutina: {str(core_error)}")
             import traceback
             error_details = traceback.format_exc()
             print(f"Detalles del error: {error_details}")
             
-            # Intentar un último recurso - rutina estática
-            backup_generator = RoutineGenerator()
-            routine = await backup_generator.create_initial_routine(routine_request)
-            
-            from app.sqlite_helper import save_routine_sync
-            routine_dict = routine.model_dump()
-            routine_id = save_routine_sync(routine_dict, user_id=routine_request.user_id)
-            
-            return {
-                "routine_id": routine_id, 
-                "routine": routine.model_dump(),
-                "warning": "Rutina generada en modo de respaldo debido a un error"
-            }
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": "Error interno al generar la rutina"}
+            )
             
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
         print(f"Error general al crear rutina: {str(e)}")
         print(f"Detalles del error: {error_details}")
-        return {"error": str(e), "details": "Hubo un problema al crear la rutina"}
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": str(e), "details": "Hubo un problema al crear la rutina"}
+        )
 
 @app.get("/dashboard/{routine_id}", response_class=HTMLResponse)
 async def dashboard(request: Request, routine_id: int):

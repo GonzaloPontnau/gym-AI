@@ -95,79 +95,81 @@ async def root(request: Request):
 # API para crear rutina - RUTA CRÍTICA
 @app.post("/api/create_routine")
 async def create_routine_api(request: Request):
-    """Endpoint para crear una rutina inicial - VERSIÓN SIMPLIFICADA"""
+    """Endpoint para crear una rutina inicial usando exclusivamente Gemini"""
     try:
         # Obtener datos del cuerpo de la solicitud
         data = await request.json()
         logger.info(f"Datos recibidos: {data}")
         
         # Extraer parámetros básicos
-        goals = data.get("goals", "Rutina básica")
+        goals = data.get("goals", "")
         days = data.get("days", 3)
         user_id = data.get("user_id", 1)
         
-        # Crear una rutina con datos básicos de usuario
-        routine = {
-            "routine_name": f"Rutina {goals[:20]}... ({days} días)",
-            "user_id": user_id,
-            "days": []
-        }
-        
-        # Añadir días según lo solicitado (máximo 7)
-        day_names = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-        focus_options = ["Pecho/Tríceps", "Espalda/Bíceps", "Piernas", "Hombros/Abdomen", "Cuerpo completo"]
-        exercise_options = [
-            {"name": "Flexiones", "equipment": "Peso corporal"},
-            {"name": "Sentadillas", "equipment": "Peso corporal"},
-            {"name": "Plancha", "equipment": "Peso corporal"},
-            {"name": "Zancadas", "equipment": "Peso corporal"},
-            {"name": "Dominadas", "equipment": "Barra"}
-        ]
-        
-        # Crear días de rutina
-        for i in range(min(days, 7)):
-            exercises = []
-            for _ in range(3):  # 3 ejercicios por día
-                exercise = random.choice(exercise_options)
-                exercises.append({
-                    "name": exercise["name"],
-                    "sets": 3,
-                    "reps": "10-12",
-                    "rest": "60 seg",
-                    "equipment": exercise["equipment"]
-                })
-                
-            routine["days"].append({
-                "day_name": day_names[i],
-                "focus": random.choice(focus_options),
-                "exercises": exercises
-            })
-        
-        # Guardar en SQLite
+        # Verificar que Gemini esté disponible
+        if not has_gemini or not routine_generator:
+            return JSONResponse(
+                status_code=503,
+                content={"error": "El servicio de generación de rutinas (Gemini) no está disponible. Verifica que GEMINI_API_KEY esté configurada."}
+            )
+            
+        # Crear la solicitud para el modelo usando Pydantic
         try:
-            routine_id = save_routine_sync(routine, user_id)
-            logger.info(f"✅ Rutina guardada en SQLite con ID: {routine_id}")
+            from app.models.models import RoutineRequest
+            routine_request = RoutineRequest(
+                user_id=user_id,
+                days=days,
+                goals=goals,
+                experience_level=data.get("experience_level", "intermedio"),
+                available_equipment=data.get("available_equipment", "básico"),
+                time_per_session=data.get("time_per_session", "45 minutos"),
+                health_conditions=data.get("health_conditions", "")
+            )
+        except Exception as model_err:
+            logger.error(f"Error al crear el modelo de solicitud: {model_err}")
+            return JSONResponse(
+                status_code=400,
+                content={"error": f"Error en los datos de entrada: {str(model_err)}"}
+            )
+        
+        # Generar la rutina usando Gemini
+        try:
+            routine = await routine_generator.create_initial_routine(routine_request)
+            
+            # Convertir el modelo Pydantic a diccionario para guardar en BD
+            routine_dict = routine.model_dump()
+            
+            # Guardar en SQLite
+            routine_id = save_routine_sync(routine_dict, user_id)
+            logger.info(f"✅ Rutina generada por Gemini guardada con ID: {routine_id}")
             
             # Guardar mensajes iniciales del chat
             try:
-                save_chat_message_sync(routine_id, "user", f"Quiero una rutina para {goals} con {days} días a la semana.")
-                save_chat_message_sync(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
+                prompt_message = f"Quiero una rutina para {goals} con {days} días a la semana."
+                if data.get("experience_level"):
+                    prompt_message += f" Mi nivel es {data.get('experience_level')}."
+                if data.get("available_equipment"):
+                    prompt_message += f" Tengo acceso a {data.get('available_equipment')}."
+                
+                save_chat_message_sync(routine_id, "user", prompt_message)
+                save_chat_message_sync(routine_id, "assistant", "¡He creado una rutina personalizada para ti basada en tus necesidades! Puedes verla en el panel principal y hacerme preguntas específicas sobre ella.")
                 logger.info(f"✅ Mensajes de chat iniciales guardados")
             except Exception as chat_err:
                 logger.error(f"❌ Error al guardar mensajes de chat: {chat_err}")
-                
+            
             # Devolver respuesta
             return JSONResponse({
                 "routine_id": routine_id,
-                "routine": routine
+                "routine": routine_dict
             })
                 
-        except Exception as sqlite_err:
-            logger.error(f"❌ Error al guardar en SQLite: {sqlite_err}")
-            # Fallar explícitamente - no usar rutina demo
+        except Exception as gemini_err:
+            logger.error(f"❌ Error al generar rutina con Gemini: {gemini_err}")
+            import traceback
+            logger.error(traceback.format_exc())
             return JSONResponse(
                 status_code=500,
-                content={"error": "No se pudo guardar la rutina en la base de datos. Por favor, inténtalo de nuevo."}
+                content={"error": "Error al generar la rutina con la IA. Inténtalo de nuevo más tarde."}
             )
             
     except Exception as e:
