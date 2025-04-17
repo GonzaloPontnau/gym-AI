@@ -36,7 +36,7 @@ templates = Jinja2Templates(directory="templates")
 # Configurar archivos estáticos solo en desarrollo
 # En Vercel, esto será manejado por vercel_app.py
 if os.environ.get("VERCEL_ENV") is None:  
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/staticfiles", StaticFiles(directory="static"), name="staticfiles")
 
 # Determinar qué generador de rutinas usar
 routine_generator = GeminiRoutineGenerator() if os.getenv("GEMINI_API_KEY") else RoutineGenerator()
