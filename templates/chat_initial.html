@@ -182,20 +182,38 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(data)
         })
         .then(response => {
-            // Verificar si la respuesta está bien
+            // Verificar si la respuesta está bien (status 2xx)
             if (!response.ok) {
-                return response.json().then(errorData => {
-                    throw new Error(errorData.error || 'Error al crear la rutina');
+                // Intentar leer el cuerpo de la respuesta como texto para obtener más detalles
+                return response.text().then(text => {
+                    let errorDetail = `Error ${response.status}: ${response.statusText}`;
+                    try {
+                        // Intentar parsear como JSON por si el backend envió un error estructurado
+                        const errorJson = JSON.parse(text);
+                        errorDetail = errorJson.error || errorJson.detail || errorDetail;
+                    } catch (e) {
+                        // Si no es JSON, usar los primeros 100 caracteres del texto como detalle
+                        errorDetail += ` - ${text.substring(0, 100)}...`;
+                    }
+                    // Lanzar un error con los detalles obtenidos
+                    throw new Error(errorDetail);
                 });
             }
+            // Si la respuesta es OK, parsear como JSON
             return response.json();
         })
         .then(data => {
+            // Verificar si el JSON parseado contiene un error (aunque el status fuera 200)
             if (data.error) {
                 throw new Error(data.error);
             }
-            // Redireccionar al dashboard con la nueva rutina
-            window.location.href = '/dashboard/' + data.routine_id;
+            // Si todo está bien y tenemos un routine_id, redireccionar
+            if (data.routine_id) {
+                window.location.href = '/dashboard/' + data.routine_id;
+            } else {
+                // Si no hay routine_id, lanzar error
+                throw new Error('Respuesta inválida del servidor: no se recibió ID de rutina.');
+            }
         })
         .catch(error => {
             console.error('Error:', error);
