@@ -6,12 +6,10 @@ from urllib.parse import urlparse, urlunparse, parse_qs, urlencode # Importar ut
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-# Eliminar Table de la importación
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData 
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, delete
 
-# Eliminar ChatMessage de la importación
 from app.models.models import Routine
 
 # Verificar disponibilidad de asyncpg
@@ -74,7 +72,9 @@ else:
     # No incluir argumentos SSL adicionales ya que están en la URL
     engine = create_async_engine(
         DB_URL,
-        echo=False
+        echo=False,
+        pool_pre_ping=True,  # Verificar conexión antes de usarla
+        pool_recycle=300     # Reciclar conexiones cada 5 minutos
     )
 
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -102,11 +102,87 @@ class ChatMessageModel(Base):
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, nullable=False)
 
+async def table_exists(table_name):
+    """Verifica si una tabla existe en la base de datos"""
+    try:
+        async with engine.begin() as conn:
+            insp = await conn.run_sync(lambda sync_conn: inspect(sync_conn))
+            return await conn.run_sync(lambda sync_conn: insp.has_table(table_name))
+    except Exception as e:
+        print(f"Error al verificar si la tabla {table_name} existe: {str(e)}")
+        return False
+
 async def init_db():
     """Inicializa la base de datos con las tablas necesarias"""
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        print("🔍 Verificando si las tablas ya existen...")
+        routines_exists = await table_exists("routines")
+        chat_messages_exists = await table_exists("chat_messages")
+        
+        if routines_exists and chat_messages_exists:
+            print("✅ Las tablas ya existen, omitiendo creación")
+            return
+        
+        print("🔧 Creando tablas en la base de datos...")
+        async with engine.begin() as conn:
+            # Para PostgreSQL, establecer timeout más largo
+            if not IS_SQLITE:
+                await conn.execute("SET statement_timeout = 30000;")  # 30 segundos
+                
+            # Crear tablas explícitamente
+            if not routines_exists:
+                print("Creando tabla 'routines'...")
+                await conn.run_sync(lambda sync_conn: RoutineModel.__table__.create(sync_conn, checkfirst=True))
+                
+            if not chat_messages_exists:
+                print("Creando tabla 'chat_messages'...")
+                await conn.run_sync(lambda sync_conn: ChatMessageModel.__table__.create(sync_conn, checkfirst=True))
+                
+        print("✅ Tablas creadas correctamente")
+    except Exception as e:
+        print(f"❌ Error al inicializar la base de datos: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        
+        # Si estamos usando PostgreSQL, intentar un enfoque alternativo si algo falla
+        if not IS_SQLITE:
+            try:
+                print("🔄 Intentando método alternativo para crear tablas...")
+                async with engine.connect() as conn:
+                    # Crear tablas con SQL directo si es necesario
+                    if not await table_exists("routines"):
+                        print("Creando tabla 'routines' con SQL directo...")
+                        await conn.execute("""
+                        CREATE TABLE IF NOT EXISTS routines (
+                            id SERIAL PRIMARY KEY,
+                            user_id INTEGER NOT NULL,
+                            routine_name VARCHAR NOT NULL,
+                            routine_data TEXT NOT NULL,
+                            created_at TIMESTAMP NOT NULL,
+                            updated_at TIMESTAMP NOT NULL
+                        )
+                        """)
+                    
+                    if not await table_exists("chat_messages"):
+                        print("Creando tabla 'chat_messages' con SQL directo...")
+                        await conn.execute("""
+                        CREATE TABLE IF NOT EXISTS chat_messages (
+                            id SERIAL PRIMARY KEY,
+                            routine_id INTEGER REFERENCES routines(id) ON DELETE CASCADE,
+                            sender VARCHAR NOT NULL,
+                            content TEXT NOT NULL,
+                            timestamp TIMESTAMP NOT NULL
+                        )
+                        """)
+                    
+                    await conn.commit()
+                print("✅ Tablas creadas con método alternativo")
+            except Exception as alt_e:
+                print(f"❌ También falló el método alternativo: {str(alt_e)}")
+                print(traceback.format_exc())
+                raise
 
+# Resto del código sin cambios
 async def save_routine(routine: Routine, user_id: int = None, routine_id: int = None) -> int:
     """Guarda una rutina en la base de datos con mejor manejo de errores."""
     now = datetime.now()
@@ -163,7 +239,7 @@ async def get_routine(routine_id: int) -> Optional[Routine]:
         stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
         result = await session.execute(stmt)
         routine_model = result.scalar_one_or_none()
-        if routine_model:
+        if (routine_model):
             routine_dict = json.loads(routine_model.routine_data)
             routine_dict["id"] = routine_id
             return Routine.model_validate(routine_dict)

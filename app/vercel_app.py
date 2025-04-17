@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 import os
 import sys
 import importlib.metadata
+import asyncio
 
 # Imprimir información de paquetes instalados para depuración
 print("=== Paquetes instalados ===")
@@ -16,6 +17,29 @@ print("=========================")
 
 # Asegurar que el directorio raíz del proyecto esté en el path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Inicializar la base de datos explícitamente para entorno Vercel
+print("Inicializando base de datos para Vercel...")
+try:
+    from app.db.database import init_db
+    
+    # Ejecutar la inicialización de la base de datos
+    # Nota: asyncio.run() no funciona en algunos entornos de Vercel, usamos un enfoque alternativo
+    async def setup_db():
+        print("⏳ Creando tablas en la base de datos...")
+        await init_db()
+        print("✅ Inicialización de base de datos completada")
+    
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(setup_db())
+    loop.close()
+    
+    print("✅ Base de datos inicializada correctamente")
+except Exception as e:
+    print(f"❌ Error al inicializar la base de datos: {str(e)}")
+    import traceback
+    print(traceback.format_exc())
 
 try:
     # Importar la app principal

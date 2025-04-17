@@ -53,7 +53,15 @@ ws_routes = WebSocketRoutes(manager, routine_generator, image_analyzer)
 @app.on_event("startup")
 async def startup_event():
     """Inicializar la base de datos"""
-    await init_db()
+    print("⏳ Inicializando base de datos (evento startup)...")
+    try:
+        await init_db()
+        print("✅ Base de datos inicializada correctamente")
+    except Exception as e:
+        print(f"❌ Error al inicializar la base de datos: {str(e)}")
+        print("⚠️ La aplicación seguirá ejecutándose, pero podrían ocurrir errores")
+        import traceback
+        print(traceback.format_exc())
 
 # Rutas de la aplicación
 @app.get("/", response_class=HTMLResponse)
