@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
             user_id: 1
         };
         
-        // Enviar solicitud para crear rutina
+        // Enviar solicitud para crear rutina con manejo mejorado de errores
         fetch('/api/create_routine', {
             method: 'POST',
             headers: {
@@ -182,34 +182,44 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(data)
         })
         .then(response => {
-            // Verificar si la respuesta está bien (status 2xx)
+            console.log("Respuesta recibida:", response.status, response.statusText);
+            
+            // Verificar si la respuesta está bien
             if (!response.ok) {
-                // Intentar leer el cuerpo de la respuesta como texto para obtener más detalles
                 return response.text().then(text => {
                     let errorDetail = `Error ${response.status}: ${response.statusText}`;
                     try {
-                        // Intentar parsear como JSON por si el backend envió un error estructurado
                         const errorJson = JSON.parse(text);
                         errorDetail = errorJson.error || errorJson.detail || errorDetail;
                     } catch (e) {
-                        // Si no es JSON, usar los primeros 100 caracteres del texto como detalle
                         errorDetail += ` - ${text.substring(0, 100)}...`;
                     }
-                    // Lanzar un error con los detalles obtenidos
                     throw new Error(errorDetail);
                 });
             }
+            
             // Si la respuesta es OK, parsear como JSON
             return response.json();
         })
         .then(data => {
-            // Verificar si el JSON parseado contiene un error (aunque el status fuera 200)
+            console.log("Datos recibidos:", data);
+            
+            // Si hay un error en los datos, mostrar el error
             if (data.error) {
                 throw new Error(data.error);
             }
+            
+            // Si hay una advertencia, mostrarla pero continuar
+            if (data.warning) {
+                console.warn("Advertencia:", data.warning);
+            }
+            
             // Si todo está bien y tenemos un routine_id, redireccionar
             if (data.routine_id) {
-                window.location.href = '/dashboard/' + data.routine_id;
+                // Pequeña pausa para que Vercel pueda procesar la creación
+                setTimeout(() => {
+                    window.location.href = '/dashboard/' + data.routine_id;
+                }, 1000);
             } else {
                 // Si no hay routine_id, lanzar error
                 throw new Error('Respuesta inválida del servidor: no se recibió ID de rutina.');
@@ -224,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
             createButton.disabled = false;
             createButton.innerHTML = 'Crear mi rutina';
             
-            showError('Error: ' + error.message || 'Ha ocurrido un error inesperado. Por favor, intenta de nuevo.');
+            showError('Error: ' + (error.message || 'Ha ocurrido un error inesperado. Por favor, intenta de nuevo.'));
         });
     });
 });

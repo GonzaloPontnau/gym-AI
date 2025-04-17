@@ -39,6 +39,10 @@
       "dest": "/static/favicon.ico"
     },
     {
+      "src": "/api/(.*)",
+      "dest": "app/vercel_app.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "app/vercel_app.py"
     }
@@ -46,6 +50,7 @@
   "env": {
     "PYTHONPATH": ".",
     "DISABLE_COLLECTSTATIC": "1",
-    "SIMPLE_MODE": "true"
+    "SIMPLE_MODE": "true",
+    "DEBUG": "true"
   }
 }
