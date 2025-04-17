@@ -251,9 +251,6 @@
             // Verificar si estamos en entorno de producción (Vercel)
             const isVercel = window.location.hostname.includes('vercel.app');
             
-            // Mostrar estado de conexión en la UI
-            addMessage(`Intentando conectar al servidor en ${wsUrl}...`, 'system');
-            
             // Limpiar cualquier conexión anterior
             if (ws) {
                 try {
@@ -276,7 +273,8 @@
                         if (isVercel) {
                             enableHttpFallbackMode();
                         } else {
-                            addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
+                            // Ya no mostramos mensaje de timeout
+                            // addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
                         }
                     }
                 }, 5000); // 5 segundos de timeout
@@ -285,7 +283,8 @@
                 ws.onopen = () => {
                     clearTimeout(connectionTimeout);
                     console.log('Conexión WebSocket establecida');
-                    addMessage('Conexión establecida correctamente.', 'system');
+                    // Ya no mostramos mensaje de conexión exitosa
+                    // addMessage('Conexión establecida correctamente.', 'system');
                     sendButton.disabled = false;
                     reconnectAttempts = 0; // Resetear contador de intentos
                     
@@ -459,12 +458,9 @@
             } else if (sender === 'assistant') {
                 messageDiv.classList.add('assistant-message');
             } else if (sender === 'system') {
-                messageDiv.classList.add('system-message');
-                // Estilo diferente para mensajes del sistema
-                messageDiv.style.fontSize = '0.85rem';
-                messageDiv.style.opacity = '0.8';
-                messageDiv.style.backgroundColor = '#f8f9fa';
-                messageDiv.style.border = '1px dashed #dee2e6';
+                // No agregamos mensajes del sistema al chat, sólo log en consola
+                console.log("System message:", content);
+                return; // Salimos sin agregar el mensaje
             }
             
             messageDiv.textContent = content;
