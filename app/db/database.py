@@ -60,16 +60,22 @@ else:
     # Si tenemos una URL sqlite en variable de entorno, usarla
     if db_url_env and db_url_env.startswith("sqlite:"):
         print("Utilizando SQLite desde DATABASE_URL")
-        # Asegurar que la URL tenga el formato correcto (sqlite:///path)
-        if "sqlite:///" not in db_url_env and "sqlite://" in db_url_env:
-            # Corregir la URL si tiene formato incorrecto
-            parts = db_url_env.split("sqlite:/")
-            if len(parts) > 1:
-                DB_URL = f"sqlite:////{parts[1]}" if parts[1].startswith("/") else f"sqlite:///{parts[1]}"
-                print(f"URL de SQLite corregida: {DB_URL}")
+        
+        # Asegurar que la URL tenga el formato correcto para SQLite asíncrono
+        if "sqlite+aiosqlite://" not in db_url_env:
+            # Primero obtenemos la parte del path
+            if "sqlite:///" in db_url_env:
+                path = db_url_env.split("sqlite:///")[1]
+            elif "sqlite://" in db_url_env:
+                path = db_url_env.split("sqlite://")[1]
+                if not path.startswith("/"):
+                    path = "/" + path
             else:
-                DB_URL = "sqlite:///gym_ai.db"
-                print(f"URL de SQLite no válida, usando predeterminada: {DB_URL}")
+                path = "gym_ai.db"  # Valor por defecto
+            
+            # Construir la URL con el driver aiosqlite
+            DB_URL = f"sqlite+aiosqlite:///{path}"
+            print(f"URL de SQLite ajustada para usar driver asíncrono: {DB_URL}")
         else:
             DB_URL = db_url_env
     else:
@@ -81,6 +87,18 @@ else:
         print(f"Utilizando SQLite local para desarrollo: {DB_URL}")
     
     IS_SQLITE = True
+
+# Asegurar que todas las URLs de SQLite usen aiosqlite
+if IS_SQLITE and "sqlite+aiosqlite://" not in DB_URL:
+    if "sqlite:///" in DB_URL:
+        path = DB_URL.split("sqlite:///")[1]
+        DB_URL = f"sqlite+aiosqlite:///{path}"
+    elif "sqlite://" in DB_URL:
+        path = DB_URL.split("sqlite://")[1]
+        if not path.startswith("/"):
+            path = "/" + path
+        DB_URL = f"sqlite+aiosqlite://{path}"
+    print(f"URL de SQLite final ajustada: {DB_URL}")
 
 # Configuración del engine según el tipo de base de datos
 if IS_SQLITE:
