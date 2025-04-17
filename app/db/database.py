@@ -100,40 +100,54 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 async def save_routine(routine: Routine, user_id: int = None, routine_id: int = None) -> int:
-    """Guarda una rutina en la base de datos.
-    Si routine_id es proporcionado, actualiza la rutina existente,
-    de lo contrario, crea una nueva rutina.
-    """
+    """Guarda una rutina en la base de datos con mejor manejo de errores."""
     now = datetime.now()
     routine_data = routine.model_dump_json()
     
-    async with async_session() as session:
-        if routine_id:
-            # Actualizar rutina existente
-            stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
-            result = await session.execute(stmt)
-            routine_model = result.scalar_one_or_none()
-            if routine_model:
-                routine_model.routine_name = routine.routine_name
-                routine_model.routine_data = routine_data
-                routine_model.updated_at = now
-                await session.commit()
-                return routine_id
+    try:
+        async with async_session() as session:
+            if routine_id:
+                # Actualizar rutina existente
+                stmt = select(RoutineModel).where(RoutineModel.id == routine_id)
+                result = await session.execute(stmt)
+                routine_model = result.scalar_one_or_none()
+                if routine_model:
+                    routine_model.routine_name = routine.routine_name
+                    routine_model.routine_data = routine_data
+                    routine_model.updated_at = now
+                    await session.commit()
+                    return routine_id
+                else:
+                    raise ValueError(f"No se encontró rutina con ID {routine_id}")
             else:
-                raise ValueError(f"No se encontró rutina con ID {routine_id}")
-        else:
-            # Crear nueva rutina
-            user_id = user_id or routine.user_id
-            routine_model = RoutineModel(
-                user_id=user_id,
-                routine_name=routine.routine_name,
-                routine_data=routine_data,
-                created_at=now,
-                updated_at=now
-            )
-            session.add(routine_model)
-            await session.commit()
-            return routine_model.id
+                # Crear nueva rutina
+                user_id = user_id or routine.user_id
+                routine_model = RoutineModel(
+                    user_id=user_id,
+                    routine_name=routine.routine_name,
+                    routine_data=routine_data,
+                    created_at=now,
+                    updated_at=now
+                )
+                session.add(routine_model)
+                await session.commit()
+                return routine_model.id
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error al guardar rutina en la base de datos: {str(e)}")
+        print(f"Detalles del error: {error_trace}")
+        
+        # Verificar si es un error de conexión
+        if "connection" in str(e).lower() or "timeout" in str(e).lower():
+            raise Exception(f"Error de conexión a la base de datos: {str(e)}")
+        
+        # Verificar si podría ser un error de schema
+        if "column" in str(e).lower() or "table" in str(e).lower():
+            raise Exception(f"Error de estructura en la base de datos: {str(e)}")
+        
+        # Error general si no se identifica específicamente
+        raise Exception(f"Error al guardar rutina: {str(e)}")
 
 async def get_routine(routine_id: int) -> Optional[Routine]:
     """Obtiene una rutina por su ID"""

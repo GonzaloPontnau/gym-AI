@@ -72,24 +72,63 @@ async def list_routines(request: Request, user_id: int = 1):
 
 @app.post("/api/create_routine")
 async def create_routine(request: Request):
-    """Endpoint para crear una rutina inicial"""
-    data = await request.json()
+    """Endpoint para crear una rutina inicial con manejo de errores mejorado"""
+    try:
+        # Obtener y registrar los datos recibidos para diagnóstico
+        data = await request.json()
+        print(f"Datos recibidos para crear rutina: {data}")
+        
+        routine_request = RoutineRequest(
+            goals=data.get("goals", ""),
+            equipment=data.get("equipment", ""),
+            days=data.get("days", 3),
+            user_id=data.get("user_id", 1)
+        )
+        
+        # Verificar si Gemini API está configurada
+        if not os.getenv("GEMINI_API_KEY"):
+            print("ADVERTENCIA: GEMINI_API_KEY no configurada, usando generador de respaldo")
+            # Usar el generador de respaldo directamente
+            backup_generator = RoutineGenerator()
+            routine = await backup_generator.create_initial_routine(routine_request)
+        else:
+            # Intentar con Gemini primero
+            try:
+                routine = await routine_generator.create_initial_routine(routine_request)
+            except Exception as gemini_error:
+                print(f"Error con Gemini API: {str(gemini_error)}")
+                # Fallback a generador básico si falla Gemini
+                backup_generator = RoutineGenerator()
+                routine = await backup_generator.create_initial_routine(routine_request)
+        
+        print(f"Rutina generada con éxito: {routine.routine_name}")
+        
+        # Guardar la rutina en la base de datos
+        try:
+            routine_id = await save_routine(routine, user_id=routine_request.user_id)
+            print(f"Rutina guardada con ID: {routine_id}")
+        except Exception as db_error:
+            print(f"Error al guardar rutina en base de datos: {str(db_error)}")
+            # Devolver el error específico
+            return {"error": f"Error al guardar rutina: {str(db_error)}"}
+        
+        # Guardar mensajes iniciales
+        try:
+            await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.")
+            await save_chat_message(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
+        except Exception as chat_error:
+            print(f"Error al guardar mensajes de chat: {str(chat_error)}")
+            # No es crítico, continuamos
+        
+        return {"routine_id": routine_id, "routine": routine.model_dump()}
     
-    routine_request = RoutineRequest(
-        goals=data.get("goals", ""),
-        equipment=data.get("equipment", ""),
-        days=data.get("days", 3),
-        user_id=data.get("user_id", 1)
-    )
-    
-    routine = await routine_generator.create_initial_routine(routine_request)
-    routine_id = await save_routine(routine, user_id=routine_request.user_id)
-    
-    # Guardar mensajes iniciales
-    await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.")
-    await save_chat_message(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
-    
-    return {"routine_id": routine_id, "routine": routine.model_dump()}
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error al crear rutina: {str(e)}")
+        print(f"Detalles del error: {error_details}")
+        # Devolver respuesta de error con detalles
+        return {"error": str(e), "details": "Hubo un problema al crear la rutina"}
 
 @app.get("/dashboard/{routine_id}", response_class=HTMLResponse)
 async def dashboard(request: Request, routine_id: int):

@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ocultar después de 5 segundos
         setTimeout(() => {
             errorMessage.classList.add('d-none');
-        }, 5000);
+        }, 10000); // Aumentado a 10 segundos para dar más tiempo de lectura
     }
     
     // Manejar envío del formulario
@@ -182,12 +182,18 @@ document.addEventListener('DOMContentLoaded', function() {
             body: JSON.stringify(data)
         })
         .then(response => {
+            // Verificar si la respuesta está bien
             if (!response.ok) {
-                throw new Error('Error al crear la rutina');
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Error al crear la rutina');
+                });
             }
             return response.json();
         })
         .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
             // Redireccionar al dashboard con la nueva rutina
             window.location.href = '/dashboard/' + data.routine_id;
         })
@@ -198,9 +204,9 @@ document.addEventListener('DOMContentLoaded', function() {
             formContainer.style.display = 'block';
             loadingContainer.style.display = 'none';
             createButton.disabled = false;
-            createButton.innerHTML = '<i class="bi bi-magic"></i> Crear mi rutina';
+            createButton.innerHTML = 'Crear mi rutina';
             
-            showError('Ha ocurrido un error al crear tu rutina. Por favor, intenta de nuevo.');
+            showError('Error: ' + error.message || 'Ha ocurrido un error inesperado. Por favor, intenta de nuevo.');
         });
     });
 });

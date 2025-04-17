@@ -1,18 +1,30 @@
 import os
 import json
 import re
-import google.generativeai as genai
+import traceback
 from dotenv import load_dotenv
 from app.models.models import Routine, RoutineRequest
 
 # Cargar variables de entorno
 load_dotenv()
 
-# Configurar la API de Gemini con la clave API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Variable para seguimiento de si Gemini está configurado
+GEMINI_CONFIGURED = False
 
-# Definir el modelo a utilizar
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Intentar configurar Gemini solo si la API key está disponible
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=GEMINI_API_KEY)
+        # Definir el modelo a utilizar
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        GEMINI_CONFIGURED = True
+        print("✅ API de Gemini configurada correctamente")
+    except Exception as e:
+        print(f"❌ Error al configurar Gemini API: {str(e)}")
+else:
+    print("⚠️ GEMINI_API_KEY no encontrada, servicio de IA limitado")
 
 class GeminiRoutineGenerator:
     """Servicio para generar rutinas de entrenamiento utilizando la API de Gemini"""
@@ -78,30 +90,52 @@ class GeminiRoutineGenerator:
                 return json.loads(json_matches[0].strip())
             
             # Si no hay bloques de código, parsear el texto completo
-            return json.loads(text.strip())
+            clean_text = text.strip()
+            return json.loads(clean_text)
             
         except Exception as e:
             print(f"Error al extraer JSON: {str(e)}")
+            print(f"Texto recibido: {text[:200]}...")  # Mostrar primeros 200 caracteres
             return {}
     
     async def create_initial_routine(self, request: RoutineRequest) -> Routine:
         """Genera una rutina inicial utilizando la API de Gemini"""
+        
+        # Verificar si Gemini está configurado
+        if not GEMINI_CONFIGURED:
+            print("Gemini no configurado, usando generador de respaldo")
+            from app.services.routine_service import RoutineGenerator
+            backup_generator = RoutineGenerator()
+            return await backup_generator.create_initial_routine(request)
+        
         prompt = self._build_initial_prompt(request)
         
         try:
+            print("Enviando solicitud a Gemini API...")
             response = model.generate_content(prompt)
+            
+            print(f"Respuesta recibida de Gemini, extrayendo JSON...")
+            print(f"Muestra de respuesta: {response.text[:200]}...")  # Primeros 200 caracteres
+            
             routine_dict = self._extract_json_from_text(response.text)
             
             if not routine_dict:
-                raise ValueError("No se pudo extraer JSON válido")
+                print("❌ No se pudo extraer JSON válido de la respuesta")
+                raise ValueError("No se pudo extraer JSON válido de la respuesta de Gemini")
                 
             routine_dict["user_id"] = request.user_id
+            
+            print(f"Validando rutina con Pydantic...")
             routine = Routine.model_validate(routine_dict)
+            print(f"✅ Rutina validada correctamente: {routine.routine_name}")
             return routine
             
         except Exception as e:
-            print(f"Error al generar rutina con Gemini: {str(e)}")
+            print(f"❌ Error al generar rutina con Gemini: {str(e)}")
+            print(traceback.format_exc())
+            
             # Usar generador de respaldo
+            print("⚠️ Fallback: Usando generador de respaldo")
             from app.services.routine_service import RoutineGenerator
             backup_generator = RoutineGenerator()
             return await backup_generator.create_initial_routine(request)
