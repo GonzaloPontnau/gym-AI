@@ -39,6 +39,15 @@
       "dest": "/static/favicon.ico"
     },
     {
+      "src": "/ws/(.*)",
+      "dest": "app/vercel_app.py",
+      "headers": {
+        "Connection": "upgrade",
+        "Upgrade": "websocket"
+      },
+      "continue": true
+    },
+    {
       "src": "/api/(.*)",
       "dest": "app/vercel_app.py"
     },

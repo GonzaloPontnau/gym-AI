@@ -298,95 +298,112 @@ async def websocket_endpoint(websocket: WebSocket, routine_id: int):
 # Manejar mensajes de texto del WebSocket
 async def handle_ws_text_message(websocket: WebSocket, routine_id: int, message: str):
     """Procesa un mensaje de texto recibido por WebSocket"""
-    # Verificar si es un comando especial (como análisis de imagen)
+    # Verificar si es un comando especial (como análisis de imagen o ping)
     try:
         import json
-        data = json.loads(message)
-        if isinstance(data, dict) and data.get("type") == "analyze_image":
-            # Procesar análisis de imagen si Gemini está disponible
-            if image_analyzer:
+        
+        # Intentar parsear como JSON primero
+        try:
+            data = json.loads(message)
+            
+            # Manejar mensajes de tipo ping (keepalive)
+            if isinstance(data, dict) and data.get("type") == "ping":
+                # Simplemente responder con un pong para mantener la conexión viva
+                await websocket.send_json({"type": "pong"})
+                return
+                
+            # Manejar análisis de imagen si es ese tipo de mensaje
+            if isinstance(data, dict) and data.get("type") == "analyze_image":
+                # Procesar análisis de imagen si Gemini está disponible
+                if image_analyzer:
+                    try:
+                        image_data = data.get("image_data", "")
+                        exercise_name = data.get("exercise_name", "")
+                        
+                        if data.get("action") == "analyze_form":
+                            analysis = await image_analyzer.analyze_exercise_image(image_data, exercise_name)
+                        else:
+                            analysis = await image_analyzer.suggest_exercise_variations(image_data)
+                        
+                        # Guardar análisis como mensaje
+                        save_chat_message_sync(routine_id, "assistant", analysis)
+                        
+                        # Enviar respuesta
+                        await ws_manager.broadcast(routine_id, {
+                            "type": "image_analysis",
+                            "analysis": analysis
+                        })
+                        return
+                    except Exception as img_err:
+                        logger.error(f"Error al analizar imagen: {img_err}")
+                        await websocket.send_json({"error": f"Error al analizar imagen: {str(img_err)}"})
+                        return
+                else:
+                    await websocket.send_json({"error": "Análisis de imágenes no disponible (Gemini no configurado)"})
+                    return
+        except json.JSONDecodeError:
+            # No es JSON, tratar como mensaje de texto normal
+            pass
+        
+        # Procesar mensaje de texto normal
+        try:
+            # Obtener la rutina actual
+            current_routine = get_routine_sync(routine_id)
+            
+            if not current_routine:
+                await websocket.send_json({"error": "Rutina no encontrada"})
+                return
+            
+            # Guardar mensaje del usuario
+            save_chat_message_sync(routine_id, "user", message)
+            
+            # Si Gemini está disponible, usar para modificar rutina
+            if routine_generator:
                 try:
-                    image_data = data.get("image_data", "")
-                    exercise_name = data.get("exercise_name", "")
+                    from app.models.models import Routine
+                    # Convertir a objeto Routine para el generador
+                    routine_obj = Routine.model_validate(current_routine)
                     
-                    if data.get("action") == "analyze_form":
-                        analysis = await image_analyzer.analyze_exercise_image(image_data, exercise_name)
-                    else:
-                        analysis = await image_analyzer.suggest_exercise_variations(image_data)
+                    # Modificar rutina
+                    modified_routine = await routine_generator.modify_routine(routine_obj, message)
+                    explanation = await routine_generator.explain_routine_changes(routine_obj, modified_routine, message)
                     
-                    # Guardar análisis como mensaje
-                    save_chat_message_sync(routine_id, "assistant", analysis)
+                    # Guardar rutina modificada
+                    routine_dict = modified_routine.model_dump()
+                    save_routine_sync(routine_dict, routine_id=routine_id)
                     
-                    # Enviar respuesta
+                    # Guardar explicación como mensaje
+                    save_chat_message_sync(routine_id, "assistant", explanation)
+                    
+                    # Enviar actualización
                     await ws_manager.broadcast(routine_id, {
-                        "type": "image_analysis",
-                        "analysis": analysis
+                        "type": "routine_update",
+                        "routine": routine_dict,
+                        "explanation": explanation
                     })
                     return
-                except Exception as img_err:
-                    logger.error(f"Error al analizar imagen: {img_err}")
-                    await websocket.send_json({"error": f"Error al analizar imagen: {str(img_err)}"})
-                    return
-            else:
-                await websocket.send_json({"error": "Análisis de imágenes no disponible (Gemini no configurado)"})
-                return
-    except json.JSONDecodeError:
-        # No es JSON, tratar como mensaje de texto normal
-        pass
-    
-    # Procesar mensaje de texto normal
-    try:
-        # Obtener la rutina actual
-        current_routine = get_routine_sync(routine_id)
-        
-        if not current_routine:
-            await websocket.send_json({"error": "Rutina no encontrada"})
-            return
-        
-        # Guardar mensaje del usuario
-        save_chat_message_sync(routine_id, "user", message)
-        
-        # Si Gemini está disponible, usar para modificar rutina
-        if routine_generator:
-            try:
-                from app.models.models import Routine
-                # Convertir a objeto Routine para el generador
-                routine_obj = Routine.model_validate(current_routine)
-                
-                # Modificar rutina
-                modified_routine = await routine_generator.modify_routine(routine_obj, message)
-                explanation = await routine_generator.explain_routine_changes(routine_obj, modified_routine, message)
-                
-                # Guardar rutina modificada
-                routine_dict = modified_routine.model_dump()
-                save_routine_sync(routine_dict, routine_id=routine_id)
-                
-                # Guardar explicación como mensaje
-                save_chat_message_sync(routine_id, "assistant", explanation)
-                
-                # Enviar actualización
-                await ws_manager.broadcast(routine_id, {
-                    "type": "routine_update",
-                    "routine": routine_dict,
-                    "explanation": explanation
-                })
-                return
-            except Exception as modify_err:
-                logger.error(f"Error al modificar rutina: {modify_err}")
-        
-        # Si llegamos aquí, Gemini no está disponible o falló
-        # Dar respuesta genérica
-        generic_response = "Lo siento, no puedo modificar la rutina en este momento. La API de Gemini no está configurada correctamente."
-        save_chat_message_sync(routine_id, "assistant", generic_response)
-        await ws_manager.broadcast(routine_id, {
-            "type": "routine_update",
-            "routine": current_routine,
-            "explanation": generic_response
-        })
-        
-    except Exception as e:
-        logger.error(f"Error al procesar mensaje: {e}")
-        await websocket.send_json({"error": f"Error al procesar mensaje: {str(e)}"})
+                except Exception as modify_err:
+                    logger.error(f"Error al modificar rutina: {modify_err}")
+            
+            # Si llegamos aquí, Gemini no está disponible o falló
+            # Dar respuesta genérica
+            generic_response = "Lo siento, no puedo modificar la rutina en este momento. La API de Gemini no está configurada correctamente."
+            save_chat_message_sync(routine_id, "assistant", generic_response)
+            await ws_manager.broadcast(routine_id, {
+                "type": "routine_update",
+                "routine": current_routine,
+                "explanation": generic_response
+            })
+            
+        except Exception as e:
+            logger.error(f"Error al procesar mensaje: {e}")
+            await websocket.send_json({"error": f"Error al procesar mensaje: {str(e)}"})
+    except Exception as outer_e:
+        logger.error(f"Error general en el manejo de mensajes WebSocket: {outer_e}")
+        try:
+            await websocket.send_json({"error": "Error interno del servidor al procesar el mensaje"})
+        except:
+            pass
 
 # Verificación de salud
 @app.get("/health")
