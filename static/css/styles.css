@@ -206,7 +206,6 @@ body {
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     overflow-y: auto; /* Agregar barra de desplazamiento */
-    max-height: calc(100vh - 150px);
 }
 
 .chat-container {
@@ -214,7 +213,6 @@ body {
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 150px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     position: sticky;
     top: 1.5rem; /* Mantener fijo cuando se desplaza */
@@ -290,15 +288,17 @@ body {
 
 .day-card .table {
     color: #e0e0e0;
-    background-color: #2c2c2c; /* Color de fondo igual al de la web */
+    background-color: #2c2c2c !important; /* Color de fondo igual al de la web con !important */
 }
 
 .day-card .table thead th {
     border-bottom-color: #444;
+    background-color: #3a3a3a !important; /* Fondo más oscuro para encabezados */
 }
 
 .day-card .table td, .day-card .table th {
     border-top-color: #444;
+    background-color: #2c2c2c !important; /* Asegurar que todas las celdas tengan el color correcto */
 }
 
 .exercise-row:hover {
@@ -411,7 +411,19 @@ body {
 }
 
 .table {
-    color: #e0e0e0;
+    color: #e0e0e0 !important;
+    background-color: #2c2c2c !important;
+    border-color: #444 !important;
+}
+
+.table thead th {
+    background-color: #3a3a3a !important;
+    border-color: #444 !important;
+}
+
+.table td, .table th {
+    border-color: #444 !important;
+    background-color: #2c2c2c !important;
 }
 
 .modal-content {
