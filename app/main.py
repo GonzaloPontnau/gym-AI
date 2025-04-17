@@ -206,3 +206,67 @@ async def delete_routine(routine_id: int = Form(...)):
     
     # Redirigir con parámetros de éxito
     return RedirectResponse(url="/routines?success=true&action=delete", status_code=303)
+
+# API alternativa para modificar rutina (para entornos donde WebSocket puede fallar)
+@app.post("/api/modify_routine/{routine_id}")
+@app.post("/api/routine/modify/{routine_id}")
+async def modify_routine_api(routine_id: int, request: Request):
+    """
+    Endpoint HTTP alternativo para modificar rutinas como respaldo
+    """
+    try:
+        # Obtener datos del cuerpo de la solicitud
+        data = await request.json()
+        message = data.get("message", "")
+        
+        if not message:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "No se proporcionó mensaje"}
+            )
+        
+        # Obtener la rutina actual
+        current_routine = await get_routine(routine_id)
+        
+        if not current_routine:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Rutina no encontrada"}
+            )
+        
+        # Guardar mensaje del usuario
+        await save_chat_message(routine_id, "user", message)
+        
+        # Procesar con el generador de rutinas
+        modified_routine = await routine_generator.modify_routine(current_routine, message)
+        explanation = await routine_generator.explain_routine_changes(current_routine, modified_routine, message)
+        
+        # Actualizar la rutina en la BD
+        await save_routine(modified_routine, routine_id=routine_id)
+        await save_chat_message(routine_id, "assistant", explanation)
+        
+        # Devolver respuesta
+        return JSONResponse({
+            "explanation": explanation,
+            "routine": modified_routine.model_dump()
+        })
+    except Exception as e:
+        print(f"Error al procesar solicitud HTTP: {e}")
+        import traceback
+        print(traceback.format_exc())
+        
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Error al modificar la rutina: {str(e)}"}
+        )
+
+# Endpoint de verificación de salud para Render
+@app.get("/health")
+async def health_check():
+    """Endpoint para verificar si la aplicación está funcionando"""
+    from datetime import datetime
+    return {
+        "status": "online",
+        "server_time": datetime.now().isoformat(),
+        "gemini_available": GEMINI_CONFIGURED
+    }

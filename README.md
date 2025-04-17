@@ -1,81 +1,56 @@
-# Gym-AI - Gestor Inteligente de Rutinas con IA
+# GymAI - Asistente Inteligente de Entrenamiento
 
-## 1. Visión General
+GymAI es una aplicación web que utiliza IA (Google Gemini) para generar y personalizar rutinas de entrenamiento adaptadas a tus necesidades.
 
-### 1.1 Concepto
-GymAI es una aplicación web para la creación y gestión de rutinas de entrenamiento personalizadas mediante inteligencia artificial. Su flujo único de dos fases (conversación inicial seguida de dashboard interactivo) permite a los usuarios crear y modificar rutinas de forma intuitiva a través de lenguaje natural.
+## Características
 
-### 1.2 Propuesta de Valor
-- **Personalización mediante IA**: Creación de rutinas adaptadas a objetivos, nivel y equipamiento disponible
-- **Interfaz conversacional**: Interacción natural mediante chat para crear y modificar rutinas
-- **Dashboard visual**: Visualización clara de la rutina con modificación en tiempo real
-- **Persistencia contextual**: Conservación del historial de conversación para referencias y ajustes futuros
+- Generación de rutinas personalizadas basadas en tus objetivos y nivel
+- Chat en tiempo real para modificar rutinas
+- Análisis de imágenes de ejercicios para corregir posturas
+- Diseño responsive y moderno
 
-## 2. Stack Tecnológico
-| Capa | Tecnologías |
-|------|-------------|
-| **Backend** | Python (FastAPI), SQLAlchemy ORM, Pydantic, JWT, WebSockets |
-| **Frontend** | Jinja2 (plantillas HTML), HTMX, JavaScript, CSS (Tailwind o Bootstrap) |
-| **IA/ML** | Google Gemini API (gemini-2.0-flash), Prompt Engineering |
-| **Base de Datos** | PostgreSQL |
+## Tecnologías
 
-## 3. Funcionalidades Principales
+- Backend: FastAPI, Python 3.9+
+- Frontend: HTML, CSS, JavaScript, Bootstrap 5
+- IA: Google Gemini API
+- Base de datos: SQLite (producción ligera) / PostgreSQL (escalable)
+- WebSockets para comunicación en tiempo real
 
-1. **Creación Inicial (Chat)**
-   - Pantalla de chat minimalista
-   - IA guía al usuario con preguntas estructuradas:
-     - "¿Cuáles son tus objetivos? (aumentar masa, definición, etc.)"
-     - "¿Qué equipamiento tienes disponible?"
-     - "¿Cuántos días puedes entrenar a la semana?"
-   - Construcción progresiva de la rutina durante la conversación
-   - Botón "Finalizar y ver rutina" tras confirmación
+## Despliegue en Render
 
-2. **Dashboard Principal**
-   - Visualización semanal de la rutina (3 dias)
-   - Cada día muestra ejercicios, series, repeticiones
-   - Chat lateral persistente para modificaciones
-   - Posibilidad de guardar versiones de la rutina
-   - Opción para imprimir/exportar PDF
+La aplicación está configurada para ser desplegada fácilmente en Render.
 
-3. **Chat Lateral para Modificaciones**
-   - Historial de conversación mantenido
-   - Capacidad para solicitar cambios específicos:
-     - "Reemplaza press de banca por flexiones el lunes"
-     - "Agrega más ejercicios para piernas el viernes"
-     - "Quiero enfocarme más en cardio esta semana"
-   - Visualización de los cambios en tiempo real en el dashboard
+### Método 1: Despliegue directo con Blueprint
 
-## 5. Interfaces de Usuario
+1. Crea una cuenta en [Render](https://render.com)
+2. Conecta tu repositorio de GitHub
+3. Haz clic en "Blueprint" y selecciona este repositorio
+4. Render configurará automáticamente el servicio según el archivo `render.yaml`
+5. Configura la variable de entorno `GEMINI_API_KEY` con tu clave de API de Gemini
 
-### 5.1 Pantalla de Chat Inicial
-- Diseño minimalista centrado en la conversación
-- Indicadores visuales del progreso de creación
-- Ejemplos de preguntas sugeridas
-- Visualización previa simplificada de la rutina en construcción
+### Método 2: Despliegue manual
 
-### 5.2 Dashboard Principal
-- Vista semanal con días organizados horizontalmente
-- Tarjetas por ejercicio con información detallada
-- Códigos de color según tipo de ejercicio (cardio, fuerza, etc.)
-- Panel lateral de chat persistente (30% del ancho)
-- Barra superior con acciones (guardar, exportar, compartir)
+1. Crea una cuenta en [Render](https://render.com)
+2. Crea un nuevo servicio web
+3. Conecta tu repositorio de GitHub
+4. Configura las siguientes opciones:
+   - **Environment**: Python 3.9
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app`
+5. Añade la variable de entorno `GEMINI_API_KEY` con tu clave de API de Gemini
 
+## Desarrollo local
 
-## 4. AI Features
+1. Clona este repositorio
+2. Crea un entorno virtual: `python -m venv venv`
+3. Activa el entorno virtual:
+   - Windows: `venv\Scripts\activate`
+   - Linux/Mac: `source venv/bin/activate`
+4. Instala las dependencias: `pip install -r requirements.txt`
+5. Crea un archivo `.env` basado en `.env-example` y añade tu clave API de Gemini
+6. Ejecuta la aplicación: `uvicorn app.main:app --reload`
 
-### 4.1 Tipos de Prompts
-- **Prompt de Creación**: Genera rutina completa basada en información inicial
-- **Prompt de Modificación**: Modifica aspectos específicos preservando el resto
-- **Prompt Explicativo**: Proporciona explicación sobre ejercicios o decisiones
-- **Prompt de Sugerencias**: Recomienda mejoras basadas en progresos/feedback
+## Licencia
 
-### 4.2 Estructura de Datos de Respuesta
-- Rutina completa en formato JSON
-- Explicaciones textuales para el usuario
-- Metadatos para seguimiento de cambios
-
-### 4.3 Estrategias de Prompt Engineering
-- Instrucciones claras sobre formato requerido
-- Contexto completo de la rutina actual
-- Especificación de restricciones (equipamiento, lesiones)
-- Manejo de casos extremos y validaciones
+MIT
