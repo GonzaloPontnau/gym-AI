@@ -182,16 +182,6 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
-        // Agregar un mensaje al chat
-        function addMessage(content, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'assistant-message');
-            messageDiv.textContent = content;
-            messagesContainer.appendChild(messageDiv);
-            scrollToBottom();
-        }
-        
         // Actualizar la vista de la rutina
         function updateRoutineView(routine) {
             // Actualizar el nombre de la rutina
@@ -261,6 +251,9 @@
             // Verificar si estamos en entorno de producción (Vercel)
             const isVercel = window.location.hostname.includes('vercel.app');
             
+            // Mostrar estado de conexión en la UI
+            addMessage(`Intentando conectar al servidor en ${wsUrl}...`, 'system');
+            
             // Limpiar cualquier conexión anterior
             if (ws) {
                 try {
@@ -273,9 +266,20 @@
             try {
                 ws = new WebSocket(wsUrl);
                 
+                // Configurar timeout para conexión
+                const connectionTimeout = setTimeout(() => {
+                    if (ws.readyState !== WebSocket.OPEN) {
+                        console.error('Timeout de conexión WebSocket');
+                        ws.close();
+                        addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
+                    }
+                }, 10000); // 10 segundos de timeout
+                
                 // Configurar eventos del WebSocket
                 ws.onopen = () => {
+                    clearTimeout(connectionTimeout);
                     console.log('Conexión WebSocket establecida');
+                    addMessage('Conexión establecida correctamente.', 'system');
                     sendButton.disabled = false;
                     reconnectAttempts = 0; // Resetear contador de intentos
                     
@@ -284,6 +288,7 @@
                         if (pingInterval) clearInterval(pingInterval);
                         pingInterval = setInterval(() => {
                             if (ws && ws.readyState === WebSocket.OPEN) {
+                                console.log('Enviando ping al servidor...');
                                 ws.send(JSON.stringify({type: 'ping'}));
                             }
                         }, 30000); // Ping cada 30 segundos
@@ -292,7 +297,13 @@
                 
                 ws.onmessage = (event) => {
                     try {
+                        console.log('Mensaje recibido:', event.data);
                         const data = JSON.parse(event.data);
+                        
+                        if (data.type === 'pong') {
+                            console.log('Pong recibido del servidor');
+                            return;
+                        }
                         
                         if (data.type === 'routine_update') {
                             // Actualizar la rutina en la interfaz
@@ -327,8 +338,12 @@
                 };
                 
                 ws.onclose = (event) => {
+                    clearTimeout(connectionTimeout);
                     console.log(`Conexión WebSocket cerrada (código: ${event.code}, razón: ${event.reason})`);
                     sendButton.disabled = true;
+                    
+                    // Mostrar información diagnóstica
+                    addMessage(`Conexión cerrada. Código: ${event.code}, Razón: ${event.reason || 'No especificada'}`, 'system');
                     
                     // Limpiar el ping interval si existe
                     if (pingInterval) {
@@ -343,27 +358,45 @@
                         console.log(`Intentando reconectar (intento ${reconnectAttempts}/${maxReconnectAttempts}) en ${delay}ms...`);
                         setTimeout(setupWebSocket, delay);
                     } else if (reconnectAttempts >= maxReconnectAttempts) {
-                        // Mostrar botón para reconexión manual
-                        addMessage('No se pudo reconectar al servidor. Por favor, recarga la página o haz clic en el botón "Reconectar".', 'assistant');
+                        // Mostrar botón para reconexión manual y opciones alternativas
+                        addMessage('No se pudo reconectar al servidor. Por favor, intenta las siguientes opciones:', 'system');
                         
-                        // Agregar botón de reconexión al chat
+                        const optionsDiv = document.createElement('div');
+                        optionsDiv.className = 'connection-options mt-2';
+                        
+                        // Botón de reconexión
                         const reconnectBtn = document.createElement('button');
-                        reconnectBtn.classList.add('btn', 'btn-primary', 'mt-2');
+                        reconnectBtn.classList.add('btn', 'btn-primary', 'me-2', 'mb-2');
                         reconnectBtn.textContent = 'Reconectar';
                         reconnectBtn.onclick = () => {
                             reconnectAttempts = 0;
                             setupWebSocket();
                         };
+                        optionsDiv.appendChild(reconnectBtn);
                         
+                        // Botón de recarga
+                        const reloadBtn = document.createElement('button');
+                        reloadBtn.classList.add('btn', 'btn-outline-primary', 'me-2', 'mb-2');
+                        reloadBtn.textContent = 'Recargar página';
+                        reloadBtn.onclick = () => {
+                            window.location.reload();
+                        };
+                        optionsDiv.appendChild(reloadBtn);
+                        
+                        // Añadir opciones
                         const lastMessage = document.querySelector('.message:last-child');
-                        if (lastMessage) lastMessage.appendChild(reconnectBtn);
+                        if (lastMessage) lastMessage.appendChild(optionsDiv);
                     }
                 };
                 
                 ws.onerror = (error) => {
+                    clearTimeout(connectionTimeout);
                     console.error('Error en la conexión WebSocket:', error);
                     sendButton.disabled = false;
                     sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    
+                    // Mostrar error
+                    addMessage('Error en la conexión. Verifica que el servidor soporte WebSockets.', 'system');
                     
                     // Si es el primer intento, reintentamos inmediatamente
                     if (reconnectAttempts === 0) {
@@ -373,6 +406,7 @@
                 };
             } catch (e) {
                 console.error('Error al crear WebSocket:', e);
+                addMessage(`Error al crear conexión WebSocket: ${e.message}`, 'system');
                 setTimeout(setupWebSocket, reconnectDelay);
             }
         }
@@ -380,22 +414,31 @@
         // Declarar variable para controlar pings periódicos
         let pingInterval = null;
         
+        // Función para agregar mensajes del sistema (estilo diferente)
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            
+            if (sender === 'user') {
+                messageDiv.classList.add('user-message');
+            } else if (sender === 'assistant') {
+                messageDiv.classList.add('assistant-message');
+            } else if (sender === 'system') {
+                messageDiv.classList.add('system-message');
+                // Estilo diferente para mensajes del sistema
+                messageDiv.style.fontSize = '0.85rem';
+                messageDiv.style.opacity = '0.8';
+                messageDiv.style.backgroundColor = '#f8f9fa';
+                messageDiv.style.border = '1px dashed #dee2e6';
+            }
+            
+            messageDiv.textContent = content;
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
         // Iniciar WebSocket
         setupWebSocket();
-        
-        // Agregar un botón para reconectar manualmente
-        const actionButtons = document.querySelector('.chat-action-buttons');
-        if (actionButtons) {
-            const reconnectButton = document.createElement('button');
-            reconnectButton.className = 'btn btn-sm btn-light ms-2';
-            reconnectButton.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
-            reconnectButton.title = 'Reconectar';
-            reconnectButton.onclick = () => {
-                reconnectAttempts = 0;
-                setupWebSocket();
-            };
-            actionButtons.appendChild(reconnectButton);
-        }
         
         // Manejar subida de imagen
         uploadImageBtn.addEventListener('click', () => {

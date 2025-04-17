@@ -20,6 +20,15 @@
   ],
   "routes": [
     {
+      "src": "/ws/chat/[0-9]+",
+      "dest": "app/vercel_app.py",
+      "headers": {
+        "Connection": "upgrade",
+        "Upgrade": "websocket"
+      },
+      "continue": true
+    },
+    {
       "src": "/static/(.*)",
       "dest": "/static/$1",
       "headers": {
@@ -37,15 +46,6 @@
     {
       "src": "/favicon.ico",
       "dest": "/static/favicon.ico"
-    },
-    {
-      "src": "/ws/(.*)",
-      "dest": "app/vercel_app.py",
-      "headers": {
-        "Connection": "upgrade",
-        "Upgrade": "websocket"
-      },
-      "continue": true
     },
     {
       "src": "/api/(.*)",

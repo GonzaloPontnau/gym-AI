@@ -265,33 +265,46 @@ async def delete_routine(routine_id: int = Form(...)):
 @app.websocket("/ws/chat/{routine_id}")
 async def websocket_endpoint(websocket: WebSocket, routine_id: int):
     """Endpoint WebSocket para el chat en tiempo real"""
+    # Registrar intento de conexión
+    logger.info(f"⚡ Intento de conexión WebSocket para routine_id={routine_id}")
+    
     if not ws_manager:
         # Si no hay gestor de WebSockets, rechazar conexión
+        logger.error(f"❌ No hay gestor de WebSockets inicializado - conexión rechazada")
         return
     
     # Aceptar conexión
-    await ws_manager.connect(websocket, routine_id)
+    try:
+        await ws_manager.connect(websocket, routine_id)
+        logger.info(f"✅ Conexión WebSocket aceptada para routine_id={routine_id}")
+    except Exception as conn_err:
+        logger.error(f"❌ Error al aceptar conexión WebSocket: {conn_err}")
+        return
     
     try:
         while True:
             # Recibir mensaje
             data = await websocket.receive()
+            logger.debug(f"📩 Mensaje recibido: {data}")
             
             # Procesar mensaje según su tipo
             if "text" in data:
+                logger.debug(f"📝 Procesando mensaje de texto: {data['text'][:50]}...")
                 await handle_ws_text_message(websocket, routine_id, data["text"])
             elif "bytes" in data:
+                logger.debug(f"📦 Recibido mensaje binario (no soportado)")
                 await websocket.send_json({"error": "No se soportan mensajes binarios directamente"})
             
     except WebSocketDisconnect:
         # Desconectar cliente
+        logger.info(f"🔌 Cliente WebSocket desconectado (routine_id={routine_id})")
         ws_manager.disconnect(websocket, routine_id)
     except Exception as e:
-        logger.error(f"Error en WebSocket: {e}")
+        logger.error(f"❌ Error en WebSocket (routine_id={routine_id}): {e}")
         try:
             await websocket.send_json({"error": f"Error en el servidor: {str(e)}"})
         except:
-            pass
+            logger.debug("No se pudo enviar mensaje de error al cliente")
         if ws_manager:
             ws_manager.disconnect(websocket, routine_id)
 
@@ -416,3 +429,158 @@ async def health_check():
         "websocket_available": ws_manager is not None
     }
     return status
+
+# Página de diagnóstico específica para WebSockets
+@app.get("/websocket-test", response_class=HTMLResponse)
+async def websocket_test(request: Request):
+    """Página de diagnóstico para probar la conexión WebSocket"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Prueba de WebSocket</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+            .container { max-width: 800px; margin: 0 auto; }
+            h1 { color: #333; }
+            .card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+            .log { background-color: #f5f5f5; border: 1px solid #ddd; border-radius: 5px; padding: 10px; 
+                  height: 200px; overflow-y: auto; font-family: monospace; margin-bottom: 15px; }
+            .success { color: green; }
+            .error { color: red; }
+            .warning { color: orange; }
+            .info { color: blue; }
+            button { background-color: #4CAF50; border: none; color: white; padding: 8px 16px;
+                    text-align: center; text-decoration: none; display: inline-block; font-size: 16px;
+                    margin: 4px 2px; cursor: pointer; border-radius: 4px; }
+            button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Diagnóstico de WebSocket</h1>
+            
+            <div class="card">
+                <h2>Información del servidor</h2>
+                <p>Hora del servidor: <span id="server-time">-</span></p>
+                <p>URL de WebSocket: <span id="ws-url">-</span></p>
+            </div>
+            
+            <div class="card">
+                <h2>Prueba de conexión</h2>
+                <div class="log" id="connection-log"></div>
+                <button id="connect-btn">Conectar</button>
+                <button id="disconnect-btn" disabled>Desconectar</button>
+                <button id="ping-btn" disabled>Enviar Ping</button>
+            </div>
+        </div>
+        
+        <script>
+            // Referencias a elementos
+            const serverTimeEl = document.getElementById('server-time');
+            const wsUrlEl = document.getElementById('ws-url');
+            const connectionLogEl = document.getElementById('connection-log');
+            const connectBtn = document.getElementById('connect-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            const pingBtn = document.getElementById('ping-btn');
+            
+            // WebSocket 
+            let ws = null;
+            
+            // Función para agregar mensajes al log
+            function logMessage(message, type = 'info') {
+                const logEntry = document.createElement('div');
+                logEntry.className = type;
+                logEntry.textContent = `[${new Date().toISOString()}] ${message}`;
+                connectionLogEl.appendChild(logEntry);
+                connectionLogEl.scrollTop = connectionLogEl.scrollHeight;
+            }
+            
+            // Obtener información del servidor
+            fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                    serverTimeEl.textContent = data.server_time;
+                    
+                    if (!data.websocket_available) {
+                        logMessage('ADVERTENCIA: El servidor indica que el gestor de WebSockets no está inicializado.', 'warning');
+                    }
+                })
+                .catch(error => {
+                    logMessage(`Error al obtener información del servidor: ${error}`, 'error');
+                });
+                
+            // Configurar URL del WebSocket
+            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            const host = window.location.host;
+            const wsUrl = `${protocol}${host}/ws/chat/0`;  // Usando ID 0 para diagnóstico
+            wsUrlEl.textContent = wsUrl;
+            
+            // Conectar WebSocket
+            connectBtn.addEventListener('click', () => {
+                if (ws) {
+                    logMessage('Ya hay una conexión activa. Ciérrala primero.', 'warning');
+                    return;
+                }
+                
+                logMessage('Intentando conectar a ' + wsUrl);
+                
+                try {
+                    ws = new WebSocket(wsUrl);
+                    
+                    ws.onopen = () => {
+                        logMessage('Conexión establecida exitosamente', 'success');
+                        connectBtn.disabled = true;
+                        disconnectBtn.disabled = false;
+                        pingBtn.disabled = false;
+                    };
+                    
+                    ws.onmessage = (event) => {
+                        logMessage(`Mensaje recibido: ${event.data}`, 'info');
+                    };
+                    
+                    ws.onclose = (event) => {
+                        logMessage(`Conexión cerrada. Código: ${event.code}, Razón: ${event.reason || 'No especificada'}`, 
+                                  event.code === 1000 ? 'info' : 'warning');
+                        ws = null;
+                        connectBtn.disabled = false;
+                        disconnectBtn.disabled = true;
+                        pingBtn.disabled = true;
+                    };
+                    
+                    ws.onerror = (error) => {
+                        logMessage(`Error en la conexión: ${error}`, 'error');
+                    };
+                } catch (e) {
+                    logMessage(`Error al crear WebSocket: ${e.message}`, 'error');
+                }
+            });
+            
+            // Desconectar WebSocket
+            disconnectBtn.addEventListener('click', () => {
+                if (!ws) {
+                    logMessage('No hay conexión activa', 'warning');
+                    return;
+                }
+                
+                logMessage('Cerrando conexión...');
+                ws.close(1000, "Cierre manual");
+            });
+            
+            // Enviar ping
+            pingBtn.addEventListener('click', () => {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    logMessage('No hay conexión activa o no está abierta', 'warning');
+                    return;
+                }
+                
+                logMessage('Enviando ping al servidor...');
+                ws.send(JSON.stringify({type: 'ping'}));
+            });
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
