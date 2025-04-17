@@ -310,6 +310,7 @@ async def websocket_endpoint(websocket: WebSocket, routine_id: int):
 
 # API alternativa para modificar rutina (para entornos donde WebSocket no funciona)
 @app.post("/api/modify_routine/{routine_id}")
+@app.post("/api/routine/modify/{routine_id}") # Ruta alternativa por si la primera no funciona en Vercel
 async def modify_routine_api(routine_id: int, request: Request):
     """
     Endpoint HTTP alternativo para modificar rutinas en entornos donde WebSocket falla

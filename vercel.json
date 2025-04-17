@@ -29,6 +29,16 @@
       "continue": true
     },
     {
+      "src": "/api/routine/modify/[0-9]+",
+      "methods": ["POST"],
+      "dest": "app/vercel_app.py"
+    },
+    {
+      "src": "/api/modify_routine/[0-9]+",
+      "methods": ["POST"],
+      "dest": "app/vercel_app.py"
+    },
+    {
       "src": "/static/(.*)",
       "dest": "/static/$1",
       "headers": {

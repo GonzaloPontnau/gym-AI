@@ -476,6 +476,9 @@
         if (window.location.hostname.includes('vercel.app')) {
             console.log('Detectado entorno Vercel - utilizando directamente modo HTTP');
             enableHttpFallbackMode();
+            
+            // Mostrar un mensaje más detallado sobre la limitación
+            addMessage(`Nota: Vercel tiene limitaciones con WebSockets. Estamos utilizando un modo alternativo compatible para que puedas interactuar con tu rutina. Al enviar un mensaje, espera a que se procese completamente.`, 'system');
         } else {
             // En entorno local, intentar con WebSockets
             setupWebSocket();
@@ -602,8 +605,13 @@
             
             // Si el modo HTTP fallback está activo o estamos en Vercel, usar HTTP
             if (httpFallbackActive || window.location.hostname.includes('vercel.app')) {
+                // URL de la API
+                const apiUrl = `/api/routine/modify/${routineId}`;
+                console.log(`Usando API HTTP: ${apiUrl}`);
+                addMessage(`Enviando petición a: ${apiUrl}...`, 'system');
+                
                 // Usar HTTP API en lugar de WebSocket
-                fetch(`/api/modify_routine/${routineId}`, {
+                fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -611,12 +619,15 @@
                     body: JSON.stringify({ message: message })
                 })
                 .then(response => {
+                    console.log(`Respuesta recibida: ${response.status} ${response.statusText}`);
                     if (!response.ok) {
                         throw new Error(`HTTP error ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
+                    console.log('Datos recibidos:', data);
+                    
                     // Mostrar la explicación
                     addMessage(data.explanation, 'assistant');
                     
@@ -633,9 +644,49 @@
                     console.error('Error al modificar rutina:', error);
                     addMessage(`Error al modificar la rutina: ${error.message}. Por favor, intenta de nuevo.`, 'assistant');
                     
-                    // Habilitar botón de envío
-                    sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    // Intentar con URL alternativa en caso de error
+                    if (error.message.includes('404') && apiUrl.includes('/api/routine/modify/')) {
+                        addMessage('Intentando con URL alternativa...', 'system');
+                        
+                        const alternativeApiUrl = `/api/modify_routine/${routineId}`;
+                        console.log(`Intentando URL alternativa: ${alternativeApiUrl}`);
+                        
+                        fetch(alternativeApiUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ message: message })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Mostrar la explicación
+                            addMessage(data.explanation, 'assistant');
+                            
+                            // Actualizar la rutina en la interfaz
+                            if (data.routine) {
+                                updateRoutineView(data.routine);
+                            }
+                        })
+                        .catch(altError => {
+                            console.error('Error con URL alternativa:', altError);
+                            addMessage(`Error con URL alternativa: ${altError.message}. Por favor, contacta al soporte.`, 'system');
+                        })
+                        .finally(() => {
+                            // Habilitar botón de envío
+                            sendButton.disabled = false;
+                            sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                        });
+                    } else {
+                        // Habilitar botón de envío
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    }
                 });
             } else if (ws && ws.readyState === WebSocket.OPEN) {
                 // Usar WebSocket si está disponible y abierto
