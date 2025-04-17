@@ -24,7 +24,7 @@ if GEMINI_API_KEY:
     except Exception as e:
         print(f"❌ Error al configurar Gemini API: {str(e)}")
 else:
-    print("⚠️ GEMINI_API_KEY no encontrada, servicio de IA limitado")
+    print("⚠️ GEMINI_API_KEY no encontrada, servicio de IA no estará disponible")
 
 class GeminiRoutineGenerator:
     """Servicio para generar rutinas de entrenamiento utilizando la API de Gemini"""
@@ -36,6 +36,10 @@ class GeminiRoutineGenerator:
         
         Objetivos: {request.goals}
         Días de entrenamiento: {request.days} días a la semana
+        Nivel de experiencia: {request.experience_level if hasattr(request, 'experience_level') else 'No especificado'}
+        Equipo disponible: {request.available_equipment if hasattr(request, 'available_equipment') else 'No especificado'}
+        Tiempo por sesión: {request.time_per_session if hasattr(request, 'time_per_session') else 'No especificado'}
+        Condiciones de salud: {request.health_conditions if hasattr(request, 'health_conditions') else 'Ninguna'}
         
         La rutina debe seguir ESTRICTAMENTE este formato JSON:
         
@@ -103,10 +107,8 @@ class GeminiRoutineGenerator:
         
         # Verificar si Gemini está configurado
         if not GEMINI_CONFIGURED:
-            print("Gemini no configurado, usando generador de respaldo")
-            from app.services.routine_service import RoutineGenerator
-            backup_generator = RoutineGenerator()
-            return await backup_generator.create_initial_routine(request)
+            print("❌ Gemini no está configurado")
+            raise ValueError("API de Gemini no está configurada. No se pueden generar rutinas.")
         
         prompt = self._build_initial_prompt(request)
         
@@ -133,15 +135,15 @@ class GeminiRoutineGenerator:
         except Exception as e:
             print(f"❌ Error al generar rutina con Gemini: {str(e)}")
             print(traceback.format_exc())
-            
-            # Usar generador de respaldo
-            print("⚠️ Fallback: Usando generador de respaldo")
-            from app.services.routine_service import RoutineGenerator
-            backup_generator = RoutineGenerator()
-            return await backup_generator.create_initial_routine(request)
+            raise ValueError(f"Error al generar rutina con Gemini: {str(e)}")
     
     async def modify_routine(self, current_routine: Routine, user_request: str) -> Routine:
         """Modifica una rutina existente según la solicitud del usuario"""
+        # Verificar si Gemini está configurado
+        if not GEMINI_CONFIGURED:
+            print("❌ Gemini no está configurado")
+            raise ValueError("API de Gemini no está configurada. No se pueden modificar rutinas.")
+            
         prompt = self._build_modification_prompt(current_routine, user_request)
         
         try:
@@ -160,12 +162,15 @@ class GeminiRoutineGenerator:
             
         except Exception as e:
             print(f"Error al modificar rutina: {str(e)}")
-            from app.services.routine_service import RoutineGenerator
-            backup_generator = RoutineGenerator()
-            return await backup_generator.modify_routine(current_routine, user_request)
+            raise ValueError(f"Error al modificar rutina con Gemini: {str(e)}")
     
     async def explain_routine_changes(self, old_routine: Routine, new_routine: Routine, user_request: str) -> str:
         """Genera una explicación de los cambios realizados a la rutina"""
+        # Verificar si Gemini está configurado
+        if not GEMINI_CONFIGURED:
+            print("❌ Gemini no está configurado")
+            raise ValueError("API de Gemini no está configurada. No se puede explicar cambios.")
+            
         prompt = f"""
         El usuario solicitó: "{user_request}"
         
@@ -179,6 +184,4 @@ class GeminiRoutineGenerator:
             
         except Exception as e:
             print(f"Error al obtener explicación: {str(e)}")
-            from app.services.routine_service import RoutineGenerator
-            backup_generator = RoutineGenerator()
-            return await backup_generator.explain_routine_changes(old_routine, new_routine, user_request)
+            raise ValueError(f"Error al generar explicación con Gemini: {str(e)}")

@@ -33,10 +33,10 @@ db_url_env = os.environ.get("DATABASE_URL")
 
 # Debugging - mostrar la URL de DB si existe
 if db_url_env:
-    print(f"DATABASE_URL encontrado en variables de entorno: {db_url_env[:20]}...")
+    print(f"DATABASE_URL encontrado en variables de entorno: {db_url_env}...")
 
 # Solo usar PostgreSQL si tenemos DATABASE_URL, asyncpg y no estamos forzando SQLite
-if db_url_env and asyncpg_available and not FORCE_SQLITE:
+if db_url_env and asyncpg_available and not FORCE_SQLITE and db_url_env.startswith("postgres"):
     use_postgres = True
 
 if use_postgres:
@@ -57,13 +57,48 @@ if use_postgres:
     print("Utilizando PostgreSQL (Neon Database)")
     print(f"URL de conexión (limpia): {DB_URL[:20]}...") # Mostrar URL limpia
 else:
-    # Usar SQLite en desarrollo local
-    DB_DIR = os.path.dirname(os.path.abspath(__file__))
-    os.makedirs(DB_DIR, exist_ok=True)  # Crear directorio si no existe
-    DB_PATH = os.path.join(DB_DIR, "gymAI.db")
-    DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
+    # Si tenemos una URL sqlite en variable de entorno, usarla
+    if db_url_env and db_url_env.startswith("sqlite:"):
+        print("Utilizando SQLite desde DATABASE_URL")
+        
+        # Asegurar que la URL tenga el formato correcto para SQLite asíncrono
+        if "sqlite+aiosqlite://" not in db_url_env:
+            # Primero obtenemos la parte del path
+            if "sqlite:///" in db_url_env:
+                path = db_url_env.split("sqlite:///")[1]
+            elif "sqlite://" in db_url_env:
+                path = db_url_env.split("sqlite://")[1]
+                if not path.startswith("/"):
+                    path = "/" + path
+            else:
+                path = "gym_ai.db"  # Valor por defecto
+            
+            # Construir la URL con el driver aiosqlite
+            DB_URL = f"sqlite+aiosqlite:///{path}"
+            print(f"URL de SQLite ajustada para usar driver asíncrono: {DB_URL}")
+        else:
+            DB_URL = db_url_env
+    else:
+        # Usar SQLite en desarrollo local
+        DB_DIR = os.path.dirname(os.path.abspath(__file__))
+        os.makedirs(DB_DIR, exist_ok=True)  # Crear directorio si no existe
+        DB_PATH = os.path.join(DB_DIR, "gymAI.db")
+        DB_URL = f"sqlite+aiosqlite:///{DB_PATH}"
+        print(f"Utilizando SQLite local para desarrollo: {DB_URL}")
+    
     IS_SQLITE = True
-    print("Utilizando SQLite local para desarrollo")
+
+# Asegurar que todas las URLs de SQLite usen aiosqlite
+if IS_SQLITE and "sqlite+aiosqlite://" not in DB_URL:
+    if "sqlite:///" in DB_URL:
+        path = DB_URL.split("sqlite:///")[1]
+        DB_URL = f"sqlite+aiosqlite:///{path}"
+    elif "sqlite://" in DB_URL:
+        path = DB_URL.split("sqlite://")[1]
+        if not path.startswith("/"):
+            path = "/" + path
+        DB_URL = f"sqlite+aiosqlite://{path}"
+    print(f"URL de SQLite final ajustada: {DB_URL}")
 
 # Configuración del engine según el tipo de base de datos
 if IS_SQLITE:

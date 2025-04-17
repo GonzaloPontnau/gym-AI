@@ -49,6 +49,12 @@ class WebSocketRoutes:
             try:
                 data = json.loads(message)
                 
+                # Manejar mensajes de tipo ping (keepalive)
+                if isinstance(data, dict) and data.get("type") == "ping":
+                    # Simplemente responder con un pong para mantener la conexión viva
+                    await websocket.send_json({"type": "pong"})
+                    return
+                
                 # Si es un mensaje JSON, procesar según su tipo
                 if isinstance(data, dict) and data.get("type") == "analyze_image":
                     await self.handle_image_analysis(websocket, routine_id, data)
