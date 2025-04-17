@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, MetaData, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import select, delete
+from sqlalchemy import pool
 
 from app.models.models import Routine
 
@@ -69,12 +70,11 @@ if IS_SQLITE:
     engine = create_async_engine(DB_URL, echo=False)
 else:
     # Para PostgreSQL en entorno serverless, ajustar la configuración
-    # para evitar problemas con el bucle de eventos
     engine = create_async_engine(
         DB_URL,
         echo=False,
         # Evitar mantener conexiones persistentes en entorno serverless
-        poolclass=sqlalchemy.pool.NullPool,
+        poolclass=pool.NullPool,
         # Opciones para entorno serverless
         future=True,
         connect_args={"server_settings": {"statement_timeout": "30000"}}

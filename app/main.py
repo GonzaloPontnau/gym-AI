@@ -103,43 +103,72 @@ async def create_routine(request: Request):
             user_id=data.get("user_id", 1)
         )
 
-        # Detectar si estamos en Vercel (entorno serverless)
+        # Detectar entorno Vercel
         is_vercel = os.environ.get("VERCEL") or os.environ.get("VERCEL_ENV") or os.environ.get("VERCEL_REGION")
-        if is_vercel:
-            print("Detectado entorno Vercel: usando generador de respaldo rápido (sin IA)")
-            backup_generator = RoutineGenerator()
-            routine = await backup_generator.create_initial_routine(routine_request)
-        else:
-            # Verificar si Gemini API está configurada
+        
+        try:
+            # Intentar método asíncrono normal primero
             if not os.getenv("GEMINI_API_KEY"):
                 print("ADVERTENCIA: GEMINI_API_KEY no configurada, usando generador de respaldo")
                 backup_generator = RoutineGenerator()
                 routine = await backup_generator.create_initial_routine(routine_request)
             else:
+                routine = await routine_generator.create_initial_routine(routine_request)
+            
+            # Si llegamos aquí, generar la rutina funcionó
+            print(f"Rutina generada con éxito: {routine.routine_name}")
+            
+            # Intentar guardar en la base de datos
+            try:
+                routine_id = await save_routine(routine, user_id=routine_request.user_id)
+                print(f"Rutina guardada con ID: {routine_id}")
+            except Exception as db_error:
+                print(f"Error al guardar rutina en base de datos async: {str(db_error)}")
+                
+                # Intentar el método de respaldo síncrono (sqlite_helper)
                 try:
-                    routine = await routine_generator.create_initial_routine(routine_request)
-                except Exception as gemini_error:
-                    print(f"Error con Gemini API: {str(gemini_error)}")
-                    backup_generator = RoutineGenerator()
-                    routine = await backup_generator.create_initial_routine(routine_request)
-
-        print(f"Rutina generada con éxito: {routine.routine_name}")
-        try:
-            routine_id = await save_routine(routine, user_id=routine_request.user_id)
-            print(f"Rutina guardada con ID: {routine_id}")
-        except Exception as db_error:
-            print(f"Error al guardar rutina en base de datos: {str(db_error)}")
-            return {"error": f"Error al guardar rutina: {str(db_error)}"}
-        try:
-            await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.")
-            await save_chat_message(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
-        except Exception as chat_error:
-            print(f"Error al guardar mensajes de chat: {str(chat_error)}")
-        return {"routine_id": routine_id, "routine": routine.model_dump()}
+                    from app.sqlite_helper import save_routine_sync
+                    routine_dict = routine.model_dump()
+                    routine_id = save_routine_sync(routine_dict, user_id=routine_request.user_id)
+                    print(f"Rutina guardada con método de respaldo, ID: {routine_id}")
+                except Exception as fallback_error:
+                    print(f"Error también en el método de respaldo: {str(fallback_error)}")
+                    return {"error": "No se pudo guardar la rutina en la base de datos"}
+            
+            # Intentar guardar mensajes de chat
+            try:
+                await save_chat_message(routine_id, "user", f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.")
+                await save_chat_message(routine_id, "assistant", "¡He creado una rutina personalizada para ti! Puedes verla en el panel principal.")
+            except Exception as chat_error:
+                print(f"Error al guardar mensajes de chat: {str(chat_error)}")
+                # No fallar por esto, es menos crítico
+                
+            return {"routine_id": routine_id, "routine": routine.model_dump()}
+            
+        except Exception as core_error:
+            print(f"Error crítico al crear rutina: {str(core_error)}")
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Detalles del error: {error_details}")
+            
+            # Intentar un último recurso - rutina estática
+            backup_generator = RoutineGenerator()
+            routine = await backup_generator.create_initial_routine(routine_request)
+            
+            from app.sqlite_helper import save_routine_sync
+            routine_dict = routine.model_dump()
+            routine_id = save_routine_sync(routine_dict, user_id=routine_request.user_id)
+            
+            return {
+                "routine_id": routine_id, 
+                "routine": routine.model_dump(),
+                "warning": "Rutina generada en modo de respaldo debido a un error"
+            }
+            
     except Exception as e:
         import traceback
         error_details = traceback.format_exc()
-        print(f"Error al crear rutina: {str(e)}")
+        print(f"Error general al crear rutina: {str(e)}")
         print(f"Detalles del error: {error_details}")
         return {"error": str(e), "details": "Hubo un problema al crear la rutina"}
 

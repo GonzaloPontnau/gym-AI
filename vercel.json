@@ -45,12 +45,23 @@
       "dest": "/static/favicon.ico"
     },
     {
+      "src": "/health",
+      "dest": "app/vercel_app.py"
+    },
+    {
+      "src": "/status",
+      "dest": "app/vercel_app.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "app/vercel_app.py"
     }
   ],
   "env": {
     "PYTHONPATH": ".",
-    "DISABLE_COLLECTSTATIC": "1"
+    "DISABLE_COLLECTSTATIC": "1",
+    "DEBUG": "true",
+    "USE_FALLBACK": "true",
+    "SQLITE_FALLBACK": "true"
   }
 }
