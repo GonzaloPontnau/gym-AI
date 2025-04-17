@@ -69,29 +69,27 @@ else:
 if IS_SQLITE:
     engine = create_async_engine(DB_URL, echo=False)
 else:
-    # Para PostgreSQL en entorno serverless, ajustar la configuración
+    # Para entorno serverless, usar una configuración extremadamente simple
+    # sin pool de conexiones para evitar problemas con el contexto de ejecución
+    from sqlalchemy.pool import NullPool
     engine = create_async_engine(
         DB_URL,
         echo=False,
-        # Evitar mantener conexiones persistentes en entorno serverless
-        poolclass=pool.NullPool,
-        # Opciones para entorno serverless
-        future=True,
-        connect_args={"server_settings": {"statement_timeout": "30000"}}
+        poolclass=NullPool,
+        connect_args={"server_settings": {"statement_timeout": "10000"}}
     )
 
-# Modificamos la función de sesión para usar siempre el mismo bucle de eventos
-import asyncio
+# Simplificar la sesión para minimizar problemas de contexto asíncrono
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-async def get_session():
-    """Obtener una sesión de base de datos asegurando el uso del bucle de eventos correcto"""
+# La función get_session se ha modificado para no usar yield
+async def get_db_session():
+    """Obtener una sesión de base de datos con manejo explícito"""
+    session = async_session()
     try:
-        # Usar siempre el bucle de eventos actual
-        loop = asyncio.get_running_loop()
-        async with async_session() as session:
-            yield session
+        return session
     except Exception as e:
+        await session.close()
         print(f"Error al crear sesión de base de datos: {str(e)}")
         raise
 

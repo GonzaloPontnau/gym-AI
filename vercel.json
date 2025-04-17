@@ -28,29 +28,15 @@
     },
     {
       "src": "/(styles\\.css)",
-      "dest": "/static/$1",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
+      "dest": "/static/$1"
     },
     {
       "src": "/css/(.*\\.css)",
-      "dest": "/static/css/$1",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
+      "dest": "/static/css/$1"
     },
     {
       "src": "/favicon.ico",
       "dest": "/static/favicon.ico"
-    },
-    {
-      "src": "/health",
-      "dest": "app/vercel_app.py"
-    },
-    {
-      "src": "/status",
-      "dest": "app/vercel_app.py"
     },
     {
       "src": "/(.*)",
@@ -60,8 +46,6 @@
   "env": {
     "PYTHONPATH": ".",
     "DISABLE_COLLECTSTATIC": "1",
-    "DEBUG": "true",
-    "USE_FALLBACK": "true",
-    "SQLITE_FALLBACK": "true"
+    "SIMPLE_MODE": "true"
   }
 }
