@@ -308,6 +308,98 @@ async def websocket_endpoint(websocket: WebSocket, routine_id: int):
         if ws_manager:
             ws_manager.disconnect(websocket, routine_id)
 
+# API alternativa para modificar rutina (para entornos donde WebSocket no funciona)
+@app.post("/api/modify_routine/{routine_id}")
+async def modify_routine_api(routine_id: int, request: Request):
+    """
+    Endpoint HTTP alternativo para modificar rutinas en entornos donde WebSocket falla
+    """
+    logger.info(f"🔄 Solicitud HTTP para modificar rutina. ID={routine_id}")
+    
+    try:
+        # Obtener datos del cuerpo de la solicitud
+        data = await request.json()
+        message = data.get("message", "")
+        
+        if not message:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "No se proporcionó mensaje"}
+            )
+        
+        # Obtener la rutina actual
+        current_routine = get_routine_sync(routine_id)
+        
+        if not current_routine:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Rutina no encontrada"}
+            )
+        
+        # Guardar mensaje del usuario
+        save_chat_message_sync(routine_id, "user", message)
+        
+        # Verificar si el generador está disponible
+        if not routine_generator:
+            generic_response = "Lo siento, no puedo modificar la rutina en este momento. La API de Gemini no está configurada correctamente."
+            save_chat_message_sync(routine_id, "assistant", generic_response)
+            
+            return JSONResponse({
+                "explanation": generic_response,
+                "routine": current_routine
+            })
+        
+        try:
+            # Convertir a objeto Routine para el generador
+            from app.models.models import Routine
+            routine_obj = Routine.model_validate(current_routine)
+            
+            # Modificar rutina
+            modified_routine = await routine_generator.modify_routine(routine_obj, message)
+            explanation = await routine_generator.explain_routine_changes(routine_obj, modified_routine, message)
+            
+            # Guardar rutina modificada
+            routine_dict = modified_routine.model_dump()
+            save_routine_sync(routine_dict, routine_id=routine_id)
+            
+            # Guardar explicación como mensaje
+            save_chat_message_sync(routine_id, "assistant", explanation)
+            
+            logger.info(f"✅ Rutina modificada correctamente vía HTTP. ID={routine_id}")
+            
+            # Devolver respuesta
+            return JSONResponse({
+                "explanation": explanation,
+                "routine": routine_dict
+            })
+            
+        except Exception as modify_err:
+            logger.error(f"❌ Error al modificar rutina vía HTTP: {modify_err}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            generic_response = f"Lo siento, ocurrió un error al modificar la rutina: {str(modify_err)}"
+            save_chat_message_sync(routine_id, "assistant", generic_response)
+            
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": "Error al modificar la rutina",
+                    "explanation": generic_response,
+                    "routine": current_routine
+                }
+            )
+            
+    except Exception as e:
+        logger.error(f"❌ Error general al procesar solicitud HTTP: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Error general: {str(e)}"}
+        )
+
 # Manejar mensajes de texto del WebSocket
 async def handle_ws_text_message(websocket: WebSocket, routine_id: int, message: str):
     """Procesa un mensaje de texto recibido por WebSocket"""

@@ -271,9 +271,15 @@
                     if (ws.readyState !== WebSocket.OPEN) {
                         console.error('Timeout de conexión WebSocket');
                         ws.close();
-                        addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
+                        
+                        // Cambiar a modo HTTP si estamos en Vercel
+                        if (isVercel) {
+                            enableHttpFallbackMode();
+                        } else {
+                            addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
+                        }
                     }
-                }, 10000); // 10 segundos de timeout
+                }, 5000); // 5 segundos de timeout
                 
                 // Configurar eventos del WebSocket
                 ws.onopen = () => {
@@ -282,6 +288,9 @@
                     addMessage('Conexión establecida correctamente.', 'system');
                     sendButton.disabled = false;
                     reconnectAttempts = 0; // Resetear contador de intentos
+                    
+                    // Deshabilitar modo HTTP fallback si estaba activo
+                    httpFallbackActive = false;
                     
                     // Ping periódico para mantener la conexión viva especialmente en Vercel
                     if (isVercel) {
@@ -407,7 +416,33 @@
             } catch (e) {
                 console.error('Error al crear WebSocket:', e);
                 addMessage(`Error al crear conexión WebSocket: ${e.message}`, 'system');
-                setTimeout(setupWebSocket, reconnectDelay);
+                
+                // Cambiar a modo HTTP si estamos en Vercel
+                if (isVercel) {
+                    enableHttpFallbackMode();
+                } else {
+                    setTimeout(setupWebSocket, reconnectDelay);
+                }
+            }
+        }
+        
+        // Variable para controlar si estamos usando el modo HTTP fallback
+        let httpFallbackActive = false;
+        
+        // Función para habilitar el modo alternativo HTTP
+        function enableHttpFallbackMode() {
+            if (httpFallbackActive) return; // Ya está activado
+            
+            httpFallbackActive = true;
+            sendButton.disabled = false;
+            
+            addMessage('Los WebSockets no están disponibles en este entorno. Usando modo HTTP alternativo.', 'system');
+            addMessage('Esta modalidad requiere recargar la página después de cada modificación.', 'system');
+            
+            // Limpiar cualquier intervalo activo
+            if (pingInterval) {
+                clearInterval(pingInterval);
+                pingInterval = null;
             }
         }
         
@@ -437,8 +472,17 @@
             scrollToBottom();
         }
         
-        // Iniciar WebSocket
-        setupWebSocket();
+        // En el entorno de Vercel, activar inmediatamente el modo HTTP fallback
+        if (window.location.hostname.includes('vercel.app')) {
+            console.log('Detectado entorno Vercel - utilizando directamente modo HTTP');
+            enableHttpFallbackMode();
+        } else {
+            // En entorno local, intentar con WebSockets
+            setupWebSocket();
+        }
+        
+        // Inicializar la interfaz
+        scrollToBottom();
         
         // Manejar subida de imagen
         uploadImageBtn.addEventListener('click', () => {
@@ -556,8 +600,45 @@
             sendButton.disabled = true;
             sendButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             
-            // Enviar mensaje por WebSocket
-            if (ws && ws.readyState === WebSocket.OPEN) {
+            // Si el modo HTTP fallback está activo o estamos en Vercel, usar HTTP
+            if (httpFallbackActive || window.location.hostname.includes('vercel.app')) {
+                // Usar HTTP API en lugar de WebSocket
+                fetch(`/api/modify_routine/${routineId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostrar la explicación
+                    addMessage(data.explanation, 'assistant');
+                    
+                    // Actualizar la rutina en la interfaz
+                    if (data.routine) {
+                        updateRoutineView(data.routine);
+                    }
+                    
+                    // Habilitar botón de envío
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                })
+                .catch(error => {
+                    console.error('Error al modificar rutina:', error);
+                    addMessage(`Error al modificar la rutina: ${error.message}. Por favor, intenta de nuevo.`, 'assistant');
+                    
+                    // Habilitar botón de envío
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                });
+            } else if (ws && ws.readyState === WebSocket.OPEN) {
+                // Usar WebSocket si está disponible y abierto
                 ws.send(message);
             } else {
                 addMessage('Error de conexión. Intentando reconectar...', 'assistant');
