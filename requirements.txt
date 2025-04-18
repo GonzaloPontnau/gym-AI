@@ -1,16 +1,16 @@
 # Dependencias básicas del framework
 fastapi==0.110.0
-uvicorn==0.27.1  # Actualizado por seguridad
-gunicorn==23.0.0  # Actualizado desde 21.2.0 para solucionar vulnerabilidades de contrabando de solicitudes HTTP
+uvicorn==0.27.1
+gunicorn==23.0.0
 
 # Plantillas y procesamiento de formularios
-jinja2==3.1.3  # ADVERTENCIA: Actualizar cuando se publique la versión que solucione CVE-2024-22195/22196/22197
-markupsafe==2.1.5  # Agregado como dependencia explícita de Jinja2
-python-multipart==0.0.18  # Actualizado desde 0.0.9 para solucionar vulnerabilidades DoS
+jinja2==3.1.6  # Actualizado para solucionar múltiples vulnerabilidades de XSS e inyección de plantillas
+markupsafe==2.1.5
+python-multipart==0.0.18
 
 # Base de datos
 aiosqlite==0.19.0
-sqlalchemy==2.0.28  # Actualizado a la última versión
+sqlalchemy==2.0.28
 asyncpg==0.29.0
 psycopg2-binary==2.9.9
 
@@ -18,11 +18,12 @@ psycopg2-binary==2.9.9
 pydantic==2.6.3
 
 # Seguridad
-python-jose[cryptography]==3.4.0  # Actualizado desde 3.3.0 para resolver confusión de algoritmo con claves OpenSSH ECDSA
-cryptography==42.0.5  # Especificada versión mínima para seguridad
+python-jose[cryptography]==3.4.0
+ecdsa>=0.18.0  # Añadido explícitamente para mitigar vulnerabilidades de timing attack y falta de cifrado
+cryptography==44.0.1  # Actualizado para solucionar vulnerabilidades de confusión de tipo y reportes de error
 
 # Manejo de imágenes
-Pillow==10.3.0  # Actualizado desde 10.2.0 para solucionar desbordamiento de búfer en _imagingcms.c
+Pillow==10.3.0
 
 # WebSockets y comunicación asíncrona
 websockets==12.0
@@ -30,4 +31,7 @@ aiofiles==23.2.1
 
 # Integración con API de IA
 google-generativeai==0.3.2
-python-dotenv==1.0.1  # Actualizado a la última versión estable
+python-dotenv==1.0.1
+
+# Dependencias transitivas con problemas de seguridad
+zipp>=3.19.1  # Añadido explícitamente para solucionar bucle infinito

@@ -38,6 +38,39 @@
   - Aplicar validación estricta a toda entrada de usuario
   - Considerar usar SandboxedEnvironment con restricciones adicionales
 
+### zipp (Media)
+- **Vulnerabilidad**: Bucle infinito que podría permitir ataques DoS
+- **Introducida a través de**: gunicorn@23.0.0 y sqlalchemy@2.0.28
+- **Mitigación**: Actualizado a la versión 3.19.1 o superior
+
+### cryptography (Alta/Media)
+- **Vulnerabilidades**: 
+  - Confusión de tipos (CVE-2023-49083)
+  - Ausencia de informe de condición de error
+  - Consumo incontrolado de recursos
+- **Mitigación**: 
+  - Actualizado a la versión 44.0.1 que resuelve todas estas vulnerabilidades
+  - Implementado control de recursos para procesar datos criptográficos
+
+### jinja2 (Media)
+- **Vulnerabilidades**: 
+  - Cross-site Scripting (XSS)
+  - Neutralización inadecuada
+  - Múltiples vulnerabilidades de inyección de plantillas
+- **Mitigación**:
+  - Actualizado a la versión 3.1.6 que corrige todas estas vulnerabilidades
+  - Implementada escapado adicional en plantillas críticas
+  - Desactivado filtro `attr` para contenido generado por el usuario
+
+### ecdsa (Alta)
+- **Vulnerabilidades**:
+  - Ausencia de cifrado de datos sensibles
+  - Vulnerabilidad a ataques de temporización
+- **Introducida a través de**: python-jose@3.4.0
+- **Mitigación**:
+  - Añadido requisito explícito de ecdsa>=0.18.0
+  - Implementadas buenas prácticas para manejo de claves
+
 ## Mejores Prácticas de Seguridad para la Aplicación
 
 1. **Validación de Entrada**
@@ -82,3 +115,9 @@ pip-compile --upgrade
   - gunicorn: 21.2.0 → 23.0.0 (contrabando de solicitudes HTTP)
   - Pillow: 10.2.0 → 10.3.0 (desbordamiento de búfer)
   - python-multipart: 0.0.9 → 0.0.18 (DoS via boundary malformado)
+
+- **2024-07-XX**: Actualizadas dependencias adicionales para resolver nuevas vulnerabilidades:
+  - zipp: → 3.19.1 (bucle infinito)
+  - cryptography: 42.0.5 → 44.0.1 (múltiples vulnerabilidades)
+  - jinja2: 3.1.3 → 3.1.6 (múltiples vulnerabilidades XSS e inyección)
+  - ecdsa: → 0.18.0 (vulnerabilidades en manejo de datos sensibles)

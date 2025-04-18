@@ -1,6 +1,15 @@
 #!/bin/bash
 echo "Iniciando GymAI"
 
+# Instalar versiones seguras de dependencias vulnerables
+echo "Instalando versiones seguras de dependencias críticas..."
+pip install zipp>=3.19.1 \
+    cryptography>=44.0.1 \
+    jinja2>=3.1.6 \
+    ecdsa>=0.18.0 \
+    python-jose[cryptography]>=3.4.0 \
+    --upgrade
+
 # Instalar dependencias
 echo "Instalando dependencias..."
 pip install -r requirements.txt
