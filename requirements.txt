@@ -4,7 +4,7 @@ uvicorn==0.27.1
 gunicorn==23.0.0
 
 # Plantillas y procesamiento de formularios
-jinja2==3.1.6  # Actualizado para solucionar múltiples vulnerabilidades de XSS e inyección de plantillas
+jinja2==3.1.6
 markupsafe==2.1.5
 python-multipart==0.0.18
 
@@ -18,9 +18,9 @@ psycopg2-binary==2.9.9
 pydantic==2.6.3
 
 # Seguridad
-python-jose[cryptography]==3.4.0
-ecdsa>=0.18.0  # Añadido explícitamente para mitigar vulnerabilidades de timing attack y falta de cifrado
-cryptography==44.0.1  # Actualizado para solucionar vulnerabilidades de confusión de tipo y reportes de error
+# Reemplazando python-jose[cryptography] por cryptography directa para evitar vulnerabilidades de ecdsa
+cryptography==44.0.1
+authlib==1.2.1  # Alternativa moderna y segura a python-jose
 
 # Manejo de imágenes
 Pillow==10.3.0
@@ -34,4 +34,5 @@ google-generativeai==0.3.2
 python-dotenv==1.0.1
 
 # Dependencias transitivas con problemas de seguridad
-zipp>=3.19.1  # Añadido explícitamente para solucionar bucle infinito
+zipp==3.19.1  # Fijando versión para solucionar el problema de bucle infinito
+importlib-metadata==6.8.0  # Versión compatible con zipp>=3.19.1

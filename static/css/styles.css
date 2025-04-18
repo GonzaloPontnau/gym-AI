@@ -371,10 +371,16 @@ body {
 /* Estilos para el footer global */
 .global-footer {
     background-color: #2c2c2c;
-    border-top: 1px solid #444;
     color: #e0e0e0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #444;
+    z-index: 100;
     margin-top: 2rem;
-    padding: 1rem 0;
 }
 
 .global-footer p {
