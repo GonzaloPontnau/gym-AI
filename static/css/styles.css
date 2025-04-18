@@ -1,5 +1,3 @@
-/* static/css/styles.css */
-
 /* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -7,7 +5,6 @@ body {
     color: #e0e0e0 !important;
 }
 
-/* Texto muted */
 .text-muted, small.text-muted, .form-text.text-muted {
     color: #868e96 !important;
 }
@@ -354,6 +351,61 @@ body {
 .card-footer {
     background-color: rgba(0, 0, 0, 0.2) !important;
     border-top: 1px solid #444 !important;
+}
+
+/* Mejorar visibilidad del icono de papelera */
+.delete-btn {
+    width: 44px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.delete-btn i {
+    font-size: 1.2rem;
+    color: #ffffff;
+}
+
+/* Estilos para el footer global */
+.global-footer {
+    background-color: #2c2c2c;
+    border-top: 1px solid #444;
+    color: #e0e0e0;
+    margin-top: 2rem;
+    padding: 1rem 0;
+}
+
+.global-footer p {
+    color: #a074c3;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.github-link {
+    display: inline-flex;
+    align-items: center;
+    color: #e0e0e0;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.github-link i {
+    font-size: 1.2rem;
+    margin-right: 0.4rem;
+}
+
+.github-link:hover {
+    color: #a074c3;
+    transform: translateY(-2px);
+}
+
+/* Asegurarse que el icono de la basura sea visible en modo oscuro */
+.btn-danger .bi-trash-fill {
+    color: white !important;
+    font-size: 1.1rem;
 }
 
 /* Media queries para responsive */
