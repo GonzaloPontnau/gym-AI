@@ -456,6 +456,7 @@ body {
 .btn-outline-primary {
     border-color: #a074c3;
     color: #a074c3;
+    margin-top: 5px;
 }
 
 .btn-outline-primary:hover, .btn-outline-primary:focus {
