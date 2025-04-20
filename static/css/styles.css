@@ -2,7 +2,6 @@
 html, body {
     margin: 0;
     height: 100%;
-    overflow: hidden; /* Evita scroll de página */
 }
 * {
     box-sizing: border-box;
@@ -203,16 +202,16 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 1.5rem;
-    padding: 1rem; /* Reemplaza margin para evitar overflow de página */
+    padding: 1rem;
     height: calc(100vh - 70px);
     box-sizing: border-box;
-    overflow: hidden; /* Evita scroll de la página */
 }
 
 .routine-container {
     border-radius: 10px;
     padding: 1.5rem;
     overflow-y: auto; /* Agregar barra de desplazamiento */
+    height: calc(100vh - 100px);
 }
 
 .chat-container {
@@ -220,8 +219,9 @@ body {
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    height: 100%;   /* Ocupa toda la altura disponible */
+    height: calc(100vh - 100px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    overflow: hidden; /* Evita scroll del contenedor pero permite scroll en chat-messages */
 }
 
 .chat-header {
@@ -233,7 +233,9 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
-    /* Flexión por defecto; altura viene de chat-container */
+    max-height: calc(100% - 120px); /* Limita la altura para dejar espacio para el input */
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-input-container textarea::placeholder,

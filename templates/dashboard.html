@@ -185,10 +185,20 @@
         // Limitar la cantidad de mensajes visibles para mejorar rendimiento
         function limitVisibleMessages(maxMessages = 50) {
             const messages = messagesContainer.querySelectorAll('.message');
+            
+            // Si hay demasiados mensajes, eliminar los más antiguos
             if (messages.length > maxMessages) {
-                // Eliminar los mensajes más antiguos si hay demasiados
-                for (let i = 0; i < messages.length - maxMessages; i++) {
-                    messagesContainer.removeChild(messages[i]);
+                console.log(`Reduciendo mensajes de ${messages.length} a ${maxMessages}`);
+                
+                // Eliminar mensajes extras comenzando por los más antiguos
+                const countToRemove = messages.length - maxMessages;
+                
+                // Eliminarlos uno por uno desde el más antiguo (primero en la lista)
+                for (let i = 0; i < countToRemove; i++) {
+                    // Siempre eliminamos el primero porque al eliminar uno, el resto se reordena
+                    if (messagesContainer.firstChild) {
+                        messagesContainer.removeChild(messagesContainer.firstChild);
+                    }
                 }
             }
         }
@@ -626,7 +636,7 @@
             
             // Cambiar estado del botón
             sendButton.disabled = true;
-            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Enviar';
             
             // Si el modo HTTP fallback está activo o estamos en Vercel, usar HTTP
             if (httpFallbackActive || window.location.hostname.includes('vercel.app')) {
@@ -663,7 +673,7 @@
                     
                     // Habilitar botón de envío
                     sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
                 })
                 .catch(error => {
                     console.error('Error al modificar rutina:', error);
@@ -705,12 +715,12 @@
                         .finally(() => {
                             // Habilitar botón de envío
                             sendButton.disabled = false;
-                            sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                            sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
                         });
                     } else {
                         // Habilitar botón de envío
                         sendButton.disabled = false;
-                        sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                        sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
                     }
                 });
             } else if (ws && ws.readyState === WebSocket.OPEN) {
@@ -723,7 +733,7 @@
                 // Habilitar botón después de un tiempo
                 setTimeout(() => {
                     sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
+                    sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
                 }, 3000);
             }
             
