@@ -1,3 +1,13 @@
+/* Global reset and layout helpers */
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden; /* Evita scroll de página */
+}
+* {
+    box-sizing: border-box;
+}
+
 /* Estilos generales */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -193,8 +203,10 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 1.5rem;
-    margin: 1rem;
-    height: calc(100vh - 70px); /* Ajustado para ocupar toda la pantalla disponible */
+    padding: 1rem; /* Reemplaza margin para evitar overflow de página */
+    height: calc(100vh - 70px);
+    box-sizing: border-box;
+    overflow: hidden; /* Evita scroll de la página */
 }
 
 .routine-container {
@@ -208,10 +220,8 @@ body {
     border-radius: 10px;
     display: flex;
     flex-direction: column;
+    height: 100%;   /* Ocupa toda la altura disponible */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    position: sticky;
-    top: 1.5rem; /* Mantener fijo cuando se desplaza */
-    right: 0; /* Fijar en el lado derecho */
 }
 
 .chat-header {
@@ -223,9 +233,7 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
-    height: calc(100vh - 200px); /* Altura fija para forzar scroll */
-    display: flex;
-    flex-direction: column;
+    /* Flexión por defecto; altura viene de chat-container */
 }
 
 .chat-input-container textarea::placeholder,
@@ -425,6 +433,7 @@ body {
         position: relative;
         top: 0;
         right: 0;
+        overflow-y: auto; /* Agregar overflow auto */
     }
     
     .routine-container {
