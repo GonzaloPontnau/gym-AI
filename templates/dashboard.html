@@ -182,6 +182,30 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
+        // Limitar la cantidad de mensajes visibles para mejorar rendimiento
+        function limitVisibleMessages(maxMessages = 50) {
+            const messages = messagesContainer.querySelectorAll('.message');
+            if (messages.length > maxMessages) {
+                // Eliminar los mensajes más antiguos si hay demasiados
+                for (let i = 0; i < messages.length - maxMessages; i++) {
+                    messagesContainer.removeChild(messages[i]);
+                }
+            }
+        }
+        
+        // Manejar vista responsive mejor
+        function adjustLayout() {
+            if (window.innerWidth < 992) {
+                // En dispositivos móviles, asegurar que el chat tenga altura adecuada
+                const chatContainer = document.querySelector('.chat-container');
+                chatContainer.style.height = '400px';
+            } else {
+                // En desktop, volver a altura automática
+                const chatContainer = document.querySelector('.chat-container');
+                chatContainer.style.height = '';
+            }
+        }
+        
         // Actualizar la vista de la rutina
         function updateRoutineView(routine) {
             // Actualizar el nombre de la rutina
@@ -465,6 +489,11 @@
             
             messageDiv.textContent = content;
             messagesContainer.appendChild(messageDiv);
+            
+            // Limitar los mensajes visibles para mejorar rendimiento
+            limitVisibleMessages(50);
+            
+            // Hacer scroll hacia abajo para mostrar el nuevo mensaje
             scrollToBottom();
         }
         
@@ -757,14 +786,6 @@
             URL.revokeObjectURL(url);
         }
         
-        // Agregar evento al botón de exportación
-        if (exportRoutineBtn) {
-            exportRoutineBtn.addEventListener('click', exportRoutine);
-        }
-        
-        // Scroll inicial al final del chat
-        scrollToBottom();
-
         // Manejar vista responsive mejor
         function adjustLayout() {
             if (window.innerWidth < 992) {
@@ -777,6 +798,14 @@
                 chatContainer.style.height = '';
             }
         }
+
+        // Agregar evento al botón de exportación
+        if (exportRoutineBtn) {
+            exportRoutineBtn.addEventListener('click', exportRoutine);
+        }
+        
+        // Scroll inicial al final del chat
+        scrollToBottom();
 
         // Ajustar layout al cargar y al cambiar tamaño de ventana
         adjustLayout();

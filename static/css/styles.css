@@ -223,11 +223,9 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
-}
-
-.chat-input-container {
-    padding: 1rem;
-    border-top: 1px solid #444;
+    height: calc(100vh - 200px); /* Altura fija para forzar scroll */
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-input-container textarea::placeholder,
