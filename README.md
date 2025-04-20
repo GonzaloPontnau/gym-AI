@@ -6,17 +6,17 @@
 
 ## Demo
 
-### Dashboard Principal
-![demo-dashboard]()
-
 ### Generación de Rutinas
-![demo-rutinas]()
-
-### Análisis de Posturas
-![demo-analisis]()
+![prompt-inicial](https://github.com/user-attachments/assets/8c1bfbdb-12f6-4a20-bf89-1fdb9169d7c1)
 
 ### Chat en Tiempo Real
-![demo-chat]()
+![modificar-rutina](https://github.com/user-attachments/assets/6163adbe-ad67-49d2-802e-3bff0e953ae4)
+
+### Mis Rutinas
+![mis-rutinas](https://github.com/user-attachments/assets/b8c4786c-d320-4c64-b338-b0dba6212be5)
+
+### Exportar rutina
+![exportar-rutina](https://github.com/user-attachments/assets/871a144f-d57f-434b-8f32-1176ac4ebd4e)
 
 ## Descripción
 
