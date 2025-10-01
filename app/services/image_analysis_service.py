@@ -25,8 +25,9 @@ else:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         print("✅ API de Gemini configurada correctamente")
-        # Definir el modelo a utilizar (gemini-1.5-pro es multimodal y el modelo recomendado)
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        # Definir el modelo a utilizar - gemini-pro-vision para análisis de imágenes
+        # Si este no funciona, ejecuta: python list_gemini_models.py
+        model = genai.GenerativeModel('gemini-pro-vision')
     except Exception as e:
         print(f"❌ Error al configurar la API de Gemini: {str(e)}")
 
