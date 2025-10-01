@@ -25,8 +25,8 @@ else:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
         print("✅ API de Gemini configurada correctamente")
-        # Definir el modelo a utilizar (gemini-1.5-flash es multimodal)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Definir el modelo a utilizar (gemini-1.5-pro es multimodal y el modelo recomendado)
+        model = genai.GenerativeModel('gemini-1.5-pro')
     except Exception as e:
         print(f"❌ Error al configurar la API de Gemini: {str(e)}")
 
