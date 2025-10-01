@@ -9,6 +9,21 @@ jobs:
     name: Deploy to Render
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Render deploy hook
+      - name: Check if deploy hook is configured
+        id: check-secret
         run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }} 
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ RENDER_DEPLOY_HOOK_URL secret is not configured"
+            echo "📝 Please configure it in: Settings → Secrets and variables → Actions"
+            echo "🔗 Get the deploy hook URL from your Render dashboard"
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Trigger Render deploy hook
+        if: steps.check-secret.outputs.configured == 'true'
+        run: |
+          echo "🚀 Deploying to Render..."
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          echo "✅ Deploy hook triggered successfully" 

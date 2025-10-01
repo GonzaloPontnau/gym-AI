@@ -121,6 +121,17 @@ Algunos de los desafíos enfrentados incluyen:
 
 ---
 
+## 🚀 Despliegue
+
+Para configurar el despliegue automático en Render con GitHub Actions, consulta la guía completa en [DEPLOY_SETUP.md](./DEPLOY_SETUP.md).
+
+**Resumen rápido:**
+1. Obtén el Deploy Hook URL desde tu Dashboard de Render
+2. Configúralo como secreto `RENDER_DEPLOY_HOOK_URL` en GitHub (Settings → Secrets)
+3. Cada push a `main` o `master` desplegará automáticamente
+
+---
+
 ## 👨‍💻 Desarrollado por
 
 **Ing. Pontnau, Gonzalo Martín**
