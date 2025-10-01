@@ -56,6 +56,8 @@ ws_routes = WebSocketRoutes(manager, routine_generator, image_analyzer)
 @app.on_event("startup")
 async def startup_event():
     """Inicializar la base de datos"""
+    print("🚀 Iniciando aplicación GymAI...")
+    
     # Solo inicializar si no estamos en Vercel (donde lo hace vercel_app.py)
     if not os.environ.get("VERCEL_ENV"):
         print("⏳ Inicializando base de datos (evento startup)...")
@@ -64,9 +66,13 @@ async def startup_event():
             print("✅ Base de datos inicializada correctamente")
         except Exception as e:
             print(f"❌ Error al inicializar la base de datos: {str(e)}")
-            print("⚠️ La aplicación seguirá ejecutándose, pero podrían ocurrir errores")
+            print("⚠️ La aplicación continuará sin base de datos inicializada")
             import traceback
             print(traceback.format_exc())
+    else:
+        print("⏩ Saltando inicialización de BD (entorno Vercel)")
+    
+    print(f"✅ Aplicación iniciada - Gemini disponible: {GEMINI_CONFIGURED}")
 
 # Rutas de la aplicación
 @app.get("/", response_class=HTMLResponse)
@@ -259,8 +265,21 @@ async def modify_routine_api(routine_id: int, request: Request):
 async def health_check():
     """Endpoint para verificar si la aplicación está funcionando"""
     from datetime import datetime
-    return {
-        "status": "online",
+    
+    health_status = {
+        "status": "ok",
         "server_time": datetime.now().isoformat(),
         "gemini_available": GEMINI_CONFIGURED
     }
+    
+    # Intentar verificar la base de datos
+    try:
+        from app.db.database import engine
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        health_status["database"] = "connected"
+    except Exception as e:
+        health_status["database"] = f"error: {str(e)[:100]}"
+    
+    return health_status

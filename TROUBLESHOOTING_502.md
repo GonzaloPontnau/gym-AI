@@ -55,18 +55,33 @@ gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app \
 
 1. **Hacer commit de los cambios:**
    ```bash
-   git add app/main.py
-   git commit -m "Fix: Eliminar manejo manual del bucle de eventos asyncio que causaba Error 502"
+   git add app/main.py TROUBLESHOOTING_502.md
+   git commit -m "Fix: Mejorar health check y startup event para diagnosticar Error 502"
    git push origin master
    ```
 
 2. **Render desplegará automáticamente** (si tienes autoDeploy: true)
 
 3. **Verificar el despliegue:**
-   - Espera a que el build termine en el Dashboard de Render
-   - Verifica que el servicio esté "Live"
+   - Ve a https://dashboard.render.com
+   - Selecciona tu servicio "gymai"
+   - Ve a la pestaña "Events" - verás el nuevo deploy
+   - Espera a que el estado cambie a "Live" (2-5 minutos)
    - Accede a `https://tu-app.onrender.com/health`
-   - Deberías ver: `{"status": "online", "server_time": "...", "gemini_available": true/false}`
+   - Deberías ver: 
+     ```json
+     {
+       "status": "ok",
+       "server_time": "2025-10-01T...",
+       "gemini_available": true,
+       "database": "connected"
+     }
+     ```
+
+4. **Si el Error 502 persiste después de 5 minutos:**
+   - Ve a la pestaña "Logs" en el Dashboard de Render
+   - Busca el error específico que está causando el problema
+   - Revisa las secciones siguientes según el error encontrado
 
 ## 🐛 Si el Error 502 Persiste
 
