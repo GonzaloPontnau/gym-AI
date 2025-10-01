@@ -10,9 +10,31 @@ El Error 502 era causado por un conflicto con el bucle de eventos asyncio en `ap
    - Gunicorn + Uvicorn workers gestionan automáticamente los bucles de eventos
    - El código manual causaba conflictos y errores RuntimeError
 
-## 🔍 Verificación del Despliegue
+## 🔍 Verificación Local (ANTES de desplegar)
 
-Antes de hacer deploy, verifica lo siguiente:
+**⚡ NUEVO: Script de Diagnóstico Automático**
+
+Antes de desplegar a Render, ejecuta el script de diagnóstico:
+
+```bash
+python check_health.py
+```
+
+Este script verificará automáticamente:
+- ✅ Todas las dependencias están instaladas
+- ✅ Variables de entorno configuradas
+- ✅ Estructura de archivos correcta
+- ✅ La aplicación puede iniciar
+- ✅ Conexión a base de datos funciona
+- ✅ Configuración de Render es correcta
+
+Si todas las verificaciones pasan, estás listo para desplegar. Si alguna falla, el script te dirá exactamente qué corregir.
+
+---
+
+## 🔍 Verificación del Despliegue en Render
+
+Después de hacer deploy, verifica lo siguiente:
 
 ### 1. Variables de Entorno en Render
 
