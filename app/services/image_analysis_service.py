@@ -1,6 +1,7 @@
 import os
 import base64
 from io import BytesIO
+import asyncio
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -138,7 +139,8 @@ class GeminiImageAnalyzer:
                 """
             
             # Generar el análisis con Gemini
-            response = model.generate_content([prompt, image])
+            # Ejecutar en thread pool para no bloquear el event loop
+            response = await asyncio.to_thread(model.generate_content, [prompt, image])
             
             # Devolver el resultado
             return response.text.strip()
@@ -201,7 +203,8 @@ class GeminiImageAnalyzer:
                 """
             
             # Generar las sugerencias con Gemini
-            response = model.generate_content([prompt, image])
+            # Ejecutar en thread pool para no bloquear el event loop
+            response = await asyncio.to_thread(model.generate_content, [prompt, image])
             
             # Devolver el resultado
             return response.text.strip()

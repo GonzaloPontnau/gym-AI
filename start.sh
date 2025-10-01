@@ -27,4 +27,6 @@ exec gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app \
     --limit-request-fields 100 \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --timeout 120
+    --timeout 300 \
+    --graceful-timeout 30 \
+    --keep-alive 5

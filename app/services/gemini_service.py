@@ -2,6 +2,7 @@ import os
 import json
 import re
 import traceback
+import asyncio
 from dotenv import load_dotenv
 from app.models.models import Routine, RoutineRequest
 
@@ -115,7 +116,8 @@ class GeminiRoutineGenerator:
         
         try:
             print("Enviando solicitud a Gemini API...")
-            response = model.generate_content(prompt)
+            # Ejecutar en thread pool para no bloquear el event loop
+            response = await asyncio.to_thread(model.generate_content, prompt)
             
             print(f"Respuesta recibida de Gemini, extrayendo JSON...")
             print(f"Muestra de respuesta: {response.text[:200]}...")  # Primeros 200 caracteres
@@ -148,7 +150,8 @@ class GeminiRoutineGenerator:
         prompt = self._build_modification_prompt(current_routine, user_request)
         
         try:
-            response = model.generate_content(prompt)
+            # Ejecutar en thread pool para no bloquear el event loop
+            response = await asyncio.to_thread(model.generate_content, prompt)
             routine_dict = self._extract_json_from_text(response.text)
             
             if not routine_dict:
@@ -180,7 +183,8 @@ class GeminiRoutineGenerator:
         """
         
         try:
-            response = model.generate_content(prompt)
+            # Ejecutar en thread pool para no bloquear el event loop
+            response = await asyncio.to_thread(model.generate_content, prompt)
             return response.text.strip()
             
         except Exception as e:
