@@ -1,5 +1,4 @@
 import os
-import asyncio
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect, HTTPException, Form, status
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
@@ -9,15 +8,6 @@ from dotenv import load_dotenv
 
 # Cargar variables de entorno primero
 load_dotenv()
-
-# Intentar obtener el bucle de eventos actual o crear uno nuevo
-try:
-    loop = asyncio.get_event_loop()
-    print(f"Usando bucle de eventos existente en main: {loop}")
-except RuntimeError:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    print(f"Creado nuevo bucle de eventos en main: {loop}")
 
 # Importar servicios y módulos
 from app.services.gemini_service import GeminiRoutineGenerator, GEMINI_CONFIGURED
