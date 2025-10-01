@@ -17,11 +17,11 @@ if GEMINI_API_KEY:
     try:
         import google.generativeai as genai
         genai.configure(api_key=GEMINI_API_KEY)
-        # Definir el modelo a utilizar - usando gemini-pro que es el modelo estable
+        # Definir el modelo a utilizar - usando gemini-1.5-flash que es el modelo más reciente
         # Si este no funciona, ejecuta: python list_gemini_models.py para ver modelos disponibles
-        model = genai.GenerativeModel('gemini-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         GEMINI_CONFIGURED = True
-        print("✅ API de Gemini configurada correctamente con modelo gemini-pro")
+        print("✅ API de Gemini configurada correctamente con modelo gemini-1.5-flash")
     except Exception as e:
         print(f"❌ Error al configurar Gemini API: {str(e)}")
 else:

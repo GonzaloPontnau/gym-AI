@@ -52,7 +52,10 @@ try:
     print("=" * 80)
     print("RECOMENDACIÓN:")
     print("Usa el nombre SIN el prefijo 'models/' en tu código")
-    print("Ejemplo: model = genai.GenerativeModel('gemini-pro')")
+    print("Modelos recomendados actuales:")
+    print("  - gemini-1.5-flash (rápido y eficiente)")
+    print("  - gemini-1.5-pro (más potente)")
+    print("Ejemplo: model = genai.GenerativeModel('gemini-1.5-flash')")
     print("=" * 80)
     
 except ImportError:
