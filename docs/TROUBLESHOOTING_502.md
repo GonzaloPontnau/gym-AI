@@ -17,7 +17,7 @@ El Error 502 era causado por un conflicto con el bucle de eventos asyncio en `ap
 Antes de desplegar a Render, ejecuta el script de diagnóstico:
 
 ```bash
-python check_health.py
+python scripts/check_health.py
 ```
 
 Este script verificará automáticamente:

@@ -82,15 +82,24 @@ gym-AI/
 │   ├── main.py             # Punto de entrada principal
 │   └── sqlite_helper.py    # Utilidades para manejo de SQLite
 │
+├── docs/                   # Documentación
+│   ├── TROUBLESHOOTING_502.md  # Guía de solución Error 502
+│   └── security.md         # Documentación de seguridad
+│
+├── scripts/                # Scripts de utilidad
+│   ├── check_health.py     # Diagnóstico de salud antes de deploy
+│   ├── deploy.sh           # Script de despliegue
+│   └── list_gemini_models.py   # Listado de modelos Gemini
+│
 ├── static/                 # Archivos estáticos
 │   ├── css/                # Estilos
+│   └── logoGymAI.png       # Logo de la aplicación
 │
 ├── templates/              # Plantillas HTML
 │   ├── base.html           # Plantilla base
 │   ├── dashboard.html      # Dashboard principal
 │   └── routines_list.html  # Lista de rutinas
 │
-├── scripts/                # Scripts de utilidad
 ├── requirements.txt        # Dependencias del proyecto
 ├── render.yaml             # Configuración para despliegue en Render
 └── README.md               # Este archivo
