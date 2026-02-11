@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
-from app.models.models import Routine, Day, Exercise, RoutineRequest
+from app.models.models import Routine, Day, Exercise
+from app.schemas.routines import RoutineRequest
 
 class TestModels:
     """Pruebas para los modelos Pydantic"""

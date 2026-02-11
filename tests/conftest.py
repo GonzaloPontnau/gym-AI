@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app.main import app
 from app.models.models import Routine, Day, Exercise
-from app.db.database import Base
+from app.db.models import Base
 
 # Crear una base de datos de prueba en memoria
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"

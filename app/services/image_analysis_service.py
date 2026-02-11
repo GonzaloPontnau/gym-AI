@@ -1,214 +1,162 @@
-import os
+"""
+Service for analyzing exercise images using the Gemini API.
+Shares Gemini configuration with gemini_service via centralized config.
+"""
+
 import base64
 from io import BytesIO
 import asyncio
-import google.generativeai as genai
-from dotenv import load_dotenv
 
-# Intentar importar PIL, si no está disponible, definir un flag
+import google.generativeai as genai
+
+from app.core.config import get_settings
+from app.core.logging import get_logger
+
+logger = get_logger("services.image_analysis")
+
+# Lazy PIL import
 PIL_AVAILABLE = False
 try:
     from PIL import Image
     PIL_AVAILABLE = True
-    print("✅ PIL (Pillow) está disponible - Funcionalidad de análisis de imágenes activada")
 except ImportError:
-    print("⚠️ PIL (Pillow) no está instalado - Funcionalidad de análisis de imágenes desactivada")
+    logger.warning("Pillow not installed — image analysis disabled")
 
-# Cargar variables de entorno
-load_dotenv()
-
-# Verificar si la API de Gemini está configurada
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    print("⚠️ GEMINI_API_KEY no está configurada - Funcionalidad de IA limitada")
-else:
-    # Configurar la API de Gemini con la clave API
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        print("✅ API de Gemini configurada correctamente")
-        # Definir el modelo a utilizar - gemini-2.5-flash soporta tanto texto como imágenes
-        # Si este no funciona, ejecuta: python list_gemini_models.py
-        model = genai.GenerativeModel('gemini-2.5-flash')
-    except Exception as e:
-        print(f"❌ Error al configurar la API de Gemini: {str(e)}")
 
 class GeminiImageAnalyzer:
-    """Servicio para analizar imágenes de ejercicios usando la API de Gemini"""
-    
-    async def analyze_exercise_image(self, image_data, exercise_name=None):
+    """Analyzes exercise images and suggests variations via Gemini AI."""
+
+    def __init__(self):
+        settings = get_settings()
+        self._configured = settings.gemini_configured
+        self._max_image_size = settings.max_image_size_bytes
+
+        if self._configured:
+            try:
+                genai.configure(api_key=settings.GEMINI_API_KEY)
+                self._model = genai.GenerativeModel(settings.GEMINI_MODEL)
+                logger.info("Image analyzer configured with model %s", settings.GEMINI_MODEL)
+            except Exception as e:
+                logger.error("Failed to configure image analyzer: %s", e)
+                self._configured = False
+        else:
+            self._model = None
+
+    # --- Image Validation ---
+
+    def _validate_and_open_image(self, image_data):
         """
-        Analiza una imagen de un ejercicio y proporciona retroalimentación sobre la postura
-        
-        Args:
-            image_data: La imagen en formato bytes o base64
-            exercise_name: Nombre del ejercicio (opcional)
-        
+        Validate and open image data from various formats.
+
         Returns:
-            str: Análisis y feedback sobre la postura y técnica
+            PIL.Image or error string.
         """
-        # Verificar si PIL está disponible
         if not PIL_AVAILABLE:
-            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
-        
-        # Verificar si la API de Gemini está configurada
-        if not GEMINI_API_KEY:
-            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada porque no se ha configurado la API de Gemini."
-        
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada (Pillow no instalado)."
+
+        if not self._configured:
+            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada (API de Gemini no configurada)."
+
         try:
-            # Mejorar la validación de imágenes para mitigar vulnerabilidades
-            image = None
-            
-            # Convertir datos de imagen si es necesario
-            if isinstance(image_data, str) and image_data.startswith('data:image'):
-                # Definir un límite máximo para tamaño de imagen (10MB)
-                MAX_IMAGE_SIZE = 10 * 1024 * 1024
-                
-                # Extraer datos base64
-                try:
-                    image_data = image_data.split(',')[1]
-                    image_bytes = base64.b64decode(image_data)
-                    
-                    # Verificar tamaño
-                    if len(image_bytes) > MAX_IMAGE_SIZE:
-                        return "La imagen es demasiado grande. Por favor, utiliza una imagen más pequeña (max. 10MB)."
-                    
-                    # Validar que sea una imagen real antes de procesarla
-                    image = Image.open(BytesIO(image_bytes))
-                    image.verify()  # Verificar que es una imagen válida
-                    
-                    # Reabrir después de verify() ya que verify cierra el archivo
-                    image = Image.open(BytesIO(image_bytes))
-                except Exception as e:
-                    print(f"Error al validar imagen: {str(e)}")
-                    return "No se pudo procesar la imagen. El formato no es válido o está corrupta."
-                    
+            if isinstance(image_data, str) and image_data.startswith("data:image"):
+                image_bytes = base64.b64decode(image_data.split(",")[1])
             elif isinstance(image_data, bytes):
-                # Verificar tamaño
-                MAX_IMAGE_SIZE = 10 * 1024 * 1024
-                if len(image_data) > MAX_IMAGE_SIZE:
-                    return "La imagen es demasiado grande. Por favor, utiliza una imagen más pequeña (max. 10MB)."
-                
-                try:
-                    # Validar que sea una imagen real
-                    image = Image.open(BytesIO(image_data))
-                    image.verify()
-                    # Reabrir después de verify()
-                    image = Image.open(BytesIO(image_data))
-                except Exception as e:
-                    print(f"Error al validar imagen: {str(e)}")
-                    return "No se pudo procesar la imagen. El formato no es válido o está corrupta."
+                image_bytes = image_data
             else:
-                try:
-                    # Intentar abrir como flujo de bytes
-                    image = Image.open(BytesIO(image_data))
-                    image.verify()
-                    # Reabrir después de verify()
-                    image = Image.open(BytesIO(image_data))
-                except Exception as e:
-                    print(f"Error al validar imagen: {str(e)}")
-                    return "Formato de imagen no compatible. Por favor, intenta con otro formato."
-            
-            # Asegurar que tenemos una imagen válida antes de continuar
-            if not image:
-                return "No se pudo procesar la imagen. Por favor, intenta con otro formato."
-            
-            # Construir el prompt según si tenemos el nombre del ejercicio o no
-            if exercise_name:
-                prompt = f"""
-                Analiza esta imagen donde la persona está realizando el ejercicio: {exercise_name}.
-                
-                Por favor, proporciona:
-                1. Una evaluación de su postura y técnica
-                2. Puntos específicos de mejora
-                3. Consejos para mejorar la forma del ejercicio
-                4. Posibles riesgos de lesión basados en la técnica mostrada
-                
-                Responde en español de forma clara y concisa.
-                """
-            else:
-                prompt = """
-                Analiza esta imagen de una persona haciendo ejercicio.
-                
-                Por favor:
-                1. Identifica qué ejercicio está realizando
-                2. Evalúa su postura y técnica
-                3. Proporciona consejos específicos para mejorar
-                4. Menciona los beneficios del ejercicio y músculos trabajados
-                
-                Responde en español de forma clara y concisa.
-                """
-            
-            # Generar el análisis con Gemini
-            # Ejecutar en thread pool para no bloquear el event loop
-            response = await asyncio.to_thread(model.generate_content, [prompt, image])
-            
-            # Devolver el resultado
-            return response.text.strip()
-            
+                image_bytes = bytes(image_data)
+
+            if len(image_bytes) > self._max_image_size:
+                return f"La imagen es demasiado grande. Máximo: {self._max_image_size // (1024*1024)}MB."
+
+            image = Image.open(BytesIO(image_bytes))
+            image.verify()
+            # Reopen after verify() since it closes the file
+            return Image.open(BytesIO(image_bytes))
+
         except Exception as e:
-            print(f"Error al analizar la imagen con Gemini: {str(e)}")
-            return "No se pudo analizar la imagen. Por favor, inténtalo de nuevo con una imagen más clara o desde otro ángulo."
-    
-    async def suggest_exercise_variations(self, image_data, difficulty_level=None):
+            logger.error("Image validation failed: %s", e)
+            return "No se pudo procesar la imagen. El formato no es válido o está corrupta."
+
+    # --- Public API ---
+
+    async def analyze_exercise_image(self, image_data, exercise_name: str = None) -> str:
         """
-        Analiza una imagen de un ejercicio y sugiere variaciones
-        
-        Args:
-            image_data: La imagen en formato bytes o base64
-            difficulty_level: Nivel de dificultad deseado (más fácil, similar, más difícil)
-        
-        Returns:
-            str: Sugerencias de variaciones del ejercicio
+        Analyze an exercise image and provide posture/technique feedback.
         """
-        # Verificaciones iniciales
-        if not PIL_AVAILABLE:
-            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada debido a que la biblioteca PIL (Pillow) no está instalada en el servidor."
-        
-        if not GEMINI_API_KEY:
-            return "Lo siento, la funcionalidad de análisis de imágenes está deshabilitada porque no se ha configurado la API de Gemini."
-        
+        result = self._validate_and_open_image(image_data)
+        if isinstance(result, str):
+            return result  # Error message
+        image = result
+
+        if exercise_name:
+            prompt = f"""
+            Analiza esta imagen donde la persona está realizando el ejercicio: {exercise_name}.
+
+            Por favor, proporciona:
+            1. Una evaluación de su postura y técnica
+            2. Puntos específicos de mejora
+            3. Consejos para mejorar la forma del ejercicio
+            4. Posibles riesgos de lesión basados en la técnica mostrada
+
+            Responde en español de forma clara y concisa.
+            """
+        else:
+            prompt = """
+            Analiza esta imagen de una persona haciendo ejercicio.
+
+            Por favor:
+            1. Identifica qué ejercicio está realizando
+            2. Evalúa su postura y técnica
+            3. Proporciona consejos específicos para mejorar
+            4. Menciona los beneficios del ejercicio y músculos trabajados
+
+            Responde en español de forma clara y concisa.
+            """
+
         try:
-            # Convertir datos de imagen
-            if isinstance(image_data, str) and image_data.startswith('data:image'):
-                image_data = image_data.split(',')[1]
-                image_bytes = base64.b64decode(image_data)
-                image = Image.open(BytesIO(image_bytes))
-            else:
-                image = Image.open(BytesIO(image_data))
-            
-            # Construir el prompt según el nivel de dificultad
-            if difficulty_level:
-                prompt = f"""
-                Observa esta imagen de ejercicio y sugiere 3-4 variaciones {difficulty_level} del mismo.
-                
-                Para cada variación, incluye:
-                - Nombre del ejercicio
-                - Breve descripción de cómo realizarlo
-                - Músculos principales trabajados
-                - Nivel de dificultad comparado con el ejercicio original
-                
-                Responde en español de forma clara y concisa.
-                """
-            else:
-                prompt = """
-                Observa esta imagen de ejercicio y sugiere 4-5 variaciones alternativas que trabajen los mismos grupos musculares.
-                
-                Para cada variación, incluye:
-                - Nombre del ejercicio
-                - Breve descripción de cómo realizarlo
-                - Equipo necesario (si aplica)
-                - Si es más fácil o más difícil que el ejercicio mostrado
-                
-                Responde en español de forma clara y concisa.
-                """
-            
-            # Generar las sugerencias con Gemini
-            # Ejecutar en thread pool para no bloquear el event loop
-            response = await asyncio.to_thread(model.generate_content, [prompt, image])
-            
-            # Devolver el resultado
+            response = await asyncio.to_thread(self._model.generate_content, [prompt, image])
             return response.text.strip()
-            
         except Exception as e:
-            print(f"Error al generar variaciones con Gemini: {str(e)}")
-            return "No se pudieron generar variaciones. Por favor, inténtalo de nuevo con una imagen más clara."
+            logger.error("Image analysis failed: %s", e)
+            return "No se pudo analizar la imagen. Por favor, inténtalo de nuevo."
+
+    async def suggest_exercise_variations(self, image_data, difficulty_level: str = None) -> str:
+        """
+        Analyze an exercise image and suggest variations.
+        """
+        result = self._validate_and_open_image(image_data)
+        if isinstance(result, str):
+            return result
+        image = result
+
+        if difficulty_level:
+            prompt = f"""
+            Observa esta imagen de ejercicio y sugiere 3-4 variaciones {difficulty_level} del mismo.
+
+            Para cada variación, incluye:
+            - Nombre del ejercicio
+            - Breve descripción de cómo realizarlo
+            - Músculos principales trabajados
+            - Nivel de dificultad comparado con el ejercicio original
+
+            Responde en español de forma clara y concisa.
+            """
+        else:
+            prompt = """
+            Observa esta imagen de ejercicio y sugiere 4-5 variaciones alternativas que trabajen los mismos grupos musculares.
+
+            Para cada variación, incluye:
+            - Nombre del ejercicio
+            - Breve descripción de cómo realizarlo
+            - Equipo necesario (si aplica)
+            - Si es más fácil o más difícil que el ejercicio mostrado
+
+            Responde en español de forma clara y concisa.
+            """
+
+        try:
+            response = await asyncio.to_thread(self._model.generate_content, [prompt, image])
+            return response.text.strip()
+        except Exception as e:
+            logger.error("Exercise variation suggestion failed: %s", e)
+            return "No se pudieron generar variaciones. Por favor, inténtalo de nuevo."

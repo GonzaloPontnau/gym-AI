@@ -1,23 +1,35 @@
-from pydantic import BaseModel
-from typing import List, Optional
+"""
+Domain models for GymAI.
+These represent the core business entities, independent of API or DB concerns.
+"""
+
 from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel
+
 
 class Exercise(BaseModel):
-    """Modelo para representar un ejercicio en una rutina"""
+    """A single exercise within a training day."""
+
     name: str
     sets: int
     reps: str
     rest: str
     equipment: str
 
+
 class Day(BaseModel):
-    """Modelo para representar un día de entrenamiento en una rutina"""
+    """A training day consisting of a focus area and exercises."""
+
     day_name: str
     focus: str
     exercises: List[Exercise]
 
+
 class Routine(BaseModel):
-    """Modelo para representar una rutina de entrenamiento completa"""
+    """A complete workout routine spanning multiple training days."""
+
     id: Optional[int] = None
     user_id: int = 1
     routine_name: str
@@ -25,16 +37,11 @@ class Routine(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+
 class ChatMessage(BaseModel):
-    """Modelo para representar un mensaje en el chat"""
+    """A single message in a routine's chat history."""
+
     routine_id: int
-    sender: str  # "user" o "assistant"
+    sender: str  # "user" | "assistant"
     content: str
     timestamp: Optional[datetime] = None
-    
-class RoutineRequest(BaseModel):
-    """Modelo para solicitar la creación de una rutina"""
-    goals: str
-    equipment: str = ""
-    days: int
-    user_id: int = 1
