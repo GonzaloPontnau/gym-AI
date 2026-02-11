@@ -7,32 +7,33 @@
     <!-- Panel de rutina -->
     <div class="routine-container">
         <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
-            <h1 id="routine-name">{{ routine.routine_name }}</h1>
-            <div>
-                <button id="export-routine-btn" class="btn btn-outline-primary me-2">
-                    <i class="bi bi-download"></i> Exportar rutina
+            <h1 id="routine-name" class="text-primary" style="font-size: 1.75rem;">{{ routine.routine_name }}</h1>
+            <div class="d-flex gap-2">
+                <button id="export-routine-btn" class="btn btn-outline-primary">
+                    <i class="bi bi-download me-1"></i> Exportar
                 </button>
                 <a href="/routines" class="btn btn-outline-primary">
-                    <i class="bi bi-arrow-left"></i> Volver a mis rutinas
+                    <i class="bi bi-arrow-left me-1"></i> Mis rutinas
                 </a>
             </div>
         </div>
-        
+
         <!-- Alerta de actualización exitosa (oculta inicialmente) -->
         <div class="alert alert-success alert-dismissible fade show d-none" id="update-alert" role="alert">
-            <i class="bi bi-check-circle"></i> 
+            <i class="bi bi-check-circle"></i>
             Tu rutina ha sido actualizada correctamente.
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        
-        <div class="alert alert-primary">
-            <i class="bi bi-info-circle"></i> 
-            Puedes modificar esta rutina usando el chat lateral. Pide añadir ejercicios, cambiar repeticiones o adaptar la rutina a tus necesidades.
+
+        <div class="alert alert-primary" style="animation: fadeIn 0.5s var(--ease-out) both;">
+            <i class="bi bi-info-circle me-1"></i>
+            Puedes modificar esta rutina usando el chat lateral. Pide añadir ejercicios, cambiar repeticiones o adaptar
+            la rutina a tus necesidades.
         </div>
-        
+
         <div id="routine-content">
             {% for day in routine.days %}
-            <div class="card day-card">
+            <div class="card day-card" style="animation: fadeInUp 0.5s {{ loop.index * 0.08 }}s var(--ease-out) both;">
                 <div class="card-header">
                     <h3 class="mb-0">{{ day.day_name }} - {{ day.focus }}</h3>
                 </div>
@@ -62,35 +63,38 @@
             {% endfor %}
         </div>
     </div>
-    
+
     <!-- Panel de chat -->
     <div class="chat-container">
         <div class="chat-header">
-            <h3 class="mb-0 text-center">Personal Tr<strong>AI</strong>ner</h3>
+            <h3 class="mb-0 text-center"
+                style="-webkit-text-fill-color: var(--text-primary); background: none !important;">Personal
+                Tr<strong>AI</strong>ner</h3>
         </div>
-        
+
         <div class="chat-messages" id="chat-messages">
             {% for message in chat_history %}
-                <div class="message {% if message.sender == 'user' %}user-message{% else %}assistant-message{% endif %}">
-                    {{ message.content }}
-                </div>
+            <div class="message {% if message.sender == 'user' %}user-message{% else %}assistant-message{% endif %}">
+                {{ message.content }}
+            </div>
             {% endfor %}
         </div>
-        
+
         <div class="chat-input-container">
             <form id="chat-form" class="d-flex flex-column">
-                <div class="d-flex mb-2">
-                    <input type="text" id="message-input" class="form-control me-2" placeholder="Escribe tu mensaje aquí..." required>
-                    <button type="submit" class="btn btn-primary" id="send-button">
-                        <i class="bi bi-send"></i> Enviar
+                <div class="d-flex mb-2 gap-2">
+                    <input type="text" id="message-input" class="form-control" placeholder="Escribe tu mensaje aquí..."
+                        required>
+                    <button type="submit" class="btn btn-primary" id="send-button" style="padding: 0.5rem 1.25rem;">
+                        <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
                 <div class="d-flex align-items-center">
-                    <button type="button" id="upload-image-btn" class="btn btn-sm btn-outline-secondary me-2">
-                        <i class="bi bi-image"></i> Subir imagen
+                    <button type="button" id="upload-image-btn" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-image me-1"></i> Subir imagen
                     </button>
-                    <div id="image-preview-container" class="d-none">
-                        <span id="image-name" class="me-2"></span>
+                    <div id="image-preview-container" class="d-none ms-2">
+                        <span id="image-name" class="me-2" style="font-size: 0.82rem; color: var(--text-muted);"></span>
                         <button type="button" id="remove-image-btn" class="btn btn-sm btn-outline-danger">
                             <i class="bi bi-x"></i>
                         </button>
@@ -103,7 +107,8 @@
 </div>
 
 <!-- Modal para analizar imagen -->
-<div class="modal fade" id="image-analysis-modal" tabindex="-1" aria-labelledby="image-analysis-modal-label" aria-hidden="true">
+<div class="modal fade" id="image-analysis-modal" tabindex="-1" aria-labelledby="image-analysis-modal-label"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -113,21 +118,27 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <img id="modal-image-preview" class="img-fluid rounded" src="" alt="Vista previa">
+                        <img id="modal-image-preview" class="img-fluid rounded" src="" alt="Vista previa"
+                            style="border-radius: var(--radius-md) !important; border: 1px solid var(--border-subtle);">
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="exercise-name" class="form-label">Nombre del ejercicio (opcional)</label>
-                            <input type="text" class="form-control" id="exercise-name" placeholder="Ej: Sentadilla, Press banca...">
+                            <label for="exercise-name" class="form-label"
+                                style="color: var(--text-secondary); font-weight: 600; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.02em;">Nombre
+                                del ejercicio (opcional)</label>
+                            <input type="text" class="form-control" id="exercise-name"
+                                placeholder="Ej: Sentadilla, Press banca...">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">¿Qué quieres analizar?</label>
+                            <label class="form-label"
+                                style="color: var(--text-secondary); font-weight: 600; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.02em;">¿Qué
+                                quieres analizar?</label>
                             <div class="d-grid gap-2">
                                 <button type="button" id="analyze-form-btn" class="btn btn-outline-primary">
-                                    <i class="bi bi-check-circle"></i> Analizar forma y postura
+                                    <i class="bi bi-check-circle me-1"></i> Analizar forma y postura
                                 </button>
                                 <button type="button" id="suggest-variations-btn" class="btn btn-outline-primary">
-                                    <i class="bi bi-shuffle"></i> Sugerir variaciones
+                                    <i class="bi bi-shuffle me-1"></i> Sugerir variaciones
                                 </button>
                             </div>
                         </div>
@@ -139,7 +150,8 @@
                             <span class="visually-hidden">Analizando...</span>
                         </div>
                     </div>
-                    <p class="text-center mt-2">Analizando imagen con Gemini AI...</p>
+                    <p class="text-center mt-2" style="color: var(--text-secondary);">Analizando imagen con Gemini AI...
+                    </p>
                 </div>
             </div>
         </div>
@@ -149,7 +161,7 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Referencias a elementos
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
@@ -170,66 +182,68 @@
         const sendButton = document.getElementById('send-button');
         const updateAlert = document.getElementById('update-alert');
         const exportRoutineBtn = document.getElementById('export-routine-btn');
-        
+
         // ID de la rutina actual
-        const routineId = {{ routine_id }};
-        
-        // Variables para almacenar la imagen
-        let selectedImage = null;
-        
-        // Scroll al final del chat
-        function scrollToBottom() {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-        
-        // Limitar la cantidad de mensajes visibles para mejorar rendimiento
-        function limitVisibleMessages(maxMessages = 50) {
-            const messages = messagesContainer.querySelectorAll('.message');
-            
-            // Si hay demasiados mensajes, eliminar los más antiguos
-            if (messages.length > maxMessages) {
-                console.log(`Reduciendo mensajes de ${messages.length} a ${maxMessages}`);
-                
-                // Eliminar mensajes extras comenzando por los más antiguos
-                const countToRemove = messages.length - maxMessages;
-                
-                // Eliminarlos uno por uno desde el más antiguo (primero en la lista)
-                for (let i = 0; i < countToRemove; i++) {
-                    // Siempre eliminamos el primero porque al eliminar uno, el resto se reordena
-                    if (messagesContainer.firstChild) {
-                        messagesContainer.removeChild(messagesContainer.firstChild);
-                    }
+        const routineId = {{ routine_id }
+    };
+
+    // Variables para almacenar la imagen
+    let selectedImage = null;
+
+    // Scroll al final del chat
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Limitar la cantidad de mensajes visibles para mejorar rendimiento
+    function limitVisibleMessages(maxMessages = 50) {
+        const messages = messagesContainer.querySelectorAll('.message');
+
+        // Si hay demasiados mensajes, eliminar los más antiguos
+        if (messages.length > maxMessages) {
+            console.log(`Reduciendo mensajes de ${messages.length} a ${maxMessages}`);
+
+            // Eliminar mensajes extras comenzando por los más antiguos
+            const countToRemove = messages.length - maxMessages;
+
+            // Eliminarlos uno por uno desde el más antiguo (primero en la lista)
+            for (let i = 0; i < countToRemove; i++) {
+                // Siempre eliminamos el primero porque al eliminar uno, el resto se reordena
+                if (messagesContainer.firstChild) {
+                    messagesContainer.removeChild(messagesContainer.firstChild);
                 }
             }
         }
-        
-        // Manejar vista responsive mejor
-        function adjustLayout() {
-            if (window.innerWidth < 992) {
-                // En dispositivos móviles, asegurar que el chat tenga altura adecuada
-                const chatContainer = document.querySelector('.chat-container');
-                chatContainer.style.height = '400px';
-            } else {
-                // En desktop, volver a altura automática
-                const chatContainer = document.querySelector('.chat-container');
-                chatContainer.style.height = '';
-            }
+    }
+
+    // Manejar vista responsive mejor
+    function adjustLayout() {
+        if (window.innerWidth < 992) {
+            // En dispositivos móviles, asegurar que el chat tenga altura adecuada
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.style.height = '400px';
+        } else {
+            // En desktop, volver a altura automática
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.style.height = '';
         }
-        
-        // Actualizar la vista de la rutina
-        function updateRoutineView(routine) {
-            // Actualizar el nombre de la rutina
-            routineName.textContent = routine.routine_name;
-            
-            // Limpiar el contenido actual
-            routineContent.innerHTML = '';
-            
-            // Crear HTML para cada día
-            routine.days.forEach(day => {
-                const dayCard = document.createElement('div');
-                dayCard.classList.add('card', 'day-card');
-                
-                dayCard.innerHTML = `
+    }
+
+    // Actualizar la vista de la rutina
+    function updateRoutineView(routine) {
+        // Actualizar el nombre de la rutina
+        routineName.textContent = routine.routine_name;
+
+        // Limpiar el contenido actual
+        routineContent.innerHTML = '';
+
+        // Crear HTML para cada día
+        routine.days.forEach(day => {
+            const dayCard = document.createElement('div');
+            dayCard.classList.add('card', 'day-card');
+            dayCard.style.animation = 'fadeInUp 0.5s var(--ease-out) both';
+
+            dayCard.innerHTML = `
                     <div class="card-header">
                         <h3 class="mb-0">${day.day_name} - ${day.focus}</h3>
                     </div>
@@ -256,403 +270,397 @@
                         </table>
                     </div>
                 `;
-                
-                routineContent.appendChild(dayCard);
-            });
-            
-            // Mostrar alerta de actualización exitosa
-            updateAlert.classList.remove('d-none');
-            // Ocultar después de 5 segundos
-            setTimeout(() => {
-                updateAlert.classList.add('d-none');
-            }, 5000);
-        }
-        
-        // Configurar WebSocket
-        let ws;
-        let reconnectAttempts = 0;
-        const maxReconnectAttempts = 5;
-        const reconnectDelay = 3000;
-        
-        function setupWebSocket() {
-            const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            const host = window.location.host;
-            const path = `/ws/chat/${routineId}`;
-            const wsUrl = `${protocol}${host}${path}`;
-            
-            console.log('Intentando conectar WebSocket a:', wsUrl);
-            
-            // Verificar si estamos en entorno de producción (Vercel)
-            const isVercel = window.location.hostname.includes('vercel.app');
-            
-            // Limpiar cualquier conexión anterior
-            if (ws) {
-                try {
-                    ws.close();
-                } catch (e) {
-                    console.error('Error al cerrar WebSocket anterior:', e);
-                }
-            }
-            
+
+            routineContent.appendChild(dayCard);
+        });
+
+        // Mostrar alerta de actualización exitosa
+        updateAlert.classList.remove('d-none');
+        // Ocultar después de 5 segundos
+        setTimeout(() => {
+            updateAlert.classList.add('d-none');
+        }, 5000);
+    }
+
+    // Configurar WebSocket
+    let ws;
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 5;
+    const reconnectDelay = 3000;
+
+    function setupWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const host = window.location.host;
+        const path = `/ws/chat/${routineId}`;
+        const wsUrl = `${protocol}${host}${path}`;
+
+        console.log('Intentando conectar WebSocket a:', wsUrl);
+
+        // Verificar si estamos en entorno de producción (Vercel)
+        const isVercel = window.location.hostname.includes('vercel.app');
+
+        // Limpiar cualquier conexión anterior
+        if (ws) {
             try {
-                ws = new WebSocket(wsUrl);
-                
-                // Configurar timeout para conexión
-                const connectionTimeout = setTimeout(() => {
-                    if (ws.readyState !== WebSocket.OPEN) {
-                        console.error('Timeout de conexión WebSocket');
-                        ws.close();
-                        
-                        // Cambiar a modo HTTP si estamos en Vercel
-                        if (isVercel) {
-                            enableHttpFallbackMode();
-                        } else {
-                            // Ya no mostramos mensaje de timeout
-                            // addMessage('Timeout de conexión. Verifica la configuración del servidor.', 'system');
-                        }
-                    }
-                }, 5000); // 5 segundos de timeout
-                
-                // Configurar eventos del WebSocket
-                ws.onopen = () => {
-                    clearTimeout(connectionTimeout);
-                    console.log('Conexión WebSocket establecida');
-                    // Ya no mostramos mensaje de conexión exitosa
-                    // addMessage('Conexión establecida correctamente.', 'system');
-                    sendButton.disabled = false;
-                    reconnectAttempts = 0; // Resetear contador de intentos
-                    
-                    // Deshabilitar modo HTTP fallback si estaba activo
-                    httpFallbackActive = false;
-                    
-                    // Ping periódico para mantener la conexión viva especialmente en Vercel
-                    if (isVercel) {
-                        if (pingInterval) clearInterval(pingInterval);
-                        pingInterval = setInterval(() => {
-                            if (ws && ws.readyState === WebSocket.OPEN) {
-                                console.log('Enviando ping al servidor...');
-                                ws.send(JSON.stringify({type: 'ping'}));
-                            }
-                        }, 30000); // Ping cada 30 segundos
-                    }
-                };
-                
-                ws.onmessage = (event) => {
-                    try {
-                        console.log('Mensaje recibido:', event.data);
-                        const data = JSON.parse(event.data);
-                        
-                        if (data.type === 'pong') {
-                            console.log('Pong recibido del servidor');
-                            return;
-                        }
-                        
-                        if (data.type === 'routine_update') {
-                            // Actualizar la rutina en la interfaz
-                            updateRoutineView(data.routine);
-                            
-                            // Agregar mensaje del asistente
-                            addMessage(data.explanation, 'assistant');
-                            
-                            // Habilitar botón de envío
-                            sendButton.disabled = false;
-                            sendButton.innerHTML = '<i class="bi bi-send"></i>';
-                        } else if (data.type === 'image_analysis') {
-                            // Agregar resultado del análisis de imagen
-                            addMessage(data.analysis, 'assistant');
-                            
-                            // Ocultar loading en modal si está visible
-                            analysisLoading.classList.add('d-none');
-                        } else if (data.error) {
-                            console.error('Error:', data.error);
-                            addMessage(`Error: ${data.error}`, 'assistant');
-                            
-                            // Habilitar botón de envío
-                            sendButton.disabled = false;
-                            sendButton.innerHTML = '<i class="bi bi-send"></i>';
-                        }
-                    } catch (e) {
-                        console.error('Error al procesar mensaje:', e);
-                        addMessage('Ha ocurrido un error al procesar la respuesta del servidor.', 'assistant');
-                        sendButton.disabled = false;
-                        sendButton.innerHTML = '<i class="bi bi-send"></i>';
-                    }
-                };
-                
-                ws.onclose = (event) => {
-                    clearTimeout(connectionTimeout);
-                    console.log(`Conexión WebSocket cerrada (código: ${event.code}, razón: ${event.reason})`);
-                    sendButton.disabled = true;
-                    
-                    // Mostrar información diagnóstica
-                    addMessage(`Conexión cerrada. Código: ${event.code}, Razón: ${event.reason || 'No especificada'}`, 'system');
-                    
-                    // Limpiar el ping interval si existe
-                    if (pingInterval) {
-                        clearInterval(pingInterval);
-                        pingInterval = null;
-                    }
-                    
-                    // Intentar reconectar si no fue un cierre limpio y no excedimos los intentos
-                    if (event.code !== 1000 && event.code !== 1001 && reconnectAttempts < maxReconnectAttempts) {
-                        reconnectAttempts++;
-                        const delay = Math.min(reconnectDelay * reconnectAttempts, 10000); // Backoff exponencial con máximo de 10s
-                        console.log(`Intentando reconectar (intento ${reconnectAttempts}/${maxReconnectAttempts}) en ${delay}ms...`);
-                        setTimeout(setupWebSocket, delay);
-                    } else if (reconnectAttempts >= maxReconnectAttempts) {
-                        // Mostrar botón para reconexión manual y opciones alternativas
-                        addMessage('No se pudo reconectar al servidor. Por favor, intenta las siguientes opciones:', 'system');
-                        
-                        const optionsDiv = document.createElement('div');
-                        optionsDiv.className = 'connection-options mt-2';
-                        
-                        // Botón de reconexión
-                        const reconnectBtn = document.createElement('button');
-                        reconnectBtn.classList.add('btn', 'btn-primary', 'me-2', 'mb-2');
-                        reconnectBtn.textContent = 'Reconectar';
-                        reconnectBtn.onclick = () => {
-                            reconnectAttempts = 0;
-                            setupWebSocket();
-                        };
-                        optionsDiv.appendChild(reconnectBtn);
-                        
-                        // Botón de recarga
-                        const reloadBtn = document.createElement('button');
-                        reloadBtn.classList.add('btn', 'btn-outline-primary', 'me-2', 'mb-2');
-                        reloadBtn.textContent = 'Recargar página';
-                        reloadBtn.onclick = () => {
-                            window.location.reload();
-                        };
-                        optionsDiv.appendChild(reloadBtn);
-                        
-                        // Añadir opciones
-                        const lastMessage = document.querySelector('.message:last-child');
-                        if (lastMessage) lastMessage.appendChild(optionsDiv);
-                    }
-                };
-                
-                ws.onerror = (error) => {
-                    clearTimeout(connectionTimeout);
-                    console.error('Error en la conexión WebSocket:', error);
-                    sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i>';
-                    
-                    // Mostrar error
-                    addMessage('Error en la conexión. Verifica que el servidor soporte WebSockets.', 'system');
-                    
-                    // Si es el primer intento, reintentamos inmediatamente
-                    if (reconnectAttempts === 0) {
-                        console.log('Reintentando conexión inmediatamente...');
-                        setTimeout(setupWebSocket, 1000);
-                    }
-                };
+                ws.close();
             } catch (e) {
-                console.error('Error al crear WebSocket:', e);
-                addMessage(`Error al crear conexión WebSocket: ${e.message}`, 'system');
-                
-                // Cambiar a modo HTTP si estamos en Vercel
-                if (isVercel) {
-                    enableHttpFallbackMode();
-                } else {
-                    setTimeout(setupWebSocket, reconnectDelay);
+                console.error('Error al cerrar WebSocket anterior:', e);
+            }
+        }
+
+        try {
+            ws = new WebSocket(wsUrl);
+
+            // Configurar timeout para conexión
+            const connectionTimeout = setTimeout(() => {
+                if (ws.readyState !== WebSocket.OPEN) {
+                    console.error('Timeout de conexión WebSocket');
+                    ws.close();
+
+                    // Cambiar a modo HTTP si estamos en Vercel
+                    if (isVercel) {
+                        enableHttpFallbackMode();
+                    }
                 }
+            }, 5000);
+
+            // Configurar eventos del WebSocket
+            ws.onopen = () => {
+                clearTimeout(connectionTimeout);
+                console.log('Conexión WebSocket establecida');
+                sendButton.disabled = false;
+                reconnectAttempts = 0;
+
+                // Deshabilitar modo HTTP fallback si estaba activo
+                httpFallbackActive = false;
+
+                // Ping periódico para mantener la conexión viva especialmente en Vercel
+                if (isVercel) {
+                    if (pingInterval) clearInterval(pingInterval);
+                    pingInterval = setInterval(() => {
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            console.log('Enviando ping al servidor...');
+                            ws.send(JSON.stringify({ type: 'ping' }));
+                        }
+                    }, 30000);
+                }
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    console.log('Mensaje recibido:', event.data);
+                    const data = JSON.parse(event.data);
+
+                    if (data.type === 'pong') {
+                        console.log('Pong recibido del servidor');
+                        return;
+                    }
+
+                    if (data.type === 'routine_update') {
+                        // Actualizar la rutina en la interfaz
+                        updateRoutineView(data.routine);
+
+                        // Agregar mensaje del asistente
+                        addMessage(data.explanation, 'assistant');
+
+                        // Habilitar botón de envío
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                    } else if (data.type === 'image_analysis') {
+                        // Agregar resultado del análisis de imagen
+                        addMessage(data.analysis, 'assistant');
+
+                        // Ocultar loading en modal si está visible
+                        analysisLoading.classList.add('d-none');
+                    } else if (data.error) {
+                        console.error('Error:', data.error);
+                        addMessage(`Error: ${data.error}`, 'assistant');
+
+                        // Habilitar botón de envío
+                        sendButton.disabled = false;
+                        sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                    }
+                } catch (e) {
+                    console.error('Error al procesar mensaje:', e);
+                    addMessage('Ha ocurrido un error al procesar la respuesta del servidor.', 'assistant');
+                    sendButton.disabled = false;
+                    sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                }
+            };
+
+            ws.onclose = (event) => {
+                clearTimeout(connectionTimeout);
+                console.log(`Conexión WebSocket cerrada (código: ${event.code}, razón: ${event.reason})`);
+                sendButton.disabled = true;
+
+                // Mostrar información diagnóstica
+                addMessage(`Conexión cerrada. Código: ${event.code}, Razón: ${event.reason || 'No especificada'}`, 'system');
+
+                // Limpiar el ping interval si existe
+                if (pingInterval) {
+                    clearInterval(pingInterval);
+                    pingInterval = null;
+                }
+
+                // Intentar reconectar si no fue un cierre limpio y no excedimos los intentos
+                if (event.code !== 1000 && event.code !== 1001 && reconnectAttempts < maxReconnectAttempts) {
+                    reconnectAttempts++;
+                    const delay = Math.min(reconnectDelay * reconnectAttempts, 10000);
+                    console.log(`Intentando reconectar (intento ${reconnectAttempts}/${maxReconnectAttempts}) en ${delay}ms...`);
+                    setTimeout(setupWebSocket, delay);
+                } else if (reconnectAttempts >= maxReconnectAttempts) {
+                    // Mostrar botón para reconexión manual y opciones alternativas
+                    addMessage('No se pudo reconectar al servidor. Por favor, intenta las siguientes opciones:', 'system');
+
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'connection-options mt-2';
+
+                    // Botón de reconexión
+                    const reconnectBtn = document.createElement('button');
+                    reconnectBtn.classList.add('btn', 'btn-primary', 'me-2', 'mb-2');
+                    reconnectBtn.textContent = 'Reconectar';
+                    reconnectBtn.onclick = () => {
+                        reconnectAttempts = 0;
+                        setupWebSocket();
+                    };
+                    optionsDiv.appendChild(reconnectBtn);
+
+                    // Botón de recarga
+                    const reloadBtn = document.createElement('button');
+                    reloadBtn.classList.add('btn', 'btn-outline-primary', 'me-2', 'mb-2');
+                    reloadBtn.textContent = 'Recargar página';
+                    reloadBtn.onclick = () => {
+                        window.location.reload();
+                    };
+                    optionsDiv.appendChild(reloadBtn);
+
+                    // Añadir opciones
+                    const lastMessage = document.querySelector('.message:last-child');
+                    if (lastMessage) lastMessage.appendChild(optionsDiv);
+                }
+            };
+
+            ws.onerror = (error) => {
+                clearTimeout(connectionTimeout);
+                console.error('Error en la conexión WebSocket:', error);
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+
+                // Mostrar error
+                addMessage('Error en la conexión. Verifica que el servidor soporte WebSockets.', 'system');
+
+                // Si es el primer intento, reintentamos inmediatamente
+                if (reconnectAttempts === 0) {
+                    console.log('Reintentando conexión inmediatamente...');
+                    setTimeout(setupWebSocket, 1000);
+                }
+            };
+        } catch (e) {
+            console.error('Error al crear WebSocket:', e);
+            addMessage(`Error al crear conexión WebSocket: ${e.message}`, 'system');
+
+            // Cambiar a modo HTTP si estamos en Vercel
+            if (isVercel) {
+                enableHttpFallbackMode();
+            } else {
+                setTimeout(setupWebSocket, reconnectDelay);
             }
         }
-        
-        // Variable para controlar si estamos usando el modo HTTP fallback
-        let httpFallbackActive = false;
-        
-        // Función para habilitar el modo alternativo HTTP
-        function enableHttpFallbackMode() {
-            if (httpFallbackActive) return; // Ya está activado
-            
-            httpFallbackActive = true;
-            sendButton.disabled = false;
-            
-            addMessage('Los WebSockets no están disponibles en este entorno. Usando modo HTTP alternativo.', 'system');
-            addMessage('Esta modalidad requiere recargar la página después de cada modificación.', 'system');
-            
-            // Limpiar cualquier intervalo activo
-            if (pingInterval) {
-                clearInterval(pingInterval);
-                pingInterval = null;
-            }
+    }
+
+    // Variable para controlar si estamos usando el modo HTTP fallback
+    let httpFallbackActive = false;
+
+    // Función para habilitar el modo alternativo HTTP
+    function enableHttpFallbackMode() {
+        if (httpFallbackActive) return;
+
+        httpFallbackActive = true;
+        sendButton.disabled = false;
+
+        addMessage('Los WebSockets no están disponibles en este entorno. Usando modo HTTP alternativo.', 'system');
+        addMessage('Esta modalidad requiere recargar la página después de cada modificación.', 'system');
+
+        // Limpiar cualquier intervalo activo
+        if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
         }
-        
-        // Declarar variable para controlar pings periódicos
-        let pingInterval = null;
-        
-        // Función para agregar mensajes del sistema (estilo diferente)
-        function addMessage(content, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message');
-            
-            if (sender === 'user') {
-                messageDiv.classList.add('user-message');
-            } else if (sender === 'assistant') {
-                messageDiv.classList.add('assistant-message');
-            } else if (sender === 'system') {
-                // No agregamos mensajes del sistema al chat, sólo log en consola
-                console.log("System message:", content);
-                return; // Salimos sin agregar el mensaje
-            }
-            
-            messageDiv.textContent = content;
-            messagesContainer.appendChild(messageDiv);
-            
-            // Limitar los mensajes visibles para mejorar rendimiento
-            limitVisibleMessages(50);
-            
-            // Hacer scroll hacia abajo para mostrar el nuevo mensaje
-            scrollToBottom();
+    }
+
+    // Declarar variable para controlar pings periódicos
+    let pingInterval = null;
+
+    // Función para agregar mensajes del sistema (estilo diferente)
+    function addMessage(content, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+
+        if (sender === 'user') {
+            messageDiv.classList.add('user-message');
+        } else if (sender === 'assistant') {
+            messageDiv.classList.add('assistant-message');
+        } else if (sender === 'system') {
+            // No agregamos mensajes del sistema al chat, sólo log en consola
+            console.log("System message:", content);
+            return;
         }
-        
-        // En el entorno de Vercel, activar inmediatamente el modo HTTP fallback
-        if (window.location.hostname.includes('vercel.app')) {
-            console.log('Detectado entorno Vercel - utilizando directamente modo HTTP');
-            enableHttpFallbackMode();
-            
-            // Mostrar un mensaje más detallado sobre la limitación
-            addMessage(`Nota: Vercel tiene limitaciones con WebSockets. Estamos utilizando un modo alternativo compatible para que puedas interactuar con tu rutina. Al enviar un mensaje, espera a que se procese completamente.`, 'system');
-        } else {
-            // En entorno local, intentar con WebSockets
-            setupWebSocket();
-        }
-        
-        // Inicializar la interfaz
+
+        messageDiv.textContent = content;
+        messagesContainer.appendChild(messageDiv);
+
+        // Limitar los mensajes visibles para mejorar rendimiento
+        limitVisibleMessages(50);
+
+        // Hacer scroll hacia abajo para mostrar el nuevo mensaje
         scrollToBottom();
-        
-        // Manejar subida de imagen
-        uploadImageBtn.addEventListener('click', () => {
-            imageUpload.click();
-        });
-        
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                // Guardar la imagen seleccionada
-                selectedImage = file;
-                
-                // Mostrar el nombre del archivo
-                imageName.textContent = file.name;
-                imagePreviewContainer.classList.remove('d-none');
-                
-                // Crear URL para vista previa
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    // Mostrar el modal con la vista previa
-                    modalImagePreview.src = event.target.result;
-                    exerciseName.value = '';
-                    imageAnalysisModal.show();
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Remover imagen
-        removeImageBtn.addEventListener('click', () => {
-            selectedImage = null;
-            imageUpload.value = '';
-            imagePreviewContainer.classList.add('d-none');
-        });
-        
-        // Analizar forma y postura
-        analyzeFormBtn.addEventListener('click', () => {
-            if (selectedImage) {
-                // Mostrar cargando
-                analysisLoading.classList.remove('d-none');
-                
-                // Leer la imagen como base64
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const base64Image = event.target.result;
-                    
-                    // Enviar al servidor para análisis
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'analyze_image',
-                            image_data: base64Image,
-                            exercise_name: exerciseName.value || null,
-                            action: 'analyze_form'
-                        }));
-                        
-                        // Agregar mensaje del usuario con la imagen
-                        addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para analizar.`, 'user');
-                        
-                        // Cerrar modal y limpiar
-                        imageAnalysisModal.hide();
-                        selectedImage = null;
-                        imageUpload.value = '';
-                        imagePreviewContainer.classList.add('d-none');
-                    }
-                };
-                reader.readAsDataURL(selectedImage);
-            }
-        });
-        
-        // Sugerir variaciones
-        suggestVariationsBtn.addEventListener('click', () => {
-            if (selectedImage) {
-                // Mostrar cargando
-                analysisLoading.classList.remove('d-none');
-                
-                // Leer la imagen como base64
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const base64Image = event.target.result;
-                    
-                    // Enviar al servidor para análisis
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'analyze_image',
-                            image_data: base64Image,
-                            exercise_name: exerciseName.value || null,
-                            action: 'suggest_variations'
-                        }));
-                        
-                        // Agregar mensaje del usuario con la imagen
-                        addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para obtener variaciones.`, 'user');
-                        
-                        // Cerrar modal y limpiar
-                        imageAnalysisModal.hide();
-                        selectedImage = null;
-                        imageUpload.value = '';
-                        imagePreviewContainer.classList.add('d-none');
-                    }
-                };
-                reader.readAsDataURL(selectedImage);
-            }
-        });
-        
-        // Manejar envío de mensajes
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const message = messageInput.value.trim();
-            if (!message) return;
-            
-            // Agregar mensaje al chat
-            addMessage(message, 'user');
-            
-            // Cambiar estado del botón
-            sendButton.disabled = true;
-            sendButton.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Enviar';
-            
-            // Si el modo HTTP fallback está activo o estamos en Vercel, usar HTTP
-            if (httpFallbackActive || window.location.hostname.includes('vercel.app')) {
-                // URL de la API
-                const apiUrl = `/api/routine/modify/${routineId}`;
-                console.log(`Usando API HTTP: ${apiUrl}`);
-                addMessage(`Enviando petición a: ${apiUrl}...`, 'system');
-                
-                // Usar HTTP API en lugar de WebSocket
-                fetch(apiUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: message })
-                })
+    }
+
+    // En el entorno de Vercel, activar inmediatamente el modo HTTP fallback
+    if (window.location.hostname.includes('vercel.app')) {
+        console.log('Detectado entorno Vercel - utilizando directamente modo HTTP');
+        enableHttpFallbackMode();
+
+        addMessage(`Nota: Vercel tiene limitaciones con WebSockets. Estamos utilizando un modo alternativo compatible para que puedas interactuar con tu rutina. Al enviar un mensaje, espera a que se procese completamente.`, 'system');
+    } else {
+        // En entorno local, intentar con WebSockets
+        setupWebSocket();
+    }
+
+    // Inicializar la interfaz
+    scrollToBottom();
+
+    // Manejar subida de imagen
+    uploadImageBtn.addEventListener('click', () => {
+        imageUpload.click();
+    });
+
+    imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Guardar la imagen seleccionada
+            selectedImage = file;
+
+            // Mostrar el nombre del archivo
+            imageName.textContent = file.name;
+            imagePreviewContainer.classList.remove('d-none');
+
+            // Crear URL para vista previa
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                // Mostrar el modal con la vista previa
+                modalImagePreview.src = event.target.result;
+                exerciseName.value = '';
+                imageAnalysisModal.show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Remover imagen
+    removeImageBtn.addEventListener('click', () => {
+        selectedImage = null;
+        imageUpload.value = '';
+        imagePreviewContainer.classList.add('d-none');
+    });
+
+    // Analizar forma y postura
+    analyzeFormBtn.addEventListener('click', () => {
+        if (selectedImage) {
+            // Mostrar cargando
+            analysisLoading.classList.remove('d-none');
+
+            // Leer la imagen como base64
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const base64Image = event.target.result;
+
+                // Enviar al servidor para análisis
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'analyze_image',
+                        image_data: base64Image,
+                        exercise_name: exerciseName.value || null,
+                        action: 'analyze_form'
+                    }));
+
+                    // Agregar mensaje del usuario con la imagen
+                    addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para analizar.`, 'user');
+
+                    // Cerrar modal y limpiar
+                    imageAnalysisModal.hide();
+                    selectedImage = null;
+                    imageUpload.value = '';
+                    imagePreviewContainer.classList.add('d-none');
+                }
+            };
+            reader.readAsDataURL(selectedImage);
+        }
+    });
+
+    // Sugerir variaciones
+    suggestVariationsBtn.addEventListener('click', () => {
+        if (selectedImage) {
+            // Mostrar cargando
+            analysisLoading.classList.remove('d-none');
+
+            // Leer la imagen como base64
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const base64Image = event.target.result;
+
+                // Enviar al servidor para análisis
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'analyze_image',
+                        image_data: base64Image,
+                        exercise_name: exerciseName.value || null,
+                        action: 'suggest_variations'
+                    }));
+
+                    // Agregar mensaje del usuario con la imagen
+                    addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para obtener variaciones.`, 'user');
+
+                    // Cerrar modal y limpiar
+                    imageAnalysisModal.hide();
+                    selectedImage = null;
+                    imageUpload.value = '';
+                    imagePreviewContainer.classList.add('d-none');
+                }
+            };
+            reader.readAsDataURL(selectedImage);
+        }
+    });
+
+    // Manejar envío de mensajes
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Agregar mensaje al chat
+        addMessage(message, 'user');
+
+        // Cambiar estado del botón
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+
+        // Si el modo HTTP fallback está activo o estamos en Vercel, usar HTTP
+        if (httpFallbackActive || window.location.hostname.includes('vercel.app')) {
+            // URL de la API
+            const apiUrl = `/api/routine/modify/${routineId}`;
+            console.log(`Usando API HTTP: ${apiUrl}`);
+            addMessage(`Enviando petición a: ${apiUrl}...`, 'system');
+
+            // Usar HTTP API en lugar de WebSocket
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
                 .then(response => {
                     console.log(`Respuesta recibida: ${response.status} ${response.statusText}`);
                     if (!response.ok) {
@@ -662,30 +670,30 @@
                 })
                 .then(data => {
                     console.log('Datos recibidos:', data);
-                    
+
                     // Mostrar la explicación
                     addMessage(data.explanation, 'assistant');
-                    
+
                     // Actualizar la rutina en la interfaz
                     if (data.routine) {
                         updateRoutineView(data.routine);
                     }
-                    
+
                     // Habilitar botón de envío
                     sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
+                    sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
                 })
                 .catch(error => {
                     console.error('Error al modificar rutina:', error);
                     addMessage(`Error al modificar la rutina: ${error.message}. Por favor, intenta de nuevo.`, 'assistant');
-                    
+
                     // Intentar con URL alternativa en caso de error
                     if (error.message.includes('404') && apiUrl.includes('/api/routine/modify/')) {
                         addMessage('Intentando con URL alternativa...', 'system');
-                        
+
                         const alternativeApiUrl = `/api/modify_routine/${routineId}`;
                         console.log(`Intentando URL alternativa: ${alternativeApiUrl}`);
-                        
+
                         fetch(alternativeApiUrl, {
                             method: 'POST',
                             headers: {
@@ -693,133 +701,133 @@
                             },
                             body: JSON.stringify({ message: message })
                         })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`HTTP error ${response.status}`);
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            // Mostrar la explicación
-                            addMessage(data.explanation, 'assistant');
-                            
-                            // Actualizar la rutina en la interfaz
-                            if (data.routine) {
-                                updateRoutineView(data.routine);
-                            }
-                        })
-                        .catch(altError => {
-                            console.error('Error con URL alternativa:', altError);
-                            addMessage(`Error con URL alternativa: ${altError.message}. Por favor, contacta al soporte.`, 'system');
-                        })
-                        .finally(() => {
-                            // Habilitar botón de envío
-                            sendButton.disabled = false;
-                            sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
-                        });
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Mostrar la explicación
+                                addMessage(data.explanation, 'assistant');
+
+                                // Actualizar la rutina en la interfaz
+                                if (data.routine) {
+                                    updateRoutineView(data.routine);
+                                }
+                            })
+                            .catch(altError => {
+                                console.error('Error con URL alternativa:', altError);
+                                addMessage(`Error con URL alternativa: ${altError.message}. Por favor, contacta al soporte.`, 'system');
+                            })
+                            .finally(() => {
+                                // Habilitar botón de envío
+                                sendButton.disabled = false;
+                                sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+                            });
                     } else {
                         // Habilitar botón de envío
                         sendButton.disabled = false;
-                        sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
+                        sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
                     }
                 });
-            } else if (ws && ws.readyState === WebSocket.OPEN) {
-                // Usar WebSocket si está disponible y abierto
-                ws.send(message);
-            } else {
-                addMessage('Error de conexión. Intentando reconectar...', 'assistant');
-                setupWebSocket();
-                
-                // Habilitar botón después de un tiempo
-                setTimeout(() => {
-                    sendButton.disabled = false;
-                    sendButton.innerHTML = '<i class="bi bi-send"></i> Enviar';
-                }, 3000);
-            }
-            
-            // Limpiar campo de entrada
-            messageInput.value = '';
-        });
-        
-        // Código adicional para manejar errores y reconexiones
-        window.addEventListener('online', () => {
-            console.log('Conexión de red restaurada, reconectando WebSocket...');
+        } else if (ws && ws.readyState === WebSocket.OPEN) {
+            // Usar WebSocket si está disponible y abierto
+            ws.send(message);
+        } else {
+            addMessage('Error de conexión. Intentando reconectar...', 'assistant');
             setupWebSocket();
-        });
-        
-        // Función para exportar la rutina como archivo de texto
-        function exportRoutine() {
-            // Obtener los datos de la rutina
-            const routineName = document.getElementById('routine-name').textContent;
-            const daysCards = document.querySelectorAll('.day-card');
-            
-            // Crear el contenido de texto para exportar
-            let content = `RUTINA: ${routineName}\n`;
-            content += `Fecha de exportación: ${new Date().toLocaleDateString()}\n\n`;
-            
-            daysCards.forEach(dayCard => {
-                // Obtener el encabezado del día
-                const dayHeader = dayCard.querySelector('.card-header h3').textContent;
-                content += `=== ${dayHeader} ===\n\n`;
-                
-                // Obtener todos los ejercicios
-                const exerciseRows = dayCard.querySelectorAll('.exercise-row');
-                exerciseRows.forEach(row => {
-                    const cells = row.querySelectorAll('td');
-                    const exerciseName = cells[0].textContent;
-                    const sets = cells[1].textContent;
-                    const reps = cells[2].textContent;
-                    const rest = cells[3].textContent;
-                    
-                    content += `* ${exerciseName}\n`;
-                    content += `  Series: ${sets}, Repeticiones: ${reps}, Descanso: ${rest}\n\n`;
-                });
-                
-                content += '\n';
+
+            // Habilitar botón después de un tiempo
+            setTimeout(() => {
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="bi bi-send-fill"></i>';
+            }, 3000);
+        }
+
+        // Limpiar campo de entrada
+        messageInput.value = '';
+    });
+
+    // Código adicional para manejar errores y reconexiones
+    window.addEventListener('online', () => {
+        console.log('Conexión de red restaurada, reconectando WebSocket...');
+        setupWebSocket();
+    });
+
+    // Función para exportar la rutina como archivo de texto
+    function exportRoutine() {
+        // Obtener los datos de la rutina
+        const routineName = document.getElementById('routine-name').textContent;
+        const daysCards = document.querySelectorAll('.day-card');
+
+        // Crear el contenido de texto para exportar
+        let content = `RUTINA: ${routineName}\n`;
+        content += `Fecha de exportación: ${new Date().toLocaleDateString()}\n\n`;
+
+        daysCards.forEach(dayCard => {
+            // Obtener el encabezado del día
+            const dayHeader = dayCard.querySelector('.card-header h3').textContent;
+            content += `=== ${dayHeader} ===\n\n`;
+
+            // Obtener todos los ejercicios
+            const exerciseRows = dayCard.querySelectorAll('.exercise-row');
+            exerciseRows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const exerciseName = cells[0].textContent;
+                const sets = cells[1].textContent;
+                const reps = cells[2].textContent;
+                const rest = cells[3].textContent;
+
+                content += `* ${exerciseName}\n`;
+                content += `  Series: ${sets}, Repeticiones: ${reps}, Descanso: ${rest}\n\n`;
             });
-            
-            content += "Exportado desde GymAI - Tu asistente personal de entrenamiento";
-            
-            // Crear un objeto Blob para la descarga
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            
-            // Crear un enlace de descarga y activarlo
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${routineName.replace(/\s+/g, '_')}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            
-            // Limpiar
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-        
-        // Manejar vista responsive mejor
-        function adjustLayout() {
-            if (window.innerWidth < 992) {
-                // En dispositivos móviles, asegurar que el chat tenga altura adecuada
-                const chatContainer = document.querySelector('.chat-container');
-                chatContainer.style.height = '400px';
-            } else {
-                // En desktop, volver a altura automática
-                const chatContainer = document.querySelector('.chat-container');
-                chatContainer.style.height = '';
-            }
-        }
 
-        // Agregar evento al botón de exportación
-        if (exportRoutineBtn) {
-            exportRoutineBtn.addEventListener('click', exportRoutine);
-        }
-        
-        // Scroll inicial al final del chat
-        scrollToBottom();
+            content += '\n';
+        });
 
-        // Ajustar layout al cargar y al cambiar tamaño de ventana
-        adjustLayout();
-        window.addEventListener('resize', adjustLayout);
+        content += "Exportado desde GymAI - Tu asistente personal de entrenamiento";
+
+        // Crear un objeto Blob para la descarga
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        // Crear un enlace de descarga y activarlo
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${routineName.replace(/\s+/g, '_')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+
+        // Limpiar
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Manejar vista responsive mejor
+    function adjustLayout() {
+        if (window.innerWidth < 992) {
+            // En dispositivos móviles, asegurar que el chat tenga altura adecuada
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.style.height = '400px';
+        } else {
+            // En desktop, volver a altura automática
+            const chatContainer = document.querySelector('.chat-container');
+            chatContainer.style.height = '';
+        }
+    }
+
+    // Agregar evento al botón de exportación
+    if (exportRoutineBtn) {
+        exportRoutineBtn.addEventListener('click', exportRoutine);
+    }
+
+    // Scroll inicial al final del chat
+    scrollToBottom();
+
+    // Ajustar layout al cargar y al cambiar tamaño de ventana
+    adjustLayout();
+    window.addEventListener('resize', adjustLayout);
     });
 </script>
 {% endblock %}

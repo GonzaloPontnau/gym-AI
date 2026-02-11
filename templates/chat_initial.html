@@ -4,14 +4,20 @@
 
 {% block content %}
 <div class="container my-5">
-    <div class="row align-items-center">
+    <div class="row align-items-center g-4">
         <div class="col-md-6 d-flex align-items-stretch">
             <div class="hero-section p-4 w-100">
-                <h1 class="display-4 mb-4 text-primary">GymAI</h1>
-                <h2 class="mb-4">Tu asistente personal para crear la rutina perfecta</h2>
-                <p class="lead mb-4">Crea una rutina de entrenamiento personalizada en segundos, adaptada a tus objetivos.</p>
-                
-                <h3 class="h5 mb-3">Beneficios:</h3>
+                <div class="badge-ai">
+                    <i class="bi bi-stars"></i> Potenciado por IA
+                </div>
+                <h1 class="display-4 mb-3">GymAI</h1>
+                <h2 class="mb-3">Tu asistente personal para crear la rutina perfecta</h2>
+                <p class="lead mb-4">Crea una rutina de entrenamiento personalizada en segundos, adaptada a tus
+                    objetivos y nivel.</p>
+
+                <h3 class="h6 mb-3"
+                    style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">
+                    Beneficios</h3>
                 <ul class="benefits-list">
                     <li>Rutinas <strong>personalizadas</strong> según tus objetivos</li>
                     <li><strong>Modifica</strong> tu rutina cuando quieras con el chat</li>
@@ -20,45 +26,49 @@
                 </ul>
             </div>
         </div>
-        
+
         <div class="col-md-6 d-flex align-items-stretch">
             <div class="form-container w-100" id="form-container">
-                <h2 class="text-center mb-4 text-primary">Crea tu rutina personalizada</h2>
-                
+                <h2 class="text-center mb-4">Crea tu rutina personalizada</h2>
+
                 <div class="alert alert-info mb-3 d-none" id="input-tip">
-                    <i class="bi bi-lightbulb"></i> <strong>Consejo:</strong> Cuanto más detalles incluyas sobre tus objetivos, mejor será tu rutina personalizada.
+                    <i class="bi bi-lightbulb"></i> <strong>Consejo:</strong> Cuanto más detalles incluyas sobre tus
+                    objetivos, mejor será tu rutina personalizada.
                 </div>
-                
+
                 <div class="alert alert-danger mb-3 d-none" id="error-message">
                     <i class="bi bi-exclamation-triangle"></i> <span id="error-text"></span>
                 </div>
-                
+
                 <form id="routine-form">
                     <div class="form-section">
                         <label class="form-label">¿Cuáles son tus objetivos?</label>
                         <div class="form-floating">
-                            <textarea class="form-control goals-textarea" id="goals" style="height: 100px; background-color: #3a3a3a; color: #e0e0e0 !important;" required minlength="10"></textarea>
+                            <textarea class="form-control goals-textarea" id="goals" style="height: 110px;" required
+                                minlength="10" placeholder="Describe tus objetivos..."></textarea>
                         </div>
-                        <small class="text-muted">Por ejemplo: ganar masa muscular, perder peso, upper/lower, push/pull/legs, etc.</small>
+                        <small class="text-muted mt-2 d-block">Por ejemplo: ganar masa muscular, perder peso,
+                            upper/lower, push/pull/legs, etc.</small>
                     </div>
-                    
+
                     <div class="form-section">
                         <label class="form-label">¿Cuántos días a la semana entrenarás?</label>
                         <div class="input-group number-input">
-                            <button class="btn btn-outline-secondary" type="button" id="decrease-days">-</button>
-                            <input type="number" class="form-control text-center" id="days" min="1" max="7" value="3" required>
+                            <button class="btn btn-outline-secondary" type="button" id="decrease-days">−</button>
+                            <input type="number" class="form-control text-center" id="days" min="1" max="7" value="3"
+                                required>
                             <button class="btn btn-outline-secondary" type="button" id="increase-days">+</button>
                         </div>
                     </div>
-                    
+
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-primary btn-create" id="create-button">
-                            Crear mi rutina
+                            <i class="bi bi-lightning-charge-fill me-2"></i>Crear mi rutina
                         </button>
                     </div>
                 </form>
             </div>
-            
+
             <div class="loading-container" id="loading-container">
                 <div class="d-flex justify-content-center">
                     <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
@@ -75,186 +85,156 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const routineForm = document.getElementById('routine-form');
-    const formContainer = document.getElementById('form-container');
-    const loadingContainer = document.getElementById('loading-container');
-    const daysInput = document.getElementById('days');
-    const decreaseDays = document.getElementById('decrease-days');
-    const increaseDays = document.getElementById('increase-days');
-    const goalsInput = document.getElementById('goals');
-    const createButton = document.getElementById('create-button');
-    const errorMessage = document.getElementById('error-message');
-    const errorText = document.getElementById('error-text');
-    const inputTip = document.getElementById('input-tip');
-    
-    // Mostrar consejo cuando el usuario hace foco en el textarea
-    goalsInput.addEventListener('focus', function() {
-        inputTip.classList.remove('d-none');
-    });
-    
-    // Controles para el campo de días
-    decreaseDays.addEventListener('click', function() {
-        if (daysInput.value > 1) {
-            daysInput.value = parseInt(daysInput.value) - 1;
+    document.addEventListener('DOMContentLoaded', function () {
+        const routineForm = document.getElementById('routine-form');
+        const formContainer = document.getElementById('form-container');
+        const loadingContainer = document.getElementById('loading-container');
+        const daysInput = document.getElementById('days');
+        const decreaseDays = document.getElementById('decrease-days');
+        const increaseDays = document.getElementById('increase-days');
+        const goalsInput = document.getElementById('goals');
+        const createButton = document.getElementById('create-button');
+        const errorMessage = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
+        const inputTip = document.getElementById('input-tip');
+
+        // Mostrar consejo cuando el usuario hace foco en el textarea
+        goalsInput.addEventListener('focus', function () {
+            inputTip.classList.remove('d-none');
+        });
+
+        // Controles para el campo de días
+        decreaseDays.addEventListener('click', function () {
+            if (daysInput.value > 1) {
+                daysInput.value = parseInt(daysInput.value) - 1;
+            }
+        });
+
+        increaseDays.addEventListener('click', function () {
+            if (daysInput.value < 7) {
+                daysInput.value = parseInt(daysInput.value) + 1;
+            }
+        });
+
+        // Validación de formulario
+        function validateForm() {
+            const goals = goalsInput.value.trim();
+
+            if (goals.length < 10) {
+                showError('Por favor, describe tus objetivos con más detalle (mínimo 10 caracteres)');
+                return false;
+            }
+
+            if (daysInput.value < 1 || daysInput.value > 7) {
+                showError('El número de días debe estar entre 1 y 7');
+                return false;
+            }
+
+            return true;
         }
-    });
-    
-    increaseDays.addEventListener('click', function() {
-        if (daysInput.value < 7) {
-            daysInput.value = parseInt(daysInput.value) + 1;
+
+        // Mostrar mensaje de error
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.remove('d-none');
+            // Ocultar después de 5 segundos
+            setTimeout(() => {
+                errorMessage.classList.add('d-none');
+            }, 10000); // Aumentado a 10 segundos para dar más tiempo de lectura
         }
-    });
-    
-    // Validación de formulario
-    function validateForm() {
-        const goals = goalsInput.value.trim();
-        
-        if (goals.length < 10) {
-            showError('Por favor, describe tus objetivos con más detalle (mínimo 10 caracteres)');
-            return false;
-        }
-        
-        if (daysInput.value < 1 || daysInput.value > 7) {
-            showError('El número de días debe estar entre 1 y 7');
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Mostrar mensaje de error
-    function showError(message) {
-        errorText.textContent = message;
-        errorMessage.classList.remove('d-none');
-        // Ocultar después de 5 segundos
-        setTimeout(() => {
-            errorMessage.classList.add('d-none');
-        }, 10000); // Aumentado a 10 segundos para dar más tiempo de lectura
-    }
-    
-    // Manejar envío del formulario
-    routineForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validar formulario
-        if (!validateForm()) {
-            return;
-        }
-        
-        // Cambiar estado del botón
-        createButton.disabled = true;
-        createButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
-        
-        // Mostrar cargador
-        formContainer.style.display = 'none';
-        loadingContainer.style.display = 'block';
-        
-        // Obtener valores del formulario
-        const goals = goalsInput.value;
-        const days = daysInput.value;
-        
-        // Preparar datos para enviar
-        const data = {
-            goals: goals,
-            days: parseInt(days),
-            user_id: 1
-        };
-        
-        // Enviar solicitud para crear rutina con manejo mejorado de errores
-        fetch('/api/create_routine', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            console.log("Respuesta recibida:", response.status, response.statusText);
-            
-            // Verificar si la respuesta está bien
-            if (!response.ok) {
-                return response.text().then(text => {
-                    let errorDetail = `Error ${response.status}: ${response.statusText}`;
-                    try {
-                        const errorJson = JSON.parse(text);
-                        errorDetail = errorJson.error || errorJson.detail || errorDetail;
-                    } catch (e) {
-                        errorDetail += ` - ${text.substring(0, 100)}...`;
+
+        // Manejar envío del formulario
+        routineForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Validar formulario
+            if (!validateForm()) {
+                return;
+            }
+
+            // Cambiar estado del botón
+            createButton.disabled = true;
+            createButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
+
+            // Mostrar cargador
+            formContainer.style.display = 'none';
+            loadingContainer.style.display = 'block';
+
+            // Obtener valores del formulario
+            const goals = goalsInput.value;
+            const days = daysInput.value;
+
+            // Preparar datos para enviar
+            const data = {
+                goals: goals,
+                days: parseInt(days),
+                user_id: 1
+            };
+
+            // Enviar solicitud para crear rutina con manejo mejorado de errores
+            fetch('/api/create_routine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    console.log("Respuesta recibida:", response.status, response.statusText);
+
+                    // Verificar si la respuesta está bien
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            let errorDetail = `Error ${response.status}: ${response.statusText}`;
+                            try {
+                                const errorJson = JSON.parse(text);
+                                errorDetail = errorJson.error || errorJson.detail || errorDetail;
+                            } catch (e) {
+                                errorDetail += ` - ${text.substring(0, 100)}...`;
+                            }
+                            throw new Error(errorDetail);
+                        });
                     }
-                    throw new Error(errorDetail);
+
+                    // Si la respuesta es OK, parsear como JSON
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Datos recibidos:", data);
+
+                    // Si hay un error en los datos, mostrar el error
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    // Si hay una advertencia, mostrarla pero continuar
+                    if (data.warning) {
+                        console.warn("Advertencia:", data.warning);
+                    }
+
+                    // Si todo está bien y tenemos un routine_id, redireccionar
+                    if (data.routine_id) {
+                        // Pequeña pausa para que Vercel pueda procesar la creación
+                        setTimeout(() => {
+                            window.location.href = '/dashboard/' + data.routine_id;
+                        }, 1000);
+                    } else {
+                        // Si no hay routine_id, lanzar error
+                        throw new Error('Respuesta inválida del servidor: no se recibió ID de rutina.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+
+                    // Restaurar formulario y mostrar error
+                    formContainer.style.display = 'block';
+                    loadingContainer.style.display = 'none';
+                    createButton.disabled = false;
+                    createButton.innerHTML = '<i class="bi bi-lightning-charge-fill me-2"></i>Crear mi rutina';
+
+                    showError('Error: ' + (error.message || 'Ha ocurrido un error inesperado. Por favor, intenta de nuevo.'));
                 });
-            }
-            
-            // Si la respuesta es OK, parsear como JSON
-            return response.json();
-        })
-        .then(data => {
-            console.log("Datos recibidos:", data);
-            
-            // Si hay un error en los datos, mostrar el error
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            
-            // Si hay una advertencia, mostrarla pero continuar
-            if (data.warning) {
-                console.warn("Advertencia:", data.warning);
-            }
-            
-            // Si todo está bien y tenemos un routine_id, redireccionar
-            if (data.routine_id) {
-                // Pequeña pausa para que Vercel pueda procesar la creación
-                setTimeout(() => {
-                    window.location.href = '/dashboard/' + data.routine_id;
-                }, 1000);
-            } else {
-                // Si no hay routine_id, lanzar error
-                throw new Error('Respuesta inválida del servidor: no se recibió ID de rutina.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            
-            // Restaurar formulario y mostrar error
-            formContainer.style.display = 'block';
-            loadingContainer.style.display = 'none';
-            createButton.disabled = false;
-            createButton.innerHTML = 'Crear mi rutina';
-            
-            showError('Error: ' + (error.message || 'Ha ocurrido un error inesperado. Por favor, intenta de nuevo.'));
         });
     });
-});
 </script>
-
-<style>
-/* Estilos para el footer personalizado */
-.custom-footer {
-    margin-top: 2rem;
-    padding: 1rem 0;
-    border-top: 1px solid #444;
-}
-
-.custom-footer p {
-    margin-bottom: 0.5rem;
-    color: #a074c3;
-    font-weight: 500;
-}
-
-.github-link {
-    display: inline-block;
-    transition: all 0.3s ease;
-}
-
-.github-link i {
-    font-size: 1.5rem;
-    color: #e0e0e0;
-}
-
-.github-link:hover i {
-    color: #a074c3;
-    transform: scale(1.1);
-}
-</style>
 {% endblock %}

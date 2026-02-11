@@ -3,65 +3,75 @@
 {% block title %}GymAI - Mis Rutinas{% endblock %}
 
 {% block content %}
-<div class="container my-4">
+<div class="container my-4" style="animation: fadeInUp 0.5s var(--ease-out) both;">
     <!-- Alerta de éxito (oculta inicialmente) -->
     <div class="alert alert-success alert-dismissible fade show d-none" id="success-alert" role="alert">
-        <i class="bi bi-check-circle"></i> 
+        <i class="bi bi-check-circle"></i>
         <span id="success-message">Operación completada con éxito</span>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-end">
         <div class="col">
-            <h1 class="text-primary">Mis Rutinas</h1>
-            <p class="lead">Selecciona una rutina para ver y modificarla, o crea una nueva.</p>
+            <div class="badge-ai mb-3"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 9999px; background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,102,241,0.15)); border: 1px solid rgba(160,116,195,0.35); color: #a855f7; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">
+                <i class="bi bi-journal-text"></i> Tu historial
+            </div>
+            <h1 class="text-primary" style="font-size: 2.25rem;">Mis Rutinas</h1>
+            <p class="lead" style="color: var(--text-secondary);">Selecciona una rutina para ver y modificarla, o crea
+                una nueva.</p>
         </div>
         <div class="col-auto align-self-center">
             <a href="/" class="btn btn-primary">
-                Crear nueva rutina
+                <i class="bi bi-plus-lg me-1"></i> Crear nueva rutina
             </a>
         </div>
     </div>
-    
+
     <div class="row" id="routines-container">
         {% if routines %}
-            {% for routine in routines %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ routine.routine_name }}</h5>
-                            <p class="card-text text-muted">
-                                <small>Actualizada: {{ routine.updated_at }}</small>
-                            </p>
-                        </div>
-                        <div class="card-footer bg-white border-0">
-                            <div class="d-flex gap-2">
-                                <a href="/dashboard/{{ routine.id }}" class="btn btn-primary flex-grow-1">
-                                    Ver rutina
-                                </a>
-                                <button class="btn btn-danger delete-btn" 
-                                        onclick="confirmDelete({{ routine.id }}, '{{ routine.routine_name }}')"
-                                        title="Eliminar rutina">
-                                    <i class="bi bi-trash-fill"></i> Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        {% for routine in routines %}
+        {% set delay = (loop.index * 0.08) | round(2) %}
+        <div class="col-md-4 mb-4" style="animation: fadeInUp 0.5s {{ delay }}s var(--ease-out) both;">
+            <div class="card h-100" style="cursor: default;">
+                <div class="card-body" style="padding: 1.5rem;">
+                    <h5 class="card-title"
+                        style="font-weight: 700; font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.75rem;">
+                        {{ routine.routine_name }}</h5>
+                    <p class="card-text" style="margin-bottom: 0;">
+                        <small style="color: var(--text-muted); font-size: 0.82rem;">
+                            <i class="bi bi-clock-history me-1"></i> Actualizada: {{ routine.updated_at }}
+                        </small>
+                    </p>
                 </div>
-            {% endfor %}
-        {% else %}
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-clipboard2-x display-1 empty-state-icon"></i>
-                        <h3 class="mt-3 text-primary">No tienes rutinas guardadas</h3>
-                        <p class="text-muted">¡Crea tu primera rutina personalizada ahora!</p>
-                        <a href="/" class="btn btn-primary btn-lg mt-3">
-                            <i class="bi bi-plus-circle"></i> Crear mi primera rutina
+                <div class="card-footer" style="padding: 1rem 1.5rem;">
+                    <div class="d-flex gap-2">
+                        <a href="/dashboard/{{ routine.id }}" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> Ver rutina
                         </a>
+                        <button class="btn btn-danger delete-btn"
+                            onclick="confirmDelete({{ routine.id }}, '{{ routine.routine_name }}')"
+                            title="Eliminar rutina">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="card" style="animation: fadeInUp 0.5s var(--ease-out) both;">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-clipboard2-x display-1 empty-state-icon"></i>
+                    <h3 class="mt-3 text-primary">No tienes rutinas guardadas</h3>
+                    <p style="color: var(--text-secondary);">¡Crea tu primera rutina personalizada ahora!</p>
+                    <a href="/" class="btn btn-primary btn-lg mt-3">
+                        <i class="bi bi-plus-circle me-2"></i> Crear mi primera rutina
+                    </a>
+                </div>
+            </div>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -76,7 +86,7 @@
             </div>
             <div class="modal-body">
                 <p>¿Estás seguro que deseas eliminar la rutina "<span id="routine-name-to-delete"></span>"?</p>
-                <p class="text-danger">Esta acción no se puede deshacer.</p>
+                <p class="text-danger" style="color: var(--danger) !important;">Esta acción no se puede deshacer.</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -86,7 +96,9 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     {% endif %}
                     <input type="hidden" id="routine-id-to-delete" name="routine_id">
-                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">Eliminar</button>
+                    <button type="submit" class="btn btn-danger" id="confirm-delete-btn">
+                        <i class="bi bi-trash-fill me-1"></i> Eliminar
+                    </button>
                 </form>
             </div>
         </div>
@@ -97,26 +109,26 @@
 {% block scripts %}
 <script>
     // Verificar si hay un parámetro de éxito en la URL
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);
         const success = urlParams.get('success');
         const action = urlParams.get('action');
-        
+
         if (success === 'true') {
             const successAlert = document.getElementById('success-alert');
             const successMessage = document.getElementById('success-message');
-            
+
             // Personalizar mensaje según la acción
             if (action === 'delete') {
                 successMessage.textContent = "La rutina ha sido eliminada correctamente.";
             }
-            
+
             // Mostrar la alerta
             successAlert.classList.remove('d-none');
-            
+
             // Limpiar la URL (eliminar parámetros)
             window.history.replaceState({}, document.title, window.location.pathname);
-            
+
             // Ocultar después de 5 segundos
             setTimeout(() => {
                 successAlert.classList.add('d-none');
@@ -128,14 +140,14 @@
         // Configurar el modal con los datos de la rutina
         document.getElementById('routine-name-to-delete').textContent = routineName;
         document.getElementById('routine-id-to-delete').value = routineId;
-        
+
         // Mostrar el modal de confirmación
         const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
         deleteModal.show();
     }
-    
+
     // Manejar el formulario de eliminación
-    document.getElementById('delete-form').addEventListener('submit', function(e) {
+    document.getElementById('delete-form').addEventListener('submit', function (e) {
         // Cambiar estado del botón
         const deleteButton = document.getElementById('confirm-delete-btn');
         deleteButton.disabled = true;
