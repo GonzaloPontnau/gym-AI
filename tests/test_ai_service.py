@@ -1,46 +1,49 @@
 import pytest
-from unittest.mock import patch, MagicMock
-from app.services.gemini_service import GeminiRoutineGenerator
+from unittest.mock import patch, AsyncMock, MagicMock
+from app.services.ai_service import RoutineGenerator
 from app.schemas.routines import RoutineRequest
 from app.models.models import Routine
 
 
-class TestGeminiService:
-    """Pruebas para el servicio de Gemini"""
+class TestAIService:
+    """Pruebas para el servicio de IA (Groq)"""
 
     @pytest.fixture
     def generator(self):
-        """Create a GeminiRoutineGenerator with mocked Gemini model."""
+        """Create a RoutineGenerator with mocked Groq client."""
         mock_response = MagicMock()
-        mock_response.text = """
-        ```json
-        {
-            "routine_name": "Rutina de prueba",
-            "days": [
-                {
-                    "day_name": "Lunes",
-                    "focus": "Pecho y tríceps",
-                    "exercises": [
-                        {
-                            "name": "Press de banca",
-                            "sets": 3,
-                            "reps": "8-12",
-                            "rest": "60-90 seg",
-                            "equipment": "Barra y banco"
-                        }
-                    ]
-                }
-            ]
-        }
-        ```
-        """
+        mock_response.choices = [
+            MagicMock(
+                message=MagicMock(
+                    content="""{
+                        "routine_name": "Rutina de prueba",
+                        "days": [
+                            {
+                                "day_name": "Lunes",
+                                "focus": "Pecho y tríceps",
+                                "exercises": [
+                                    {
+                                        "name": "Press de banca",
+                                        "sets": 3,
+                                        "reps": "8-12",
+                                        "rest": "60-90 seg",
+                                        "equipment": "Barra y banco"
+                                    }
+                                ]
+                            }
+                        ]
+                    }"""
+                )
+            )
+        ]
 
-        mock_model = MagicMock()
-        mock_model.generate_content = MagicMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        gen = GeminiRoutineGenerator()
+        gen = RoutineGenerator()
         gen._configured = True
-        gen._model = mock_model
+        gen._client = mock_client
+        gen._model = "llama-3.3-70b-versatile"
         return gen
 
     @pytest.mark.asyncio
@@ -55,7 +58,7 @@ class TestGeminiService:
 
         routine = await generator.create_initial_routine(request)
 
-        generator._model.generate_content.assert_called_once()
+        generator._client.chat.completions.create.assert_called_once()
 
         assert isinstance(routine, Routine)
         assert routine.routine_name == "Rutina de prueba"
@@ -78,7 +81,7 @@ class TestGeminiService:
             "Quiero agregar más ejercicios para pecho"
         )
 
-        generator._model.generate_content.assert_called_once()
+        generator._client.chat.completions.create.assert_called_once()
 
         assert isinstance(modified_routine, Routine)
         assert modified_routine.routine_name == "Rutina de prueba"  # Del mock
@@ -110,15 +113,16 @@ class TestGeminiService:
         result = generator._extract_json_from_text(simple_json)
         assert result["routine_name"] == "Rutina simple"
 
-        # Probar con JSON inválido — ahora retorna {} en vez de lanzar excepción
+        # Probar con JSON inválido — retorna {}
         result = generator._extract_json_from_text("Esto no es JSON")
         assert result == {}
 
     @pytest.mark.asyncio
     async def test_create_routine_without_configuration(self):
-        """Probar que falla si Gemini no está configurado"""
-        generator = GeminiRoutineGenerator()
-        # _configured es False por defecto sin API key
+        """Probar que falla si la API no está configurada"""
+        generator = RoutineGenerator()
+        generator._configured = False
+        generator._client = None
 
         request = RoutineRequest(
             goals="Hipertrofia",

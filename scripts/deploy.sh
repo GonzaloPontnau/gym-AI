@@ -14,7 +14,7 @@ if [ ! -f .env ]; then
     cp .env .env
     # Reemplazar la clave secreta de ejemplo por la generada
     sed -i "s/genera_una_clave_secreta_aqui/$SECRET_KEY/g" .env
-    echo "Archivo .env creado. No olvides configurar tu GEMINI_API_KEY."
+    echo "Archivo .env creado. No olvides configurar tu GROQ_API_KEY."
 else
     echo "El archivo .env ya existe."
     # Actualizar SECRET_KEY en .env existente
@@ -28,7 +28,7 @@ if [ -f render.yaml ]; then
     echo "Para desplegar en Render:"
     echo "1. Abre https://dashboard.render.com/blueprint/new"
     echo "2. Conecta tu repositorio de GitHub"
-    echo "3. Configura la variable de entorno GEMINI_API_KEY"
+    echo "3. Configura la variable de entorno GROQ_API_KEY"
     echo "4. Configura la variable de entorno SECRET_KEY con: $SECRET_KEY"
     echo "5. Haz clic en 'Apply'"
 else

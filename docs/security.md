@@ -79,7 +79,7 @@
 
 2. **Protección de API**
    - Implementar rate limiting para endpoints públicos
-   - Asegurar que las claves de API (como GEMINI_API_KEY) no se expongan
+   - Asegurar que las claves de API (como GROQ_API_KEY) no se expongan
 
 3. **Seguridad de Base de Datos**
    - Usar sentencias parametrizadas para todas las consultas SQL

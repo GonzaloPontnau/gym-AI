@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
         logger.info("Skipping DB init (Vercel environment)")
 
     generator = get_routine_generator()
-    logger.info("Gemini available: %s", generator.is_configured)
+    logger.info("AI service available: %s", generator.is_configured)
 
     yield  # Application runs here
 

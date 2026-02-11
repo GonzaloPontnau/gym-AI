@@ -33,7 +33,7 @@ def check_imports():
     ]
     
     optional_modules = [
-        ("google.generativeai", "Google Generative AI (Gemini)"),
+        ("groq", "Groq AI (Llama)"),
         ("PIL", "Pillow (procesamiento de imágenes)"),
         ("asyncpg", "AsyncPG (PostgreSQL)"),
     ]
@@ -67,7 +67,7 @@ def check_env_vars():
     
     # Variables opcionales pero recomendadas
     env_vars = {
-        "GEMINI_API_KEY": "API Key de Google Gemini (para IA)",
+        "GROQ_API_KEY": "API Key de Groq (para IA)",
         "DATABASE_URL": "URL de la base de datos",
         "SECRET_KEY": "Clave secreta (seguridad)"
     }
@@ -81,10 +81,10 @@ def check_env_vars():
         else:
             print(f"  ⚠️  {var_name} no configurada - {description}")
     
-    # Verificar si Gemini está configurado
-    gemini_key = os.environ.get("GEMINI_API_KEY")
-    if not gemini_key:
-        print("\n  ⚠️  ADVERTENCIA: GEMINI_API_KEY no configurada")
+    # Verificar si Groq está configurado
+    groq_key = os.environ.get("GROQ_API_KEY")
+    if not groq_key:
+        print("\n  ⚠️  ADVERTENCIA: GROQ_API_KEY no configurada")
         print("     La funcionalidad de IA no estará disponible")
         print("     Configúrala en el archivo .env o variables de entorno")
 
@@ -96,7 +96,7 @@ def check_app_structure():
         "app/main.py",
         "app/models/models.py",
         "app/db/database.py",
-        "app/services/gemini_service.py",
+        "app/services/ai_service.py",
         "requirements.txt",
         "render.yaml",
         "templates/base.html",
@@ -254,7 +254,7 @@ async def main():
         print("✅ TODAS LAS VERIFICACIONES PASARON")
         print("\n🚀 Tu aplicación está lista para desplegar a Render")
         print("\nPróximos pasos:")
-        print("1. Asegúrate de configurar GEMINI_API_KEY en Render")
+        print("1. Asegúrate de configurar GROQ_API_KEY en Render")
         print("2. Haz push a GitHub: git push origin master")
         print("3. Render desplegará automáticamente")
         print("4. Verifica el health check: https://tu-app.onrender.com/health")

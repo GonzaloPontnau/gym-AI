@@ -7,8 +7,8 @@ services:
     startCommand: gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app --limit-request-line 8190 --limit-request-fields 100 --max-requests 1000 --max-requests-jitter 50 --timeout 300 --graceful-timeout 30 --keep-alive 5
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.0
-      - key: GEMINI_API_KEY
+        value: 3.11.0
+      - key: GROQ_API_KEY
         sync: false
       - key: DATABASE_URL
         value: "sqlite+aiosqlite:///gym_ai.db"

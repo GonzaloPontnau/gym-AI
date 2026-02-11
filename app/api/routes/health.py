@@ -25,7 +25,7 @@ async def health_check():
     health_status = {
         "status": "ok",
         "server_time": datetime.now().isoformat(),
-        "gemini_available": generator.is_configured,
+        "ai_available": generator.is_configured,
     }
 
     try:

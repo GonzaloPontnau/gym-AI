@@ -1,10 +1,10 @@
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, AsyncMock
 import base64
 import io
 from PIL import Image
 
-from app.services.image_analysis_service import GeminiImageAnalyzer
+from app.services.image_analysis_service import ImageAnalyzer
 
 
 class TestImageAnalysisService:
@@ -12,27 +12,32 @@ class TestImageAnalysisService:
 
     @pytest.fixture
     def analyzer(self):
-        """Create a GeminiImageAnalyzer with mocked Gemini model."""
+        """Create an ImageAnalyzer with mocked Groq client."""
         mock_response = MagicMock()
-        mock_response.text = """
-        La imagen muestra a una persona realizando una sentadilla con buena forma.
+        mock_response.choices = [
+            MagicMock(
+                message=MagicMock(
+                    content="""La imagen muestra a una persona realizando una sentadilla con buena forma.
 
-        Análisis de postura:
-        - Espalda recta
-        - Rodillas alineadas con los pies
-        - Profundidad adecuada
+Análisis de postura:
+- Espalda recta
+- Rodillas alineadas con los pies
+- Profundidad adecuada
 
-        Recomendaciones:
-        - Mantener esta técnica
-        - Asegurar que los talones permanezcan en el suelo
-        """
+Recomendaciones:
+- Mantener esta técnica
+- Asegurar que los talones permanezcan en el suelo"""
+                )
+            )
+        ]
 
-        mock_model = MagicMock()
-        mock_model.generate_content = MagicMock(return_value=mock_response)
+        mock_client = AsyncMock()
+        mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
-        analyzer = GeminiImageAnalyzer()
+        analyzer = ImageAnalyzer()
         analyzer._configured = True
-        analyzer._model = mock_model
+        analyzer._client = mock_client
+        analyzer._model = "llama-3.2-11b-vision-preview"
         return analyzer
 
     @pytest.fixture
@@ -53,7 +58,7 @@ class TestImageAnalysisService:
             "sentadilla",
         )
 
-        analyzer._model.generate_content.assert_called_once()
+        analyzer._client.chat.completions.create.assert_called_once()
 
         assert "buena forma" in result.lower()
         assert "espalda recta" in result.lower()
@@ -71,10 +76,11 @@ class TestImageAnalysisService:
         assert "no se pudo" in result.lower() or "no es válido" in result.lower()
 
     @pytest.mark.asyncio
-    async def test_analyze_without_gemini_configured(self):
-        """Probar comportamiento cuando Gemini no está configurado — retorna mensaje de error"""
-        analyzer = GeminiImageAnalyzer()
-        # _configured es False por defecto sin API key
+    async def test_analyze_without_ai_configured(self):
+        """Probar comportamiento cuando la API no está configurada — retorna mensaje de error"""
+        analyzer = ImageAnalyzer()
+        analyzer._configured = False
+        analyzer._client = None
 
         result = await analyzer.analyze_exercise_image(
             "base64_irrelevante",

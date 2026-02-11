@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 
 from app.core.logging import get_logger
 from app.schemas.routines import RoutineRequest
-from app.services.gemini_service import GeminiRoutineGenerator
+from app.services.ai_service import RoutineGenerator
 from app.repositories import routine_repository, chat_repository
 from app.api.dependencies import get_routine_generator
 
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api", tags=["Routines"])
 @router.post("/create_routine")
 async def create_routine(
     request: Request,
-    generator: GeminiRoutineGenerator = Depends(get_routine_generator),
+    generator: RoutineGenerator = Depends(get_routine_generator),
 ):
     """Create a new AI-generated routine."""
     try:
@@ -75,7 +75,7 @@ async def create_routine(
 async def modify_routine(
     routine_id: int,
     request: Request,
-    generator: GeminiRoutineGenerator = Depends(get_routine_generator),
+    generator: RoutineGenerator = Depends(get_routine_generator),
 ):
     """HTTP fallback for modifying routines (when WebSocket is unavailable)."""
     try:

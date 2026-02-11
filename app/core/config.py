@@ -17,9 +17,10 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     LOG_LEVEL: str = "INFO"
 
-    # --- Gemini AI ---
-    GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    # --- Groq AI ---
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_VISION_MODEL: str = "llama-3.2-11b-vision-preview"
 
     # --- Database ---
     DATABASE_URL: str = ""
@@ -38,8 +39,8 @@ class Settings(BaseSettings):
         return self.MAX_IMAGE_SIZE_MB * 1024 * 1024
 
     @property
-    def gemini_configured(self) -> bool:
-        return bool(self.GEMINI_API_KEY)
+    def ai_configured(self) -> bool:
+        return bool(self.GROQ_API_KEY)
 
     @property
     def is_vercel(self) -> bool:

@@ -5,17 +5,17 @@ Central place for all Depends() callables.
 
 from functools import lru_cache
 
-from app.services.gemini_service import GeminiRoutineGenerator
-from app.services.image_analysis_service import GeminiImageAnalyzer
+from app.services.ai_service import RoutineGenerator
+from app.services.image_analysis_service import ImageAnalyzer
 
 
 @lru_cache
-def get_routine_generator() -> GeminiRoutineGenerator:
+def get_routine_generator() -> RoutineGenerator:
     """Singleton routine generator."""
-    return GeminiRoutineGenerator()
+    return RoutineGenerator()
 
 
 @lru_cache
-def get_image_analyzer() -> GeminiImageAnalyzer:
+def get_image_analyzer() -> ImageAnalyzer:
     """Singleton image analyzer."""
-    return GeminiImageAnalyzer()
+    return ImageAnalyzer()

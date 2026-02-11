@@ -40,7 +40,7 @@ Después de hacer deploy, verifica lo siguiente:
 
 Asegúrate de que estén configuradas en el Dashboard de Render:
 
-- ✅ `GEMINI_API_KEY`: Tu clave de API de Google Gemini
+- ✅ `GROQ_API_KEY`: Tu clave de API de Groq
 - ✅ `DATABASE_URL`: `sqlite+aiosqlite:///gym_ai.db` (ya está en render.yaml)
 - ✅ `SECRET_KEY`: Una clave secreta generada (opcional pero recomendado)
 
@@ -56,7 +56,7 @@ async def health_check():
     return {
         "status": "online",
         "server_time": datetime.now().isoformat(),
-        "gemini_available": GEMINI_CONFIGURED
+        "ai_available": AI_CONFIGURED
     }
 ```
 
@@ -95,7 +95,7 @@ gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app \
      {
        "status": "ok",
        "server_time": "2025-10-01T...",
-       "gemini_available": true,
+       "ai_available": true,
        "database": "connected"
      }
      ```
@@ -116,18 +116,18 @@ gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT app.main:app \
    - `RuntimeError`
    - `Database error`
    - `ImportError`
-   - Problemas con `GEMINI_API_KEY`
+   - Problemas con `GROQ_API_KEY`
 
 ### Posibles Causas Adicionales
 
-#### 1. GEMINI_API_KEY no configurada
+#### 1. GROQ_API_KEY no configurada
 
 Si ves en los logs:
 ```
-⚠️ GEMINI_API_KEY no encontrada, servicio de IA no estará disponible
+⚠️ GROQ_API_KEY no encontrada, servicio de IA no estará disponible
 ```
 
-**Solución:** Configura la variable de entorno `GEMINI_API_KEY` en Render Dashboard
+**Solución:** Configura la variable de entorno `GROQ_API_KEY` en Render Dashboard
 
 #### 2. Timeout durante la inicialización
 
@@ -198,7 +198,7 @@ async def health_check():
     return {
         "status": "online",
         "server_time": datetime.now().isoformat(),
-        "gemini_available": GEMINI_CONFIGURED,
+        "ai_available": AI_CONFIGURED,
         "database": db_status
     }
 ```

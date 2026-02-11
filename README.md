@@ -2,7 +2,7 @@
 
 [![FastAPI](https://img.shields.io/badge/docs-FastAPI-white?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/docs-Python-blue?logo=python)](https://docs.python.org/3/)
-[![Gemini](https://img.shields.io/badge/API-Google_Gemini-green?logo=google)](https://ai.google.dev/)
+[![Groq](https://img.shields.io/badge/API-Groq_Llama-orange?logo=meta)](https://console.groq.com/)
 
 ## Demo
 
@@ -20,7 +20,7 @@
 
 ## Descripción
 
-GymAI es una aplicación web que utiliza inteligencia artificial (Google Gemini) para generar y personalizar rutinas de entrenamiento adaptadas a las necesidades específicas de cada usuario. Con un enfoque en la experiencia del usuario, permite modificar rutinas en tiempo real mediante un chat interactivo y ofrece análisis de posturas a través del procesamiento de imágenes.
+GymAI es una aplicación web que utiliza inteligencia artificial (Groq con Llama 3.3) para generar y personalizar rutinas de entrenamiento adaptadas a las necesidades específicas de cada usuario. Con un enfoque en la experiencia del usuario, permite modificar rutinas en tiempo real mediante un chat interactivo y ofrece análisis de posturas a través del procesamiento de imágenes.
 
 > [!TIP]
 > Esta aplicación permite combinar ejercicios según tus objetivos específicos, equipo disponible y nivel de condición física.
@@ -53,8 +53,8 @@ GymAI es una aplicación web que utiliza inteligencia artificial (Google Gemini)
    - HTMX para interactividad sin complicaciones
    
 - **Inteligencia Artificial**:
-   - Google Gemini API para generación de rutinas
-   - Análisis de imágenes para corrección de posturas
+   - Groq API con Llama 3.3 70B para generación de rutinas
+   - Llama 3.2 Vision para análisis de imágenes y corrección de posturas
    
 - **DevOps**:
    - Render para despliegue automatizado
@@ -88,8 +88,7 @@ gym-AI/
 │
 ├── scripts/                # Scripts de utilidad
 │   ├── check_health.py     # Diagnóstico de salud antes de deploy
-│   ├── deploy.sh           # Script de despliegue
-│   └── list_gemini_models.py   # Listado de modelos Gemini
+│   └── deploy.sh           # Script de despliegue
 │
 ├── static/                 # Archivos estáticos
 │   ├── css/                # Estilos

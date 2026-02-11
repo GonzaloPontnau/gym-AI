@@ -9,8 +9,8 @@ from fastapi import WebSocket, WebSocketDisconnect
 
 from app.core.logging import get_logger
 from app.websocket.manager import ConnectionManager
-from app.services.gemini_service import GeminiRoutineGenerator
-from app.services.image_analysis_service import GeminiImageAnalyzer
+from app.services.ai_service import RoutineGenerator
+from app.services.image_analysis_service import ImageAnalyzer
 from app.repositories import routine_repository, chat_repository
 
 logger = get_logger("websocket.routes")
@@ -22,8 +22,8 @@ class WebSocketRoutes:
     def __init__(
         self,
         manager: ConnectionManager,
-        routine_generator: GeminiRoutineGenerator,
-        image_analyzer: GeminiImageAnalyzer,
+        routine_generator: RoutineGenerator,
+        image_analyzer: ImageAnalyzer,
     ):
         self.manager = manager
         self.routine_generator = routine_generator
