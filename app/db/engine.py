@@ -6,6 +6,7 @@ Handles SQLite vs PostgreSQL selection and connection setup.
 import os
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
 
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
@@ -81,6 +82,15 @@ def create_engine_and_session():
 
     if is_sqlite:
         engine = create_async_engine(db_url, echo=False)
+
+        # SQLite does not enforce foreign keys by default.
+        # This listener enables FK enforcement on every new connection,
+        # so CASCADE deletes (e.g. chat messages) actually work.
+        @event.listens_for(engine.sync_engine, "connect")
+        def _enable_foreign_keys(dbapi_conn, connection_record):
+            cursor = dbapi_conn.cursor()
+            cursor.execute("PRAGMA foreign_keys = ON")
+            cursor.close()
     else:
         engine = create_async_engine(
             db_url,

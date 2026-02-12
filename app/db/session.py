@@ -39,6 +39,20 @@ async def init_db() -> None:
 
         if routines_ok and chat_ok:
             logger.info("All tables already exist — skipping creation")
+
+            # One-time cleanup: remove orphaned chat messages left by
+            # previous runs that didn't enforce foreign keys.
+            try:
+                async with engine.begin() as conn:
+                    result = await conn.execute(text(
+                        "DELETE FROM chat_messages "
+                        "WHERE routine_id NOT IN (SELECT id FROM routines)"
+                    ))
+                    if result.rowcount:
+                        logger.info("Cleaned up %d orphaned chat messages", result.rowcount)
+            except Exception as e:
+                logger.warning("Orphan cleanup skipped: %s", e)
+
             return
 
         logger.info("Creating database tables...")

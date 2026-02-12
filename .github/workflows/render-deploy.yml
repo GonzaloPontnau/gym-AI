@@ -1,4 +1,3 @@
-```yaml
 name: Deploy to Render
 
 on:
@@ -36,4 +35,3 @@ jobs:
             -o /dev/null
           
           echo "✅ Deployment hook successfully dispatched."
-```

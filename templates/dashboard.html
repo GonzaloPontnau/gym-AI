@@ -170,6 +170,12 @@
         </div>
     </div>
 </div>
+
+<!-- Lightbox para previsualización de imagen -->
+<div class="image-lightbox-overlay d-none" id="image-lightbox">
+    <img id="lightbox-image" src="" alt="Vista previa">
+    <button class="lightbox-close-btn" id="lightbox-close">&times;</button>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -509,7 +515,7 @@
     // Declarar variable para controlar pings periódicos
     let pingInterval = null;
 
-    // Lightweight markdown-to-HTML formatter
+    // Markdown-to-HTML formatter
     function formatMarkdown(text) {
         if (!text) return '';
 
@@ -519,12 +525,25 @@
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
 
+        // Extract fenced code blocks before any other processing
+        const codeBlocks = [];
+        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, function(_, lang, code) {
+            codeBlocks.push('<pre><code>' + code.trimEnd() + '</code></pre>');
+            return '\x00CODEBLOCK_' + (codeBlocks.length - 1) + '\x00';
+        });
+
+        // Inline code: `code`
+        html = html.replace(/`([^`]+?)`/g, '<code>$1</code>');
+
         // Bold: **text** or __text__
         html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
 
-        // Italic: *text* or _text_ (but not inside words)
+        // Italic: *text* (not inside words)
         html = html.replace(/(?<![\w*])\*([^*]+?)\*(?![\w*])/g, '<em>$1</em>');
+
+        // Strikethrough: ~~text~~
+        html = html.replace(/~~(.+?)~~/g, '<del>$1</del>');
 
         // Split into lines for block-level processing
         const lines = html.split('\n');
@@ -534,6 +553,42 @@
 
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
+
+            // Code block placeholder – emit as-is
+            const cbMatch = line.match(/^\x00CODEBLOCK_(\d+)\x00$/);
+            if (cbMatch) {
+                if (inList) {
+                    result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    inList = false;
+                    listType = null;
+                }
+                result.push(codeBlocks[parseInt(cbMatch[1])]);
+                continue;
+            }
+
+            // Headings: # H1, ## H2, ### H3, #### H4
+            const headingMatch = line.match(/^(#{1,4})\s+(.+)/);
+            if (headingMatch) {
+                if (inList) {
+                    result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    inList = false;
+                    listType = null;
+                }
+                const level = headingMatch[1].length;
+                result.push('<h' + level + '>' + headingMatch[2] + '</h' + level + '>');
+                continue;
+            }
+
+            // Horizontal rule: --- or ***
+            if (/^[-*_]{3,}$/.test(line)) {
+                if (inList) {
+                    result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    inList = false;
+                    listType = null;
+                }
+                result.push('<hr>');
+                continue;
+            }
 
             // Unordered list item: - item or • item or * item (at start)
             const ulMatch = line.match(/^[-•*]\s+(.+)/);
@@ -581,8 +636,32 @@
         return result.join('');
     }
 
+    // Lightbox functions
+    function openLightbox(src) {
+        const overlay = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-image');
+        img.src = src;
+        overlay.classList.remove('d-none');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        const overlay = document.getElementById('image-lightbox');
+        overlay.classList.add('d-none');
+        document.body.style.overflow = '';
+    }
+
+    // Lightbox event listeners
+    document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+    document.getElementById('image-lightbox').addEventListener('click', function(e) {
+        if (e.target === this) closeLightbox();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+
     // Función para agregar mensajes del sistema (estilo diferente)
-    function addMessage(content, sender) {
+    function addMessage(content, sender, imageDataUrl) {
         const messageDiv = document.createElement('div');
         messageDiv.classList.add('message');
 
@@ -601,6 +680,16 @@
             messageDiv.innerHTML = formatMarkdown(content);
         } else {
             messageDiv.textContent = content;
+        }
+
+        // Attach image thumbnail if provided
+        if (imageDataUrl) {
+            const thumb = document.createElement('img');
+            thumb.src = imageDataUrl;
+            thumb.alt = 'Imagen adjunta';
+            thumb.className = 'message-image-thumb';
+            thumb.addEventListener('click', function() { openLightbox(this.src); });
+            messageDiv.appendChild(thumb);
         }
 
         messagesContainer.appendChild(messageDiv);
@@ -686,8 +775,8 @@
                         action: 'analyze_form'
                     }));
 
-                    // Agregar mensaje del usuario con la imagen
-                    addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para analizar.`, 'user');
+                    // Agregar mensaje del usuario con thumbnail de la imagen
+                    addMessage(`Analizar forma: ${exerciseName.value || 'ejercicio'}`, 'user', base64Image);
 
                     // Cerrar modal y limpiar
                     imageAnalysisModal.hide();
@@ -720,8 +809,8 @@
                         action: 'suggest_variations'
                     }));
 
-                    // Agregar mensaje del usuario con la imagen
-                    addMessage(`He enviado una imagen de ${exerciseName.value || 'un ejercicio'} para obtener variaciones.`, 'user');
+                    // Agregar mensaje del usuario con thumbnail de la imagen
+                    addMessage(`Sugerir variaciones: ${exerciseName.value || 'ejercicio'}`, 'user', base64Image);
 
                     // Cerrar modal y limpiar
                     imageAnalysisModal.hide();

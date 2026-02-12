@@ -11,7 +11,7 @@ from sqlalchemy.sql import select, delete
 
 from app.core.logging import get_logger
 from app.db.session import async_session
-from app.db.models import RoutineModel
+from app.db.models import RoutineModel, ChatMessageModel
 from app.models.models import Routine
 
 logger = get_logger("repositories.routine")
@@ -112,9 +112,14 @@ async def get_user_routines(user_id: int) -> List[Dict[str, Any]]:
 
 
 async def delete_routine(routine_id: int) -> bool:
-    """Delete a routine and its associated chat messages (via CASCADE)."""
+    """Delete a routine and its associated chat messages."""
     try:
         async with async_session() as session:
+            # Explicitly delete chat messages first (safety net for DBs
+            # created before FK enforcement was enabled).
+            await session.execute(
+                delete(ChatMessageModel).where(ChatMessageModel.routine_id == routine_id)
+            )
             stmt = delete(RoutineModel).where(RoutineModel.id == routine_id)
             await session.execute(stmt)
             await session.commit()
