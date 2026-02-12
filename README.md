@@ -1,5 +1,9 @@
 # GymAI - Tu Personal TrAIner
 
+<div align="center">
+  <img src="static/logoGymAI.png" alt="GymAI Logo" width="200"/>
+</div>
+
 [![FastAPI](https://img.shields.io/badge/docs-FastAPI-white?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://docs.python.org/3/)
 [![Groq](https://img.shields.io/badge/AI-Groq_Llama_3-orange?logo=meta)](https://console.groq.com/)
@@ -32,31 +36,11 @@
 - **Base de Datos Asíncrona**: Soporte nativo para PostgreSQL (Producción) y SQLite (Desarrollo) con SQLAlchemy Async.
 - **Listo para Despliegue**: Configuración Docker y Render optimizada.
 
----
-
 ## Demo
 
-### 1. Generación de Rutinas
-
-Define tus objetivos y deja que la IA estructure tu semana perfecta.
-![prompt-inicial](https://github.com/user-attachments/assets/8c1bfbdb-12f6-4a20-bf89-1fdb9169d7c1)
-
-### 2. Chat con tu Entrenador
-
-Pide cambios como "tengo dolor de rodilla hoy" o "cambia el press de banca por mancuernas".
-![modificar-rutina](https://github.com/user-attachments/assets/6163adbe-ad67-49d2-802e-3bff0e953ae4)
-
-### 3. Gestión de Rutinas
-
-Accede a tu historial completo y exporta tus planes.
-![mis-rutinas](https://github.com/user-attachments/assets/b8c4786c-d320-4c64-b338-b0dba6212be5)
-
-### 4. Exportación Profesional
-
-Descarga tus rutinas en formato PDF/Texto para llevar al gimnasio sin conexión.
-![exportar-rutina](https://github.com/user-attachments/assets/871a144f-d57f-434b-8f32-1176ac4ebd4e)
-
----
+<div align="center">
+  <video src="static/demoGymAI.mp4" controls width="100%"></video>
+</div>
 
 ## Tech Stack
 
@@ -159,13 +143,6 @@ Este proyecto incluye una configuración automática (`render.yaml`).
    - `SECRET_KEY`: Una cadena aleatoria segura para seguridad de sesión.
    - `PYTHON_VERSION`: `3.11.0` (o superior).
 
----
-
-## Contribución
-
-¡Las contribuciones son bienvenidas! Por favor, abre un Issue para discutir cambios mayores o envía un Pull Request directo para mejoras menores.
-
----
 
 ## Autor
 
@@ -173,4 +150,4 @@ Este proyecto incluye una configuración automática (`render.yaml`).
 
 💼 [LinkedIn](https://linkedin.com/in/gonzalopontnau)
 📧 [Email](mailto:gonzalopontnau@gmail.com)
-💻 [Portfolio](https://gonzalopontnau.github.io/)
+💻 [Portfolio](https://gonzalopontnau.vercel.app/)
