@@ -78,6 +78,7 @@ La rutina debe seguir ESTRICTAMENTE este formato JSON:
                     "sets": 3,
                     "reps": "8-12",
                     "rest": "60-90 seg",
+                    "rir": "2-3",
                     "equipment": "Equipamiento necesario"
                 }}
             ]
@@ -89,7 +90,13 @@ IMPORTANTE:
 1. Devuelve SOLO el JSON válido, sin texto explicativo.
 {days_count_instruction}
 3. Cada día debe tener entre 4 y 6 ejercicios.
-4. Los nombres de los días deben ser en español (Lunes, Martes, etc.)."""
+4. Los nombres de los días deben ser en español (Lunes, Martes, etc.).
+5. Incluye el campo "rir" (Reps In Reserve) para cada ejercicio. Usa valores como "0" (al fallo), "1-2", "2-3" o "3-4" según la intensidad y el ejercicio.
+6. Los descansos deben variar según el tipo de ejercicio:
+   - Ejercicios compuestos pesados (sentadilla, peso muerto, press banca, press militar): 120-180 seg
+   - Ejercicios compuestos secundarios (remo, dominadas, hip thrust): 90-120 seg
+   - Ejercicios de aislamiento (curl bíceps, extensiones, elevaciones laterales): 45-60 seg
+   - No uses el mismo descanso para todos los ejercicios."""
 
     @staticmethod
     def _build_modification_prompt(current_routine: Routine, user_request: str) -> str:

@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}GymAI - {{ routine.routine_name }}{% endblock %}
+{% block body_class %}dashboard-page{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
     <!-- Panel de rutina -->
     <div class="routine-container">
-        <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mt-3 mb-4 dashboard-header">
             <h1 id="routine-name" class="text-primary" style="font-size: 1.75rem;">{{ routine.routine_name }}</h1>
             <div class="d-flex gap-2">
                 <button id="export-routine-btn" class="btn btn-outline-primary">
@@ -38,12 +39,14 @@
                     <h3 class="mb-0">{{ day.day_name }} - {{ day.focus }}</h3>
                 </div>
                 <div class="card-body">
+                    <div class="table-responsive-wrapper">
                     <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>Ejercicio</th>
                                 <th>Series</th>
                                 <th>Repeticiones</th>
+                                <th>RIR</th>
                                 <th>Descanso</th>
                             </tr>
                         </thead>
@@ -53,11 +56,13 @@
                                 <td>{{ exercise.name }}</td>
                                 <td>{{ exercise.sets }}</td>
                                 <td>{{ exercise.reps }}</td>
+                                <td>{{ exercise.rir or '-' }}</td>
                                 <td>{{ exercise.rest }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
             {% endfor %}
@@ -70,6 +75,9 @@
             <h3 class="mb-0 text-center"
                 style="-webkit-text-fill-color: var(--text-primary); background: none !important;">Personal
                 Tr<strong>AI</strong>ner</h3>
+            <button type="button" class="chat-close-btn" id="chat-close-btn" aria-label="Cerrar chat">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
 
         <div class="chat-messages" id="chat-messages">
@@ -104,6 +112,11 @@
             </form>
         </div>
     </div>
+
+    <!-- Floating chat bubble (mobile only) -->
+    <button type="button" class="chat-bubble-btn" id="chat-bubble-btn" aria-label="Abrir chat">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
 </div>
 
 <!-- Modal para analizar imagen -->
@@ -217,14 +230,16 @@
 
     // Manejar vista responsive mejor
     function adjustLayout() {
+        const chatContainer = document.querySelector('.chat-container');
+        const bubbleBtn = document.getElementById('chat-bubble-btn');
         if (window.innerWidth < 992) {
-            // En dispositivos móviles, asegurar que el chat tenga altura adecuada
-            const chatContainer = document.querySelector('.chat-container');
-            chatContainer.style.height = '400px';
-        } else {
-            // En desktop, volver a altura automática
-            const chatContainer = document.querySelector('.chat-container');
+            // En mobile, el CSS maneja el layout via clases
             chatContainer.style.height = '';
+        } else {
+            // En desktop, asegurar que el chat esté visible sin clases de mobile
+            chatContainer.style.height = '';
+            chatContainer.classList.remove('chat-open');
+            if (bubbleBtn) bubbleBtn.classList.remove('chat-open');
         }
     }
 
@@ -247,12 +262,14 @@
                         <h3 class="mb-0">${day.day_name} - ${day.focus}</h3>
                     </div>
                     <div class="card-body">
+                        <div class="table-responsive-wrapper">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
                                     <th>Ejercicio</th>
                                     <th>Series</th>
                                     <th>Repeticiones</th>
+                                    <th>RIR</th>
                                     <th>Descanso</th>
                                 </tr>
                             </thead>
@@ -262,11 +279,13 @@
                                         <td>${exercise.name}</td>
                                         <td>${exercise.sets}</td>
                                         <td>${exercise.reps}</td>
+                                        <td>${exercise.rir || '-'}</td>
                                         <td>${exercise.rest}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 `;
 
@@ -490,6 +509,78 @@
     // Declarar variable para controlar pings periódicos
     let pingInterval = null;
 
+    // Lightweight markdown-to-HTML formatter
+    function formatMarkdown(text) {
+        if (!text) return '';
+
+        // Escape HTML to prevent XSS
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Bold: **text** or __text__
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+        // Italic: *text* or _text_ (but not inside words)
+        html = html.replace(/(?<![\w*])\*([^*]+?)\*(?![\w*])/g, '<em>$1</em>');
+
+        // Split into lines for block-level processing
+        const lines = html.split('\n');
+        const result = [];
+        let inList = false;
+        let listType = null; // 'ul' or 'ol'
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+
+            // Unordered list item: - item or • item or * item (at start)
+            const ulMatch = line.match(/^[-•*]\s+(.+)/);
+            // Ordered list item: 1. item, 2) item
+            const olMatch = line.match(/^\d+[.)\-]\s+(.+)/);
+
+            if (ulMatch) {
+                if (!inList || listType !== 'ul') {
+                    if (inList) result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    result.push('<ul>');
+                    inList = true;
+                    listType = 'ul';
+                }
+                result.push('<li>' + ulMatch[1] + '</li>');
+            } else if (olMatch) {
+                if (!inList || listType !== 'ol') {
+                    if (inList) result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    result.push('<ol>');
+                    inList = true;
+                    listType = 'ol';
+                }
+                result.push('<li>' + olMatch[1] + '</li>');
+            } else {
+                // Close any open list
+                if (inList) {
+                    result.push(listType === 'ol' ? '</ol>' : '</ul>');
+                    inList = false;
+                    listType = null;
+                }
+
+                // Empty line = paragraph break
+                if (line === '') {
+                    result.push('<br>');
+                } else {
+                    result.push('<p>' + line + '</p>');
+                }
+            }
+        }
+
+        // Close any trailing list
+        if (inList) {
+            result.push(listType === 'ol' ? '</ol>' : '</ul>');
+        }
+
+        return result.join('');
+    }
+
     // Función para agregar mensajes del sistema (estilo diferente)
     function addMessage(content, sender) {
         const messageDiv = document.createElement('div');
@@ -505,7 +596,13 @@
             return;
         }
 
-        messageDiv.textContent = content;
+        // Use formatted HTML for assistant messages, plain text for user messages
+        if (sender === 'assistant') {
+            messageDiv.innerHTML = formatMarkdown(content);
+        } else {
+            messageDiv.textContent = content;
+        }
+
         messagesContainer.appendChild(messageDiv);
 
         // Limitar los mensajes visibles para mejorar rendimiento
@@ -514,6 +611,12 @@
         // Hacer scroll hacia abajo para mostrar el nuevo mensaje
         scrollToBottom();
     }
+
+    // Format existing chat history messages on page load
+    document.querySelectorAll('.assistant-message').forEach(function(msg) {
+        const rawText = msg.textContent;
+        msg.innerHTML = formatMarkdown(rawText);
+    });
 
     // En el entorno de Vercel, activar inmediatamente el modo HTTP fallback
     if (window.location.hostname.includes('vercel.app')) {
@@ -803,22 +906,32 @@
         URL.revokeObjectURL(url);
     }
 
-    // Manejar vista responsive mejor
-    function adjustLayout() {
-        if (window.innerWidth < 992) {
-            // En dispositivos móviles, asegurar que el chat tenga altura adecuada
-            const chatContainer = document.querySelector('.chat-container');
-            chatContainer.style.height = '400px';
-        } else {
-            // En desktop, volver a altura automática
-            const chatContainer = document.querySelector('.chat-container');
-            chatContainer.style.height = '';
-        }
-    }
-
     // Agregar evento al botón de exportación
     if (exportRoutineBtn) {
         exportRoutineBtn.addEventListener('click', exportRoutine);
+    }
+
+    // --- Mobile chat bubble toggle ---
+    const chatBubbleBtn = document.getElementById('chat-bubble-btn');
+    const chatCloseBtn = document.getElementById('chat-close-btn');
+    const chatContainerEl = document.querySelector('.chat-container');
+
+    function openMobileChat() {
+        chatContainerEl.classList.add('chat-open');
+        chatBubbleBtn.classList.add('chat-open');
+        scrollToBottom();
+    }
+
+    function closeMobileChat() {
+        chatContainerEl.classList.remove('chat-open');
+        chatBubbleBtn.classList.remove('chat-open');
+    }
+
+    if (chatBubbleBtn) {
+        chatBubbleBtn.addEventListener('click', openMobileChat);
+    }
+    if (chatCloseBtn) {
+        chatCloseBtn.addEventListener('click', closeMobileChat);
     }
 
     // Scroll inicial al final del chat

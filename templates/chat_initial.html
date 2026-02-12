@@ -1,367 +1,434 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GymAI - Tu entrenador personal con IA</title>
-    <link rel="icon" type="image/png" href="/static/logoGymAI.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
-        integrity="sha384-QuGBSgV5Im3DzL2z+8Ko9/hqNy/N0O7zwvXAtfd1MvPKWa/UbeLV65cfm4BV5Wgq" crossorigin="anonymous">
-    <link href="/static/css/styles.css" rel="stylesheet">
-</head>
+    <link rel="icon" type="image/png" href="/static/logoGymAI.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+      integrity="sha384-QuGBSgV5Im3DzL2z+8Ko9/hqNy/N0O7zwvXAtfd1MvPKWa/UbeLV65cfm4BV5Wgq"
+      crossorigin="anonymous"
+    />
+    <link href="/static/css/styles.css" rel="stylesheet" />
+  </head>
 
-<body>
+  <body>
     <div class="chatbot-page">
-        <!-- Sidebar overlay (mobile) -->
-        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+      <!-- Sidebar overlay (mobile) -->
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-        <!-- Left Sidebar -->
-        <aside class="chatbot-sidebar collapsed" id="chatbot-sidebar">
-            <div class="sidebar-header">
-                <span class="sidebar-brand">
-                    <img src="/static/logoGymAI.png" alt="GymAI">
-                    GymAI
-                </span>
-                <button class="sidebar-close" id="sidebar-close-btn" title="Cerrar sidebar">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+      <!-- Left Sidebar -->
+      <aside class="chatbot-sidebar collapsed" id="chatbot-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-brand">
+            <img src="/static/logoGymAI.png" alt="GymAI" />
+            GymAI
+          </span>
+          <button
+            class="sidebar-close"
+            id="sidebar-close-btn"
+            title="Cerrar sidebar"
+          >
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <a href="/" class="sidebar-new-chat">
+          <i class="bi bi-plus-lg"></i> Nueva rutina
+        </a>
+
+        <div class="sidebar-section-title">Mis Rutinas</div>
+
+        <div class="sidebar-routines" id="sidebar-routines">
+          {% if routines and routines|length > 0 %} {% for routine in routines
+          %}
+          <a href="/dashboard/{{ routine.id }}" class="sidebar-routine-item">
+            <i class="bi bi-journal-text"></i>
+            <div class="routine-info">
+              <div class="routine-item-name">{{ routine.routine_name }}</div>
+              <div class="routine-item-date">{{ routine.updated_at }}</div>
             </div>
+          </a>
+          {% endfor %} {% else %}
+          <div class="sidebar-empty">
+            <i class="bi bi-clipboard2-x"></i>
+            Aun no tienes rutinas
+          </div>
+          {% endif %}
+        </div>
 
-            <a href="/" class="sidebar-new-chat">
-                <i class="bi bi-plus-lg"></i> Nueva rutina
-            </a>
+        <div class="sidebar-footer">
+          <a href="https://github.com/GonzaloPontnau/gym-AI" target="_blank">
+            <i class="bi bi-github"></i> GitHub
+          </a>
+        </div>
+      </aside>
 
-            <div class="sidebar-section-title">Mis Rutinas</div>
+      <!-- Main Area -->
+      <main class="chatbot-main">
+        <!-- Top bar -->
+        <div class="chatbot-topbar">
+          <button
+            class="sidebar-toggle"
+            id="sidebar-toggle-btn"
+            title="Mis rutinas"
+          >
+            <i class="bi bi-layout-sidebar-inset"></i>
+          </button>
+        </div>
 
-            <div class="sidebar-routines" id="sidebar-routines">
-                {% if routines and routines|length > 0 %}
-                    {% for routine in routines %}
-                    <a href="/dashboard/{{ routine.id }}" class="sidebar-routine-item">
-                        <i class="bi bi-journal-text"></i>
-                        <div class="routine-info">
-                            <div class="routine-item-name">{{ routine.routine_name }}</div>
-                            <div class="routine-item-date">{{ routine.updated_at }}</div>
-                        </div>
-                    </a>
-                    {% endfor %}
-                {% else %}
-                    <div class="sidebar-empty">
-                        <i class="bi bi-clipboard2-x"></i>
-                        Aun no tienes rutinas
-                    </div>
-                {% endif %}
-            </div>
+        <!-- Welcome / Center (visible when no conversation) -->
+        <div class="chatbot-center" id="chatbot-center">
+          <div class="chatbot-welcome">
+            <img src="/static/logoGymAI.png" alt="GymAI" class="welcome-logo" />
+            <h1>
+              Tu Personal Tr<strong
+                style="
+                  background: linear-gradient(
+                    135deg,
+                    var(--accent-start),
+                    var(--accent-end)
+                  );
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+                "
+                >AI</strong
+              >ner
+            </h1>
+            <p>
+              Describe tus objetivos y creo tu rutina personalizada al instante.
+            </p>
 
-            <div class="sidebar-footer">
-                <a href="https://github.com/GonzaloPontnau/gym-AI" target="_blank">
-                    <i class="bi bi-github"></i> GitHub
-                </a>
-            </div>
-        </aside>
-
-        <!-- Main Area -->
-        <main class="chatbot-main">
-            <!-- Top bar -->
-            <div class="chatbot-topbar">
-                <button class="sidebar-toggle" id="sidebar-toggle-btn" title="Mis rutinas">
-                    <i class="bi bi-layout-sidebar-inset"></i>
-                </button>
-            </div>
-
-            <!-- Welcome / Center (visible when no conversation) -->
-            <div class="chatbot-center" id="chatbot-center">
-                <div class="chatbot-welcome">
-                    <img src="/static/logoGymAI.png" alt="GymAI" class="welcome-logo">
-                    <h1>Tu Personal Tr<strong style="background: linear-gradient(135deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">AI</strong>ner</h1>
-                    <p>Describe tus objetivos y creo tu rutina personalizada al instante.</p>
-
-                    <!-- Main input (centered, prominent) -->
-                    <div class="chatbot-input-wrapper chatbot-input-hero">
-                        <form id="chatbot-form" autocomplete="off">
-                            <div class="chatbot-input-box chatbot-input-box-lg">
-                                <input type="text" id="chatbot-input" placeholder="Describe tu rutina ideal..."
-                                    required autofocus>
-                                <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn">
-                                    <i class="bi bi-arrow-up"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Days selector -->
-                    <div class="days-selector">
-                        <span class="days-label"><i class="bi bi-calendar3"></i> Dias por semana</span>
-                        <div class="days-pills" id="days-pills">
-                            <button type="button" class="day-pill" data-days="1">1</button>
-                            <button type="button" class="day-pill" data-days="2">2</button>
-                            <button type="button" class="day-pill" data-days="3">3</button>
-                            <button type="button" class="day-pill" data-days="4">4</button>
-                            <button type="button" class="day-pill" data-days="5">5</button>
-                            <button type="button" class="day-pill" data-days="6">6</button>
-                            <button type="button" class="day-pill" data-days="7">7</button>
-                        </div>
-                        <span class="days-hint">Opcional — la IA elige si no seleccionas</span>
-                    </div>
-
-                    <!-- Suggested prompts (below input) -->
-                    <div class="suggested-prompts">
-                        <div class="prompt-card" data-prompt="Crea una rutina para ganar masa muscular" data-days="4">
-                            <span class="prompt-icon"><i class="bi bi-fire"></i></span>
-                            <span class="prompt-text">Ganar masa muscular</span>
-                        </div>
-                        <div class="prompt-card" data-prompt="Quiero perder grasa entrenando en casa" data-days="3">
-                            <span class="prompt-icon"><i class="bi bi-lightning-charge"></i></span>
-                            <span class="prompt-text">Perder grasa en casa</span>
-                        </div>
-                        <div class="prompt-card" data-prompt="Diseña una rutina para principiantes sin equipamiento" data-days="3">
-                            <span class="prompt-icon"><i class="bi bi-person-arms-up"></i></span>
-                            <span class="prompt-text">Rutina para principiantes</span>
-                        </div>
-                        <div class="prompt-card" data-prompt="Rutina push/pull/legs avanzada" data-days="6">
-                            <span class="prompt-icon"><i class="bi bi-calendar-week"></i></span>
-                            <span class="prompt-text">Push / Pull / Legs</span>
-                        </div>
-                    </div>
-
-                    <div class="chatbot-disclaimer">GymAI genera rutinas con IA. Consulta a un profesional antes de iniciar cualquier programa.</div>
+            <!-- Main input (centered, prominent) -->
+            <div class="chatbot-input-wrapper chatbot-input-hero">
+              <form id="chatbot-form" autocomplete="off">
+                <div class="chatbot-input-box chatbot-input-box-lg">
+                  <input
+                    type="text"
+                    id="chatbot-input"
+                    placeholder="Describe tu rutina ideal..."
+                    required
+                    autofocus
+                  />
+                  <button
+                    type="submit"
+                    class="chatbot-send-btn"
+                    id="chatbot-send-btn"
+                  >
+                    <i class="bi bi-arrow-up"></i>
+                  </button>
                 </div>
+              </form>
             </div>
 
-            <!-- Chat messages (hidden initially, shown after first message) -->
-            <div class="chatbot-messages" id="chatbot-messages"></div>
-
-            <!-- Sticky input for chat mode (hidden initially) -->
-            <div class="chatbot-input-wrapper chatbot-input-sticky" id="chatbot-input-sticky" style="display:none;">
-                <form id="chatbot-form-sticky" autocomplete="off">
-                    <div class="chatbot-input-box">
-                        <input type="text" id="chatbot-input-sticky-field" placeholder="Describe tu rutina ideal...">
-                        <button type="submit" class="chatbot-send-btn" id="chatbot-send-btn-sticky">
-                            <i class="bi bi-arrow-up"></i>
-                        </button>
-                    </div>
-                </form>
+            <!-- Days selector -->
+            <div class="days-selector">
+              <span class="days-label"
+                ><i class="bi bi-calendar3"></i> Dias por semana</span
+              >
+              <div class="days-pills" id="days-pills">
+                <button type="button" class="day-pill" data-days="1">1</button>
+                <button type="button" class="day-pill" data-days="2">2</button>
+                <button type="button" class="day-pill" data-days="3">3</button>
+                <button type="button" class="day-pill" data-days="4">4</button>
+                <button type="button" class="day-pill" data-days="5">5</button>
+                <button type="button" class="day-pill" data-days="6">6</button>
+                <button type="button" class="day-pill" data-days="7">7</button>
+              </div>
+              <span class="days-hint"
+                >Opcional — la IA elige si no seleccionas</span
+              >
             </div>
-        </main>
+
+            <!-- Suggested prompts (below input) -->
+            <div class="suggested-prompts">
+              <div
+                class="prompt-card"
+                data-prompt="Crea una rutina para ganar masa muscular"
+                data-days="4"
+              >
+                <span class="prompt-icon"><i class="bi bi-fire"></i></span>
+                <span class="prompt-text">Ganar masa muscular</span>
+              </div>
+              <div
+                class="prompt-card"
+                data-prompt="Quiero perder grasa entrenando en casa"
+                data-days="3"
+              >
+                <span class="prompt-icon"
+                  ><i class="bi bi-lightning-charge"></i
+                ></span>
+                <span class="prompt-text">Perder grasa en casa</span>
+              </div>
+              <div
+                class="prompt-card"
+                data-prompt="Diseña una rutina para principiantes sin equipamiento"
+                data-days="3"
+              >
+                <span class="prompt-icon"
+                  ><i class="bi bi-person-arms-up"></i
+                ></span>
+                <span class="prompt-text">Rutina para principiantes</span>
+              </div>
+              <div
+                class="prompt-card"
+                data-prompt="Rutina push/pull/legs avanzada"
+                data-days="6"
+              >
+                <span class="prompt-icon"
+                  ><i class="bi bi-calendar-week"></i
+                ></span>
+                <span class="prompt-text">Push / Pull / Legs</span>
+              </div>
+            </div>
+
+            <div class="chatbot-disclaimer">
+              GymAI genera rutinas con IA. Consulta a un profesional antes de
+              iniciar cualquier programa.
+            </div>
+
+            <!-- Loading overlay (hidden initially) -->
+            <div
+              class="chatbot-loading-overlay"
+              id="chatbot-loading-overlay"
+              style="display: none"
+            >
+              <div class="loading-content">
+                <div class="loading-spinner">
+                  <div class="spinner-ring"></div>
+                  <img
+                    src="/static/logoGymAI.png"
+                    alt="GymAI"
+                    class="spinner-logo"
+                  />
+                </div>
+                <h3 class="loading-title">Creando tu rutina...</h3>
+                <p class="loading-subtitle" id="loading-message">
+                  Nuestra IA está diseñando tu plan personalizado
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+      crossorigin="anonymous"
+    ></script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener("DOMContentLoaded", function () {
         // --- DOM references ---
-        const sidebar = document.getElementById('chatbot-sidebar');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-        const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
-        const chatbotCenter = document.getElementById('chatbot-center');
-        const chatbotMessages = document.getElementById('chatbot-messages');
-        const chatbotForm = document.getElementById('chatbot-form');
-        const chatbotInput = document.getElementById('chatbot-input');
-        const chatbotSendBtn = document.getElementById('chatbot-send-btn');
-        const promptCards = document.querySelectorAll('.prompt-card');
-        const dayPills = document.querySelectorAll('.day-pill');
-        const stickyWrapper = document.getElementById('chatbot-input-sticky');
-        const stickyForm = document.getElementById('chatbot-form-sticky');
-        const stickyInput = document.getElementById('chatbot-input-sticky-field');
-        const stickySendBtn = document.getElementById('chatbot-send-btn-sticky');
+        const sidebar = document.getElementById("chatbot-sidebar");
+        const sidebarOverlay = document.getElementById("sidebar-overlay");
+        const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
+        const sidebarCloseBtn = document.getElementById("sidebar-close-btn");
+        const chatbotForm = document.getElementById("chatbot-form");
+        const chatbotInput = document.getElementById("chatbot-input");
+        const chatbotSendBtn = document.getElementById("chatbot-send-btn");
+        const promptCards = document.querySelectorAll(".prompt-card");
+        const dayPills = document.querySelectorAll(".day-pill");
+        const loadingOverlay = document.getElementById(
+          "chatbot-loading-overlay",
+        );
+        const loadingMessage = document.getElementById("loading-message");
 
         // --- State ---
         let selectedDays = null;
 
         // --- Sidebar toggle ---
         function openSidebar() {
-            sidebar.classList.remove('collapsed');
-            sidebarOverlay.classList.add('active');
+          sidebar.classList.remove("collapsed");
+          sidebarOverlay.classList.add("active");
         }
 
         function closeSidebar() {
-            sidebar.classList.add('collapsed');
-            sidebarOverlay.classList.remove('active');
+          sidebar.classList.add("collapsed");
+          sidebarOverlay.classList.remove("active");
         }
 
-        sidebarToggleBtn.addEventListener('click', function () {
-            if (sidebar.classList.contains('collapsed')) {
-                openSidebar();
-            } else {
-                closeSidebar();
-            }
+        sidebarToggleBtn.addEventListener("click", function () {
+          if (sidebar.classList.contains("collapsed")) {
+            openSidebar();
+          } else {
+            closeSidebar();
+          }
         });
 
-        sidebarCloseBtn.addEventListener('click', closeSidebar);
-        sidebarOverlay.addEventListener('click', closeSidebar);
+        sidebarCloseBtn.addEventListener("click", closeSidebar);
+        sidebarOverlay.addEventListener("click", closeSidebar);
 
         // --- Days selector ---
         dayPills.forEach(function (pill) {
-            pill.addEventListener('click', function () {
-                const days = parseInt(pill.getAttribute('data-days'));
+          pill.addEventListener("click", function () {
+            const days = parseInt(pill.getAttribute("data-days"));
 
-                // Toggle: click same pill again to deselect
-                if (selectedDays === days) {
-                    selectedDays = null;
-                    pill.classList.remove('active');
-                    return;
-                }
+            // Toggle: click same pill again to deselect
+            if (selectedDays === days) {
+              selectedDays = null;
+              pill.classList.remove("active");
+              return;
+            }
 
-                // Deselect all, select this one
-                selectedDays = days;
-                dayPills.forEach(function (p) { p.classList.remove('active'); });
-                pill.classList.add('active');
+            // Deselect all, select this one
+            selectedDays = days;
+            dayPills.forEach(function (p) {
+              p.classList.remove("active");
             });
+            pill.classList.add("active");
+          });
         });
 
         // --- Suggested prompts ---
         promptCards.forEach(function (card) {
-            card.addEventListener('click', function () {
-                const prompt = card.getAttribute('data-prompt');
-                const days = card.getAttribute('data-days');
+          card.addEventListener("click", function () {
+            const prompt = card.getAttribute("data-prompt");
+            const days = card.getAttribute("data-days");
 
-                // Set days from prompt card
-                if (days) {
-                    selectedDays = parseInt(days);
-                    dayPills.forEach(function (p) {
-                        p.classList.toggle('active', p.getAttribute('data-days') === days);
-                    });
-                }
+            // Set days from prompt card
+            if (days) {
+              selectedDays = parseInt(days);
+              dayPills.forEach(function (p) {
+                p.classList.toggle(
+                  "active",
+                  p.getAttribute("data-days") === days,
+                );
+              });
+            }
 
-                chatbotInput.value = prompt;
-                submitMessage(prompt);
-            });
+            chatbotInput.value = prompt;
+            submitMessage(prompt);
+          });
         });
 
-        // --- Message helpers ---
-        function addMessage(text, sender) {
-            const msg = document.createElement('div');
-            msg.classList.add('chatbot-msg', sender);
-            msg.textContent = text;
-            chatbotMessages.appendChild(msg);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        // --- Loading overlay helpers ---
+        function showLoadingOverlay() {
+          loadingOverlay.style.display = "flex";
+          // Animate in
+          requestAnimationFrame(function () {
+            loadingOverlay.classList.add("active");
+          });
         }
 
-        function showThinking() {
-            const indicator = document.createElement('div');
-            indicator.classList.add('thinking-indicator');
-            indicator.id = 'thinking-indicator';
-            indicator.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
-            chatbotMessages.appendChild(indicator);
-            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        function hideLoadingOverlay() {
+          loadingOverlay.classList.remove("active");
+          setTimeout(function () {
+            loadingOverlay.style.display = "none";
+          }, 300);
         }
 
-        function hideThinking() {
-            const indicator = document.getElementById('thinking-indicator');
-            if (indicator) indicator.remove();
-        }
+        function showError(message) {
+          hideLoadingOverlay();
 
-        function switchToChat() {
-            chatbotCenter.classList.add('hidden');
-            chatbotMessages.classList.add('active');
-            stickyWrapper.style.display = '';
+          // Show error toast on the same screen
+          var toast = document.createElement("div");
+          toast.className = "chatbot-error-toast";
+          toast.innerHTML =
+            '<i class="bi bi-exclamation-triangle"></i> ' + message;
+          document.querySelector(".chatbot-welcome").appendChild(toast);
+
+          // Auto-remove after 6 seconds
+          setTimeout(function () {
+            toast.classList.add("fade-out");
+            setTimeout(function () {
+              toast.remove();
+            }, 300);
+          }, 6000);
         }
 
         // --- Submit message ---
         function submitMessage(message) {
-            if (!message || !message.trim()) return;
+          if (!message || !message.trim()) return;
 
-            // Switch to chat view
-            switchToChat();
+          // Show loading overlay on the same screen
+          showLoadingOverlay();
 
-            // Add user message
-            var displayMsg = message;
-            if (selectedDays) {
-                displayMsg += ' (' + selectedDays + ' dias)';
-            }
-            addMessage(displayMsg, 'user');
+          // Disable inputs
+          chatbotInput.disabled = true;
+          chatbotSendBtn.disabled = true;
 
-            // Disable inputs
-            chatbotInput.disabled = true;
-            chatbotSendBtn.disabled = true;
-            stickyInput.disabled = true;
-            stickySendBtn.disabled = true;
+          // Build API payload
+          var data = {
+            goals: message.trim(),
+            user_id: 1,
+          };
+          if (selectedDays) {
+            data.days = selectedDays;
+          }
 
-            // Show thinking
-            showThinking();
-
-            // Build API payload
-            var data = {
-                goals: message.trim(),
-                user_id: 1
-            };
-            if (selectedDays) {
-                data.days = selectedDays;
-            }
-
-            fetch('/api/create_routine', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
+          fetch("/api/create_routine", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          })
             .then(function (response) {
-                if (!response.ok) {
-                    return response.text().then(function (text) {
-                        var detail = 'Error ' + response.status;
-                        try {
-                            var errJson = JSON.parse(text);
-                            detail = errJson.error || errJson.detail || detail;
-                        } catch (e) {
-                            detail += ': ' + text.substring(0, 100);
-                        }
-                        throw new Error(detail);
-                    });
-                }
-                return response.json();
+              if (!response.ok) {
+                return response.text().then(function (text) {
+                  var detail = "Error " + response.status;
+                  try {
+                    var errJson = JSON.parse(text);
+                    detail = errJson.error || errJson.detail || detail;
+                  } catch (e) {
+                    detail += ": " + text.substring(0, 100);
+                  }
+                  throw new Error(detail);
+                });
+              }
+              return response.json();
             })
             .then(function (result) {
-                hideThinking();
+              if (result.error) {
+                throw new Error(result.error);
+              }
 
-                if (result.error) {
-                    throw new Error(result.error);
-                }
+              if (result.routine_id) {
+                // Update loading message and redirect directly
+                loadingMessage.textContent = "¡Rutina creada! Redirigiendo...";
 
-                if (result.routine_id) {
-                    addMessage('He creado tu rutina personalizada. Redirigiendo...', 'assistant');
-
-                    setTimeout(function () {
-                        window.location.href = '/dashboard/' + result.routine_id;
-                    }, 1200);
-                } else {
-                    throw new Error('No se recibio el ID de la rutina.');
-                }
+                setTimeout(function () {
+                  window.location.href = "/dashboard/" + result.routine_id;
+                }, 600);
+              } else {
+                throw new Error("No se recibió el ID de la rutina.");
+              }
             })
             .catch(function (error) {
-                hideThinking();
-                addMessage('Error: ' + (error.message || 'Ha ocurrido un error inesperado. Intenta de nuevo.'), 'assistant');
+              showError(
+                error.message ||
+                  "Ha ocurrido un error inesperado. Intenta de nuevo.",
+              );
 
-                // Re-enable inputs
-                chatbotInput.disabled = false;
-                chatbotSendBtn.disabled = false;
-                stickyInput.disabled = false;
-                stickySendBtn.disabled = false;
-                stickyInput.focus();
+              // Re-enable inputs
+              chatbotInput.disabled = false;
+              chatbotSendBtn.disabled = false;
+              chatbotInput.focus();
             });
         }
 
         // --- Form submit (hero input) ---
-        chatbotForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            submitMessage(chatbotInput.value.trim());
+        chatbotForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          submitMessage(chatbotInput.value.trim());
         });
-
-        // --- Form submit (sticky input in chat mode) ---
-        stickyForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            submitMessage(stickyInput.value.trim());
-            stickyInput.value = '';
-        });
-    });
+      });
     </script>
-</body>
-
+  </body>
 </html>

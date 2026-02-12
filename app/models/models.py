@@ -16,6 +16,7 @@ class Exercise(BaseModel):
     sets: int
     reps: str
     rest: str
+    rir: str = ""
     equipment: str
 
 
