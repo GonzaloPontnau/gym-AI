@@ -3,6 +3,8 @@ API request/response schemas for routine endpoints.
 Separated from domain models to follow clean architecture.
 """
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -11,7 +13,7 @@ class RoutineRequest(BaseModel):
 
     goals: str
     equipment: str = ""
-    days: int = Field(ge=1, le=7)
+    days: Optional[int] = Field(default=None, ge=1, le=7)
     experience_level: str = ""
     available_equipment: str = ""
     time_per_session: str = ""

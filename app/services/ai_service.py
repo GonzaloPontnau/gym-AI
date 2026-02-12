@@ -44,10 +44,21 @@ class RoutineGenerator:
 
     @staticmethod
     def _build_initial_prompt(request: RoutineRequest) -> str:
+        days_instruction = (
+            f"Días de entrenamiento: {request.days} días a la semana"
+            if request.days
+            else "Días de entrenamiento: Determina el número ideal de días basándote en los objetivos del usuario"
+        )
+        days_count_instruction = (
+            f"2. Incluye exactamente {request.days} días en la rutina."
+            if request.days
+            else "2. Determina el número óptimo de días (entre 2 y 6) según los objetivos descritos."
+        )
+
         return f"""Actúa como un entrenador personal profesional y crea una rutina de entrenamiento detallada con estas características:
 
 Objetivos: {request.goals}
-Días de entrenamiento: {request.days} días a la semana
+{days_instruction}
 Nivel de experiencia: {request.experience_level or 'No especificado'}
 Equipo disponible: {request.available_equipment or 'No especificado'}
 Tiempo por sesión: {request.time_per_session or 'No especificado'}
@@ -76,7 +87,7 @@ La rutina debe seguir ESTRICTAMENTE este formato JSON:
 
 IMPORTANTE:
 1. Devuelve SOLO el JSON válido, sin texto explicativo.
-2. Incluye exactamente {request.days} días en la rutina.
+{days_count_instruction}
 3. Cada día debe tener entre 4 y 6 ejercicios.
 4. Los nombres de los días deben ser en español (Lunes, Martes, etc.)."""
 

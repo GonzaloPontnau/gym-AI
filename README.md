@@ -1,151 +1,176 @@
-# GymAI - Tu personal TrAIner
+# GymAI - Tu Personal TrAIner
 
 [![FastAPI](https://img.shields.io/badge/docs-FastAPI-white?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Python](https://img.shields.io/badge/docs-Python-blue?logo=python)](https://docs.python.org/3/)
-[![Groq](https://img.shields.io/badge/API-Groq_Llama-orange?logo=meta)](https://console.groq.com/)
+[![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://docs.python.org/3/)
+[![Groq](https://img.shields.io/badge/AI-Groq_Llama_3-orange?logo=meta)](https://console.groq.com/)
+[![Render](https://img.shields.io/badge/Deploy-Render-black?logo=render)](https://render.com/)
 
-## Demo
-
-### Generación de Rutinas
-![prompt-inicial](https://github.com/user-attachments/assets/8c1bfbdb-12f6-4a20-bf89-1fdb9169d7c1)
-
-### Chat en Tiempo Real
-![modificar-rutina](https://github.com/user-attachments/assets/6163adbe-ad67-49d2-802e-3bff0e953ae4)
-
-### Mis Rutinas
-![mis-rutinas](https://github.com/user-attachments/assets/b8c4786c-d320-4c64-b338-b0dba6212be5)
-
-### Exportar rutina
-![exportar-rutina](https://github.com/user-attachments/assets/871a144f-d57f-434b-8f32-1176ac4ebd4e)
-
-## Descripción
-
-GymAI es una aplicación web que utiliza inteligencia artificial (Groq con Llama 3.3) para generar y personalizar rutinas de entrenamiento adaptadas a las necesidades específicas de cada usuario. Con un enfoque en la experiencia del usuario, permite modificar rutinas en tiempo real mediante un chat interactivo y ofrece análisis de posturas a través del procesamiento de imágenes.
+**GymAI** es una aplicación web inteligente que actúa como tu entrenador personal avanzado. Utilizando la potencia de **Llama 3.3 (70B)** para la generación de rutinas y **Llama 3.2 Vision** para el análisis biomecánico, GymAI crea planes de entrenamiento hiper-personalizados y ofrece retroalimentación técnica en tiempo real.
 
 > [!TIP]
-> Esta aplicación permite combinar ejercicios según tus objetivos específicos, equipo disponible y nivel de condición física.
+> **Nueva Arquitectura**: El proyecto ha sido refactorizado para soportar alta concurrencia, con una base de código modular, tipado estricto y manejo robusto de errores.
 
 ---
 
 ## Características Principales
 
-- **Generación de Rutinas**: Creación de planes de entrenamiento personalizados según objetivos y nivel
-- **Chat Interactivo**: Comunicación en tiempo real para modificar rutinas sobre la marcha
-- **Análisis de Imágenes**: Evaluación y corrección de posturas en ejercicios
-- **Seguimiento de Progreso**: Monitoreo de avances y logros
-- **Diseño Adaptable**: Interfaz responsive para todos los dispositivos
-- **Recomendaciones Inteligentes**: Sugerencias basadas en el rendimiento y preferencias
-- **Almacenamiento de Rutinas**: Historial completo de entrenamientos realizados
-- **Exportación de Datos**: Posibilidad de descargar rutinas en formato PDF
+### Inteligencia Artificial Avanzada
+
+- **Generación de Rutinas a Medida**: Algoritmos basados en Llama 3.3 que consideran objetivos, nivel, equipo disponible y lesiones.
+- **Coach en Tiempo Real**: Chat interactivo contextual (RAG) que recuerda tu historial y ajusta tu plan sobre la marcha.
+- **Visión Computacional**: Sube una foto o video de tu ejercicio y recibe correcciones posturales instantáneas gracias a Llama 3.2 Vision.
+
+### Experiencia de Usuario Fluida
+
+- **Interfaz Reactiva**: Construida con **Bootstrap 5** y **HTMX** para una experiencia SPA sin la complejidad de frameworks pesados.
+- **WebSockets**: Comunicación bidireccional para el chat con el entrenador, garantizando respuestas inmediatas.
+- **Dashboard Integral**: Visualiza tu progreso, historial de rutinas y métricas clave en un solo lugar.
+
+### Ingeniería Robusta
+
+- **Arquitectura Limpia**: Separación clara de responsabilidades (Servicios, Repositorios, Rutas).
+- **Base de Datos Asíncrona**: Soporte nativo para PostgreSQL (Producción) y SQLite (Desarrollo) con SQLAlchemy Async.
+- **Listo para Despliegue**: Configuración Docker y Render optimizada.
 
 ---
 
-## Tecnologías Utilizadas
+## Demo
 
-- **Backend**: 
-   - FastAPI (Python 3.9+)
-   - WebSockets para comunicación en tiempo real
-   - SQLite/PostgreSQL para almacenamiento de datos
-   
-- **Frontend**: 
-   - HTML5, CSS3, JavaScript
-   - Bootstrap 5 para interfaz responsive
-   - HTMX para interactividad sin complicaciones
-   
-- **Inteligencia Artificial**:
-   - Groq API con Llama 3.3 70B para generación de rutinas
-   - Llama 3.2 Vision para análisis de imágenes y corrección de posturas
-   
-- **DevOps**:
-   - Render para despliegue automatizado
-   
-- **Comunicación en Tiempo Real**:
-   - WebSockets para chat interactivo
-   - Notificaciones push en tiempo real
-   - Actualizaciones instantáneas de rutinas
+### 1. Generación de Rutinas
 
-> [!NOTE]
-> Este proyecto implementa una arquitectura moderna basada en API REST con comunicación en tiempo real vía WebSockets para una experiencia fluida.
+Define tus objetivos y deja que la IA estructure tu semana perfecta.
+![prompt-inicial](https://github.com/user-attachments/assets/8c1bfbdb-12f6-4a20-bf89-1fdb9169d7c1)
+
+### 2. Chat con tu Entrenador
+
+Pide cambios como "tengo dolor de rodilla hoy" o "cambia el press de banca por mancuernas".
+![modificar-rutina](https://github.com/user-attachments/assets/6163adbe-ad67-49d2-802e-3bff0e953ae4)
+
+### 3. Gestión de Rutinas
+
+Accede a tu historial completo y exporta tus planes.
+![mis-rutinas](https://github.com/user-attachments/assets/b8c4786c-d320-4c64-b338-b0dba6212be5)
+
+### 4. Exportación Profesional
+
+Descarga tus rutinas en formato PDF/Texto para llevar al gimnasio sin conexión.
+![exportar-rutina](https://github.com/user-attachments/assets/871a144f-d57f-434b-8f32-1176ac4ebd4e)
+
+---
+
+## Tech Stack
+
+### Backend
+
+- **Framework**: FastAPI (Python 3.11+)
+- **ORM**: SQLAlchemy 2.0 (AsyncIO)
+- **Validación**: Pydantic V2
+- **IA Integration**: Groq SDK (Llama 3.3 & Llama Vision)
+- **Server**: Uvicorn / Gunicorn
+
+### Frontend
+
+- **Templating**: Jinja2
+- **UI Framework**: Bootstrap 5.3
+- **Interactivity**: HTMX 1.9 (AJAX sin escribir JS complejo)
+- **Estilos**: CSS3 Moderno (Variables, Flexbox, Grid)
+
+### Infraestructura & Herramientas
+
+- **DB**: PostgreSQL (Prod) / SQLite (Dev)
+- **CI/CD**: GitHub Actions
+- **Hosting**: Render (Web Service)
 
 ---
 
 ## Estructura del Proyecto
 
-```
+```text
 gym-AI/
-│
-├── app/                    # Aplicación principal
-│   ├── db/                 # Configuración y modelos de base de datos
-│   ├── models/             # Modelos de datos
-│   ├── services/           # Servicios de IA y generación de rutinas
-│   ├── websocket/          # Gestión de comunicación en tiempo real
-│   ├── main.py             # Punto de entrada principal
-│   └── sqlite_helper.py    # Utilidades para manejo de SQLite
-│
-├── docs/                   # Documentación
-│   ├── TROUBLESHOOTING_502.md  # Guía de solución Error 502
-│   └── security.md         # Documentación de seguridad
-│
-├── scripts/                # Scripts de utilidad
-│   ├── check_health.py     # Diagnóstico de salud antes de deploy
-│   └── deploy.sh           # Script de despliegue
-│
-├── static/                 # Archivos estáticos
-│   ├── css/                # Estilos
-│   └── logoGymAI.png       # Logo de la aplicación
-│
-├── templates/              # Plantillas HTML
-│   ├── base.html           # Plantilla base
-│   ├── dashboard.html      # Dashboard principal
-│   └── routines_list.html  # Lista de rutinas
-│
-├── requirements.txt        # Dependencias del proyecto
-├── render.yaml             # Configuración para despliegue en Render
-└── README.md               # Este archivo
+├── app/
+│   ├── api/            # Endpoints (Routes)
+│   ├── core/           # Configuración global y Logging
+│   ├── db/             # Conexión y sesión de Base de Datos
+│   ├── models/         # Modelos SQLAlchemy (Tablas)
+│   ├── repositories/   # Capa de acceso a datos (CRUD)
+│   ├── schemas/        # Esquemas Pydantic (Validación)
+│   ├── services/       # Lógica de negocio e Integración IA
+│   └── websocket/      # Gestión de conexiones en tiempo real
+├── docs/               # Documentación y Guías
+├── static/             # Assets (CSS, Imágenes)
+├── templates/          # Vistas HTML (Jinja2)
+├── tests/              # Tests automatizados (Pytest)
+├── run.py              # Script de inicio (Dev)
+├── render.yaml         # Configuración de despliegue
+└── requirements.txt    # Dependencias
 ```
 
+---
 
-### Motor de Análisis de Imágenes
+## Instalación y Uso Local
 
-El sistema puede analizar imágenes de ejercicios para:
-- Detectar errores comunes en la postura
-- Proporcionar correcciones específicas
-- Registrar progreso visual a lo largo del tiempo
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/GonzaloPontnau/gym-AI.git
+   cd gym-AI
+   ```
+
+2. **Configurar el entorno**
+   Crea un archivo `.env` en la raíz (puedes copiar el ejemplo si existe o usar estos valores base):
+
+   ```env
+   GROQ_API_KEY=tu_api_key_de_groq
+   DATABASE_URL=sqlite+aiosqlite:///gym_ai.db
+   LOG_LEVEL=INFO
+   ```
+
+   > Obtén tu API Key gratis en [Groq Console](https://console.groq.com/).
+
+3. **Instalar dependencias**
+   Se recomienda usar un entorno virtual:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # En Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+4. **Iniciar la aplicación**
+   ```bash
+   python run.py
+   ```
+   La aplicación estará disponible en `http://localhost:8000`.
 
 ---
 
-## Lecciones Aprendidas y Desafíos
+## Despliegue en Render
 
-- Integración efectiva de APIs de IA con sistemas web en tiempo real
-- Optimización de respuestas de modelo para reducir latencia
-- Diseño de interfaces de usuario intuitivas para interacción con IA
+Este proyecto incluye una configuración automática (`render.yaml`).
 
-Algunos de los desafíos enfrentados incluyen:
+1. **Crear servicio en Render**:
+   - Conecta tu repositorio de GitHub a Render.
+   - Selecciona "Blueprints" y apunta a este repositorio.
+   - Render detectará el archivo `render.yaml` y configurará el servicio web automáticamente.
 
-- Gestión eficiente de conexiones WebSocket a escala
-- Personalización de respuestas de IA según el contexto del usuario
-- Configuración óptima para el despliegue de archivos estáticos en Render
-
-
----
-
-## 🚀 Despliegue
-
-Para configurar el despliegue automático en Render con GitHub Actions, consulta la guía completa en [DEPLOY_SETUP.md](./DEPLOY_SETUP.md).
-
-**Resumen rápido:**
-1. Obtén el Deploy Hook URL desde tu Dashboard de Render
-2. Configúralo como secreto `RENDER_DEPLOY_HOOK_URL` en GitHub (Settings → Secrets)
-3. Cada push a `main` o `master` desplegará automáticamente
+2. **Variables de Entorno en Render**:
+   Asegúrate de configurar las siguientes variables en el dashboard de Render:
+   - `GROQ_API_KEY`: Tu clave privada de Groq.
+   - `SECRET_KEY`: Una cadena aleatoria segura para seguridad de sesión.
+   - `PYTHON_VERSION`: `3.11.0` (o superior).
 
 ---
 
-## 👨‍💻 Desarrollado por
+## Contribución
+
+¡Las contribuciones son bienvenidas! Por favor, abre un Issue para discutir cambios mayores o envía un Pull Request directo para mejoras menores.
+
+---
+
+## Autor
 
 **Ing. Pontnau, Gonzalo Martín**
 
 💼 [LinkedIn](https://linkedin.com/in/gonzalopontnau)
 📧 [Email](mailto:gonzalopontnau@gmail.com)
 💻 [Portfolio](https://gonzalopontnau.github.io/)
-
----

@@ -41,10 +41,14 @@ async def create_routine(
 
         # Save initial chat messages (non-critical)
         try:
+            if routine_request.days:
+                user_msg = f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana."
+            else:
+                user_msg = routine_request.goals
             await chat_repository.save_chat_message(
                 routine_id,
                 "user",
-                f"Quiero una rutina para {routine_request.goals} con una intensidad de {routine_request.days} días a la semana.",
+                user_msg,
             )
             await chat_repository.save_chat_message(
                 routine_id,

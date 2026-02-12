@@ -141,8 +141,8 @@ Responde en español de forma clara y concisa."""
             return response.choices[0].message.content.strip()
 
         except Exception as e:
-            logger.error("Image analysis failed: %s", e)
-            return "No se pudo analizar la imagen. Por favor, inténtalo de nuevo."
+            logger.error("Image analysis failed: %s", e, exc_info=True)
+            return f"No se pudo analizar la imagen: {e}"
 
     async def suggest_exercise_variations(self, image_data, difficulty_level: str = None) -> str:
         """Analyze an exercise image and suggest variations."""
@@ -194,5 +194,5 @@ Responde en español de forma clara y concisa."""
             return response.choices[0].message.content.strip()
 
         except Exception as e:
-            logger.error("Exercise variation suggestion failed: %s", e)
-            return "No se pudieron generar variaciones. Por favor, inténtalo de nuevo."
+            logger.error("Exercise variation suggestion failed: %s", e, exc_info=True)
+            return f"No se pudieron generar variaciones: {e}"

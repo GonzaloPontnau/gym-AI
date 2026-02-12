@@ -13,9 +13,13 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/", response_class=HTMLResponse)
-async def root(request: Request):
+async def root(request: Request, user_id: int = 1):
     """Landing page with the initial chat interface."""
-    return templates.TemplateResponse("chat_initial.html", {"request": request})
+    routines = await routine_repository.get_user_routines(user_id)
+    return templates.TemplateResponse(
+        "chat_initial.html",
+        {"request": request, "routines": routines},
+    )
 
 
 @router.get("/routines", response_class=HTMLResponse)
