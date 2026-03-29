@@ -120,7 +120,7 @@
                 <div class="chatbot-input-box chatbot-input-box-lg">
                   <textarea
                     id="chatbot-input"
-                    placeholder="Describe tu rutina ideal..."
+                    placeholder="Describe tu rutina ideal... (Shift+Enter para salto de línea)"
                     required
                     autofocus
                     rows="1"
@@ -431,7 +431,15 @@
 
         // --- Textarea auto-resize and submit on Enter ---
         chatbotInput.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" && !e.shiftKey) {
+          if (e.key !== "Enter") {
+            return;
+          }
+
+          if (e.shiftKey) {
+            return;
+          }
+
+          if (!e.isComposing) {
             e.preventDefault();
             submitMessage(chatbotInput.value.trim());
           }
