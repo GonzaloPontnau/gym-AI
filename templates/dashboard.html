@@ -90,9 +90,9 @@
 
         <div class="chat-input-container">
             <form id="chat-form" class="d-flex flex-column">
-                <div class="d-flex mb-2 gap-2">
-                    <input type="text" id="message-input" class="form-control" placeholder="Escribe tu mensaje aquí..."
-                        required>
+                <div class="d-flex mb-2 gap-2 align-items-end">
+                    <textarea id="message-input" class="form-control" placeholder="Escribe tu mensaje aquí..."
+                        rows="1" style="resize: none; overflow-y: auto; max-height: 200px;" required></textarea>
                     <button type="submit" class="btn btn-primary" id="send-button" style="padding: 0.5rem 1.25rem;">
                         <i class="bi bi-send-fill"></i>
                     </button>
@@ -823,12 +823,28 @@
         }
     });
 
+    // Auto-resize y enviar con Enter en el textarea
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
     // Manejar envío de mensajes
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
         const message = messageInput.value.trim();
         if (!message) return;
+
+        // Reset height
+        messageInput.style.height = 'auto';
 
         // Agregar mensaje al chat
         addMessage(message, 'user');

@@ -1589,7 +1589,8 @@ body.dashboard-page > .container-fluid {
     padding: 0.5rem 0.5rem 0.5rem 1rem;
   }
 
-  .chatbot-input-box-lg input {
+  .chatbot-input-box-lg input,
+  .chatbot-input-box-lg textarea {
     font-size: 0.95rem;
   }
 
@@ -2004,7 +2005,8 @@ body.dashboard-page > .container-fluid {
   box-shadow: var(--shadow-md);
 }
 
-.chatbot-input-box-lg input {
+.chatbot-input-box-lg input,
+.chatbot-input-box-lg textarea {
   font-size: 1.05rem;
   padding: 0.6rem 0;
 }
@@ -2242,7 +2244,7 @@ body.dashboard-page > .container-fluid {
 
 .chatbot-input-box {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 0.5rem;
   background: var(--bg-glass);
   border: 1px solid var(--border-default);
@@ -2256,7 +2258,8 @@ body.dashboard-page > .container-fluid {
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-.chatbot-input-box input {
+.chatbot-input-box input,
+.chatbot-input-box textarea {
   flex: 1;
   background: none;
   border: none;
@@ -2265,9 +2268,14 @@ body.dashboard-page > .container-fluid {
   font-size: 0.95rem;
   font-family: inherit;
   padding: 0.5rem 0;
+  resize: none;
+  overflow-y: auto;
+  max-height: 200px;
+  line-height: 1.5;
 }
 
-.chatbot-input-box input::placeholder {
+.chatbot-input-box input::placeholder,
+.chatbot-input-box textarea::placeholder {
   color: var(--text-muted);
 }
 
