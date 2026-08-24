@@ -43,7 +43,7 @@ class TestAIService:
         gen = RoutineGenerator()
         gen._configured = True
         gen._client = mock_client
-        gen._model = "llama-3.3-70b-versatile"
+        gen._model = "openai/gpt-oss-120b"
         return gen
 
     @pytest.mark.asyncio
@@ -59,6 +59,10 @@ class TestAIService:
         routine = await generator.create_initial_routine(request)
 
         generator._client.chat.completions.create.assert_called_once()
+        assert (
+            generator._client.chat.completions.create.call_args.kwargs["model"]
+            == "openai/gpt-oss-120b"
+        )
 
         assert isinstance(routine, Routine)
         assert routine.routine_name == "Rutina de prueba"

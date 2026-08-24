@@ -1,6 +1,6 @@
 """
-Service for generating and modifying workout routines using the Groq API
-with Llama models. Follows dependency injection — receives configuration, not global state.
+Service for generating and modifying workout routines using the Groq API.
+Follows dependency injection — receives configuration, not global state.
 """
 
 import json
@@ -17,7 +17,7 @@ logger = get_logger("services.ai")
 
 
 class RoutineGenerator:
-    """Generates and modifies workout routines via Groq AI (Llama models)."""
+    """Generates and modifies workout routines via Groq AI."""
 
     def __init__(self):
         settings = get_settings()

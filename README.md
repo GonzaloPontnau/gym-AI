@@ -6,10 +6,10 @@
 
 [![FastAPI](https://img.shields.io/badge/docs-FastAPI-white?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python)](https://docs.python.org/3/)
-[![Groq](https://img.shields.io/badge/AI-Groq_Llama_3-orange?logo=meta)](https://console.groq.com/)
+[![Groq](https://img.shields.io/badge/AI-Groq_GPT--OSS_120B-orange)](https://console.groq.com/)
 [![Render](https://img.shields.io/badge/Deploy-Render-black?logo=render)](https://render.com/)
 
-**GymAI** es una aplicación web inteligente que actúa como tu entrenador personal avanzado. Utilizando la potencia de **Llama 3.3 (70B)** para la generación de rutinas y **Llama 3.2 Vision** para el análisis biomecánico, GymAI crea planes de entrenamiento hiper-personalizados y ofrece retroalimentación técnica en tiempo real.
+**GymAI** es una aplicación web inteligente que actúa como tu entrenador personal avanzado. Utilizando **GPT-OSS 120B en Groq** para la generación de rutinas y un modelo multimodal para el análisis biomecánico, GymAI crea planes de entrenamiento hiper-personalizados y ofrece retroalimentación técnica en tiempo real.
 
 > [!TIP]
 > **Nueva Arquitectura**: El proyecto ha sido refactorizado para soportar alta concurrencia, con una base de código modular, tipado estricto y manejo robusto de errores.
@@ -20,7 +20,7 @@
 
 ### Inteligencia Artificial Avanzada
 
-- **Generación de Rutinas a Medida**: Algoritmos basados en Llama 3.3 que consideran objetivos, nivel, equipo disponible y lesiones.
+- **Generación de Rutinas a Medida**: GPT-OSS 120B considera objetivos, nivel, equipo disponible y lesiones.
 - **Coach en Tiempo Real**: Chat interactivo contextual (RAG) que recuerda tu historial y ajusta tu plan sobre la marcha.
 - **Visión Computacional**: Sube una foto o video de tu ejercicio y recibe correcciones posturales instantáneas gracias a Llama 3.2 Vision.
 
@@ -49,7 +49,7 @@
 - **Framework**: FastAPI (Python 3.11+)
 - **ORM**: SQLAlchemy 2.0 (AsyncIO)
 - **Validación**: Pydantic V2
-- **IA Integration**: Groq SDK (Llama 3.3 & Llama Vision)
+- **IA Integration**: Groq SDK (GPT-OSS 120B y modelo multimodal)
 - **Server**: Uvicorn / Gunicorn
 
 ### Frontend
@@ -105,6 +105,7 @@ gym-AI/
 
    ```env
    GROQ_API_KEY=tu_api_key_de_groq
+   GROQ_MODEL=openai/gpt-oss-120b
    DATABASE_URL=sqlite+aiosqlite:///gym_ai.db
    LOG_LEVEL=INFO
    ```
