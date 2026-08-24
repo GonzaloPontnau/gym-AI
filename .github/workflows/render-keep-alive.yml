@@ -5,7 +5,7 @@ on:
     branches: [master]
   # Run every 5 minutes, offset from the top of the hour to reduce queueing.
   schedule:
-    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
+    - cron: "3/5 * * * *"
   workflow_dispatch:
 
 # This workflow only makes an unauthenticated health request; it does not need
