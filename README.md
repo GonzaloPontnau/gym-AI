@@ -144,6 +144,12 @@ Este proyecto incluye una configuración automática (`render.yaml`).
    - `SECRET_KEY`: Una cadena aleatoria segura para seguridad de sesión.
    - `PYTHON_VERSION`: `3.11.0` (o superior).
 
+### Mantener despierto el servicio gratuito
+
+El workflow `.github/workflows/render-keep-alive.yml` consulta `/health` cada 5 minutos desde GitHub Actions para evitar que el servicio gratuito entre en suspensión por inactividad. No requiere secretos ni permisos de escritura.
+
+Este mecanismo reduce los cold starts, pero no es una garantía absoluta: GitHub puede retrasar ejecuciones programadas y Render puede reiniciar cualquier instancia gratuita. Para disponibilidad continua garantizada, utiliza una instancia paga de Render.
+
 
 ## Autor
 

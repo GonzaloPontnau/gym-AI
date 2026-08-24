@@ -1,0 +1,42 @@
+name: Keep Render awake
+
+on:
+  # Run every 5 minutes, offset from the top of the hour to reduce queueing.
+  schedule:
+    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
+  workflow_dispatch:
+
+# This workflow only makes an unauthenticated health request; it does not need
+# repository contents, secrets, or write permissions.
+permissions: {}
+
+jobs:
+  ping-render:
+    name: Ping production health endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Keep the Render web service warm
+        env:
+          RENDER_HEALTH_URL: https://gym-ai-pontnau.onrender.com/health
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          response="$(curl \
+            --fail \
+            --silent \
+            --show-error \
+            --location \
+            --retry 3 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            --connect-timeout 10 \
+            --max-time 60 \
+            "$RENDER_HEALTH_URL")"
+
+          printf '%s\n' "$response"
+          grep -q '"status":"ok"' <<<"$response"
+          grep -q '"database":"connected"' <<<"$response"
+          printf 'Render health check succeeded.\n'
